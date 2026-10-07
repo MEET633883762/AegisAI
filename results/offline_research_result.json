@@ -1,0 +1,54 @@
+{
+  "experiment_id": "offline_research_001-A",
+  "split": {
+    "train": [
+      [
+        "credential_reuse_known_vuln",
+        1
+      ],
+      [
+        "credential_reuse_known_vuln",
+        2
+      ],
+      [
+        "credential_reuse_known_vuln",
+        7
+      ],
+      [
+        "credential_reuse_known_vuln",
+        9
+      ]
+    ],
+    "validation": [
+      [
+        "web_exploit_lateral_exfil",
+        1
+      ],
+      [
+        "web_exploit_lateral_exfil",
+        2
+      ]
+    ],
+    "test": [
+      [
+        "web_exploit_lateral_exfil",
+        7
+      ],
+      [
+        "web_exploit_lateral_exfil",
+        9
+      ]
+    ]
+  },
+  "baseline": "ExperimentRun(experiment_id='offline_research_001-A', scenario_template_ids=('web_exploit_lateral_exfil',), seeds=(7, 9), episodes=(EpisodeMetrics(scenario_id='web_exploit_lateral_exfil:7', template_id='web_exploit_lateral_exfil', seed=7, steps=30, attack_success=False, detection_rate=0.0, mean_detection_time=None, mitigation_success_rate=0.0, false_positive_rate=0.875, decision_latency_ms=0.06129166674024115, total_alerts=8, malicious_alerts=0, benign_alerts=8, response_required_alerts=0, detected_malicious_alerts=0, mitigated_alerts=0), EpisodeMetrics(scenario_id='web_exploit_lateral_exfil:9', template_id='web_exploit_lateral_exfil', seed=9, steps=30, attack_success=False, detection_rate=1.0, mean_detection_time=0, mitigation_success_rate=1.0, false_positive_rate=1.0, decision_latency_ms=0.07764000007834208, total_alerts=5, malicious_alerts=1, benign_alerts=4, response_required_alerts=1, detected_malicious_alerts=1, mitigated_alerts=1)), aggregate=AggregateMetrics(episodes=2, attack_success_rate=0.0, detection_rate=0.5, mean_detection_time=0, mitigation_success_rate=0.5, false_positive_rate=0.9375, mean_decision_latency_ms=0.06946583340929162))",
+  "no_memory": "ExperimentRun(experiment_id='offline_research_001-B', scenario_template_ids=('web_exploit_lateral_exfil',), seeds=(7, 9), episodes=(EpisodeMetrics(scenario_id='web_exploit_lateral_exfil:7', template_id='web_exploit_lateral_exfil', seed=7, steps=30, attack_success=False, detection_rate=0.0, mean_detection_time=None, mitigation_success_rate=0.0, false_positive_rate=0.875, decision_latency_ms=0.1783166666124695, total_alerts=8, malicious_alerts=0, benign_alerts=8, response_required_alerts=0, detected_malicious_alerts=0, mitigated_alerts=0), EpisodeMetrics(scenario_id='web_exploit_lateral_exfil:9', template_id='web_exploit_lateral_exfil', seed=9, steps=30, attack_success=False, detection_rate=1.0, mean_detection_time=0, mitigation_success_rate=1.0, false_positive_rate=1.0, decision_latency_ms=0.1814283334169886, total_alerts=5, malicious_alerts=1, benign_alerts=4, response_required_alerts=1, detected_malicious_alerts=1, mitigated_alerts=1)), aggregate=AggregateMetrics(episodes=2, attack_success_rate=0.0, detection_rate=0.5, mean_detection_time=0, mitigation_success_rate=0.5, false_positive_rate=0.9375, mean_decision_latency_ms=0.17987250001472904))",
+  "adaptive_memory": "ExperimentRun(experiment_id='offline_research_001-C', scenario_template_ids=('web_exploit_lateral_exfil',), seeds=(7, 9), episodes=(EpisodeMetrics(scenario_id='web_exploit_lateral_exfil:7', template_id='web_exploit_lateral_exfil', seed=7, steps=30, attack_success=False, detection_rate=0.0, mean_detection_time=None, mitigation_success_rate=0.0, false_positive_rate=0.875, decision_latency_ms=0.19076833320165557, total_alerts=8, malicious_alerts=0, benign_alerts=8, response_required_alerts=0, detected_malicious_alerts=0, mitigated_alerts=0), EpisodeMetrics(scenario_id='web_exploit_lateral_exfil:9', template_id='web_exploit_lateral_exfil', seed=9, steps=30, attack_success=False, detection_rate=1.0, mean_detection_time=0, mitigation_success_rate=1.0, false_positive_rate=1.0, decision_latency_ms=0.17624333340791054, total_alerts=5, malicious_alerts=1, benign_alerts=4, response_required_alerts=1, detected_malicious_alerts=1, mitigated_alerts=1)), aggregate=AggregateMetrics(episodes=2, attack_success_rate=0.0, detection_rate=0.5, mean_detection_time=0, mitigation_success_rate=0.5, false_positive_rate=0.9375, mean_decision_latency_ms=0.18350583330478304))",
+  "adaptation_improvement": 0.0,
+  "generalization_improvement": 0.0,
+  "manifest_fingerprints": [
+    "3dad8ec53a81b1d4580cd675568e3f80511101c87cb33e3c45c2af02956f236a",
+    "400759a319d2b7cb5abf89f5984e289a06dbb5f060998f0ac9f4b63a2bfc93c3",
+    "b87ed083e9d6696ffae7d8b1806b07e4cc34e2b6878a10b0593d706078bdd32a"
+  ],
+  "important_note": "This experiment uses a deterministic offline test-double provider. It validates the A/B/C experiment harness, reproducibility, scenario splitting, and memory isolation. It is NOT evidence of real LLM performance."
+}

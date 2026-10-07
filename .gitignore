@@ -1,0 +1,33 @@
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Credentials / private keys
+*.key
+*.pem
+secrets/
+credentials/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.coverage
+htmlcov/
+
+# Logs
+*.log

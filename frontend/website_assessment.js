@@ -3,23 +3,38 @@
 const assessmentInput = document.getElementById('assessment-file');
 const assessmentStatus = document.getElementById('assessment-status');
 const assessmentResults = document.getElementById('assessment-results');
+const MAX_REPORT_SIZE = 1024 * 1024;
 const escapeAssessmentText = value => String(value).replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
 }[char]));
 
 function readAssessment(file) {
   return new Promise((resolve, reject) => {
+    if (Number.isFinite(file.size) && file.size > MAX_REPORT_SIZE) {
+      reject(new Error(`${file.name} is too large (maximum 1 MB).`));
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       try {
         const report = JSON.parse(String(reader.result));
-        const valid = report && report.schema_version === '1.0'
+        const valid = report && typeof report === 'object' && !Array.isArray(report)
+          && report.schema_version === '1.0'
           && report.assessment_type === 'http_security_header_check'
           && report.url === 'http://127.0.0.1:8765/'
           && ['baseline', 'hardened'].includes(report.profile)
+          && ['passed', 'findings'].includes(report.status)
+          && Array.isArray(report.checked_headers)
           && Array.isArray(report.header_results)
+          && report.header_results.every(item => item && typeof item.header === 'string'
+            && typeof item.expected_value === 'string' && typeof item.present === 'boolean')
           && Array.isArray(report.findings)
-          && Array.isArray(report.limitations);
+          && Number.isInteger(report.finding_count)
+          && report.finding_count === report.findings.length
+          && report.findings.every(item => item && ['id', 'severity', 'title', 'description', 'evidence', 'remediation']
+            .every(key => typeof item[key] === 'string'))
+          && Array.isArray(report.limitations)
+          && report.limitations.every(item => typeof item === 'string');
         if (!valid) throw new Error(`${file.name} is not a supported local header assessment.`);
         resolve(report);
       } catch (error) {

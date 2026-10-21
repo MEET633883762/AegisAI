@@ -1,0 +1,3229 @@
+{
+  "schema_version": "1.0",
+  "artifact_type": "aegisai_public_research_episode",
+  "labels": {
+    "display": "Synthetic local research demo",
+    "synthetic": true,
+    "precomputed": true,
+    "public_execution": false
+  },
+  "provenance": {
+    "episode_id": "public-demo-credential-reuse-seed-1",
+    "scenario_id": "credential_reuse_known_vuln:1",
+    "scenario_template": "credential_reuse_known_vuln",
+    "seed": 1,
+    "research_split": "training sample (experiment split: credential_reuse_known_vuln seed 1)",
+    "red_policy": "ScriptedRedAgent",
+    "blue_policy": "ScriptedBlueAgent",
+    "generator": "scripts/build_public_demo_artifact.py",
+    "generation_mode": "one offline deterministic simulator episode through Controller",
+    "recorded_steps": 20
+  },
+  "objective_result": {
+    "achieved": true,
+    "definition": "True only when the simulator records a Red DATA_EXFILTRATION event.",
+    "episode_count": 1
+  },
+  "metrics": [
+    {
+      "id": "detection_rate",
+      "label": "Detected malicious alerts",
+      "value": 0.8888888888888888,
+      "numerator": 8,
+      "denominator": 9,
+      "unit": "alerts",
+      "definition": "Detected malicious alerts divided by malicious alerts in this episode."
+    },
+    {
+      "id": "mitigation_success_rate",
+      "label": "Mitigated response-required alerts",
+      "value": 0.0,
+      "numerator": 0,
+      "denominator": 6,
+      "unit": "alerts",
+      "definition": "Alerts followed by an authorized successful mitigation divided by malicious high/critical alerts."
+    }
+  ],
+  "records": [
+    {
+      "id": "trace-1",
+      "sequence": 1,
+      "step": 0,
+      "role": "red",
+      "visibility_scope": "red",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "ENUMERATE_PORT",
+        "target": "host_a",
+        "parameters": {},
+        "reason_category": "reconnaissance",
+        "expected_outcome": "enumerate ports on the authorized simulated target"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Open ports found."
+      },
+      "evidence": [
+        {
+          "source": "red_observation",
+          "reference": "host:host_a",
+          "value": "compromised=False;ports=[];services=[]"
+        }
+      ]
+    },
+    {
+      "id": "trace-2",
+      "sequence": 2,
+      "step": 0,
+      "role": "blue",
+      "visibility_scope": "blue",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "INVESTIGATE_ALERT",
+        "target": "host_a",
+        "parameters": {
+          "alert_id": "1"
+        },
+        "reason_category": "investigation",
+        "expected_outcome": "inspect the selected simulated alert evidence"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Alert evidence retrieved."
+      },
+      "evidence": [
+        {
+          "source": "blue_observation",
+          "reference": "alert:1",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:1",
+          "value": "type=network_probe;host=host_a;src=external"
+        }
+      ]
+    },
+    {
+      "id": "trace-3",
+      "sequence": 3,
+      "step": 1,
+      "role": "red",
+      "visibility_scope": "red",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "DISCOVER_SERVICE",
+        "target": "host_a",
+        "parameters": {},
+        "reason_category": "reconnaissance",
+        "expected_outcome": "discover services on the authorized simulated target"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Services identified."
+      },
+      "evidence": [
+        {
+          "source": "red_observation",
+          "reference": "host:host_a",
+          "value": "compromised=False;ports=[8080];services=[]"
+        }
+      ]
+    },
+    {
+      "id": "trace-4",
+      "sequence": 4,
+      "step": 1,
+      "role": "blue",
+      "visibility_scope": "blue",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "INVESTIGATE_ALERT",
+        "target": "host_a",
+        "parameters": {
+          "alert_id": "2"
+        },
+        "reason_category": "investigation",
+        "expected_outcome": "inspect the selected simulated alert evidence"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Alert evidence retrieved."
+      },
+      "evidence": [
+        {
+          "source": "blue_observation",
+          "reference": "alert:1",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:2",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:1",
+          "value": "type=network_probe;host=host_a;src=external"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:2",
+          "value": "type=benign_login;host=host_c;src=host_d"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:3",
+          "value": "type=network_probe;host=host_a;src=external"
+        }
+      ]
+    },
+    {
+      "id": "trace-5",
+      "sequence": 5,
+      "step": 2,
+      "role": "red",
+      "visibility_scope": "red",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "EXPLOIT_SIMULATED_VULNERABILITY",
+        "target": "host_a",
+        "parameters": {
+          "service": "web"
+        },
+        "reason_category": "initial_access",
+        "expected_outcome": "attempt the modeled vulnerability transition"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Foothold established."
+      },
+      "evidence": [
+        {
+          "source": "red_observation",
+          "reference": "host:host_a",
+          "value": "compromised=False;ports=[8080];services=['web']"
+        }
+      ]
+    },
+    {
+      "id": "trace-6",
+      "sequence": 6,
+      "step": 2,
+      "role": "blue",
+      "visibility_scope": "blue",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "INVESTIGATE_ALERT",
+        "target": "host_a",
+        "parameters": {
+          "alert_id": "3"
+        },
+        "reason_category": "investigation",
+        "expected_outcome": "inspect the selected simulated alert evidence"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Alert evidence retrieved."
+      },
+      "evidence": [
+        {
+          "source": "blue_observation",
+          "reference": "alert:1",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:2",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:3",
+          "value": "type=auth_anomaly;host=host_a;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:4",
+          "value": "type=exploit_attempt;host=host_a;severity=high;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:1",
+          "value": "type=network_probe;host=host_a;src=external"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:2",
+          "value": "type=benign_login;host=host_c;src=host_d"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:3",
+          "value": "type=network_probe;host=host_a;src=external"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:4",
+          "value": "type=benign_auth_failure;host=host_a;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:5",
+          "value": "type=benign_login;host=host_d;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:6",
+          "value": "type=exploit_attempt;host=host_a;src=external"
+        }
+      ]
+    },
+    {
+      "id": "trace-7",
+      "sequence": 7,
+      "step": 3,
+      "role": "red",
+      "visibility_scope": "red",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "OBTAIN_CREDENTIAL",
+        "target": "host_a",
+        "parameters": {},
+        "reason_category": "credential_access",
+        "expected_outcome": "attempt to obtain a modeled credential"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Credentials obtained."
+      },
+      "evidence": [
+        {
+          "source": "red_observation",
+          "reference": "host:host_a",
+          "value": "compromised=True;ports=[8080];services=['web']"
+        }
+      ]
+    },
+    {
+      "id": "trace-8",
+      "sequence": 8,
+      "step": 3,
+      "role": "blue",
+      "visibility_scope": "blue",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "INVESTIGATE_ALERT",
+        "target": "host_a",
+        "parameters": {
+          "alert_id": "4"
+        },
+        "reason_category": "investigation",
+        "expected_outcome": "inspect the selected simulated alert evidence"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Alert evidence retrieved."
+      },
+      "evidence": [
+        {
+          "source": "blue_observation",
+          "reference": "alert:1",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:2",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:3",
+          "value": "type=auth_anomaly;host=host_a;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:4",
+          "value": "type=exploit_attempt;host=host_a;severity=high;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:5",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:6",
+          "value": "type=credential_access;host=host_a;severity=high;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:2",
+          "value": "type=benign_login;host=host_c;src=host_d"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:3",
+          "value": "type=network_probe;host=host_a;src=external"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:4",
+          "value": "type=benign_auth_failure;host=host_a;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:5",
+          "value": "type=benign_login;host=host_d;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:6",
+          "value": "type=exploit_attempt;host=host_a;src=external"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:7",
+          "value": "type=benign_login;host=host_a;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:8",
+          "value": "type=benign_auth_failure;host=host_b;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:9",
+          "value": "type=benign_login;host=host_c;src=host_b"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:10",
+          "value": "type=credential_access;host=host_a;src=host_a"
+        }
+      ]
+    },
+    {
+      "id": "trace-9",
+      "sequence": 9,
+      "step": 4,
+      "role": "red",
+      "visibility_scope": "red",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "DISCOVER_HOST",
+        "target": "host_c",
+        "parameters": {},
+        "reason_category": "reconnaissance",
+        "expected_outcome": "discover an authorized simulated host if reachable"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Host discovered."
+      },
+      "evidence": [
+        {
+          "source": "red_observation",
+          "reference": "host:host_a",
+          "value": "compromised=True;ports=[8080];services=['web']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_svc_backup",
+          "value": "principal=svc_backup"
+        }
+      ]
+    },
+    {
+      "id": "trace-10",
+      "sequence": 10,
+      "step": 4,
+      "role": "blue",
+      "visibility_scope": "blue",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "INVESTIGATE_ALERT",
+        "target": "host_b",
+        "parameters": {
+          "alert_id": "5"
+        },
+        "reason_category": "investigation",
+        "expected_outcome": "inspect the selected simulated alert evidence"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Alert evidence retrieved."
+      },
+      "evidence": [
+        {
+          "source": "blue_observation",
+          "reference": "alert:1",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:2",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:3",
+          "value": "type=auth_anomaly;host=host_a;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:4",
+          "value": "type=exploit_attempt;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:5",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:6",
+          "value": "type=credential_access;host=host_a;severity=high;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:7",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:4",
+          "value": "type=benign_auth_failure;host=host_a;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:5",
+          "value": "type=benign_login;host=host_d;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:6",
+          "value": "type=exploit_attempt;host=host_a;src=external"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:7",
+          "value": "type=benign_login;host=host_a;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:8",
+          "value": "type=benign_auth_failure;host=host_b;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:9",
+          "value": "type=benign_login;host=host_c;src=host_b"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:10",
+          "value": "type=credential_access;host=host_a;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:11",
+          "value": "type=benign_auth_failure;host=host_b;src=host_a"
+        }
+      ]
+    },
+    {
+      "id": "trace-11",
+      "sequence": 11,
+      "step": 5,
+      "role": "red",
+      "visibility_scope": "red",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "ENUMERATE_PORT",
+        "target": "host_c",
+        "parameters": {},
+        "reason_category": "reconnaissance",
+        "expected_outcome": "enumerate ports on the authorized simulated target"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Open ports found."
+      },
+      "evidence": [
+        {
+          "source": "red_observation",
+          "reference": "host:host_a",
+          "value": "compromised=True;ports=[8080];services=['web']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_c",
+          "value": "compromised=False;ports=[];services=[]"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_svc_backup",
+          "value": "principal=svc_backup"
+        }
+      ]
+    },
+    {
+      "id": "trace-12",
+      "sequence": 12,
+      "step": 5,
+      "role": "blue",
+      "visibility_scope": "blue",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "INVESTIGATE_ALERT",
+        "target": "host_a",
+        "parameters": {
+          "alert_id": "6"
+        },
+        "reason_category": "investigation",
+        "expected_outcome": "inspect the selected simulated alert evidence"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Alert evidence retrieved."
+      },
+      "evidence": [
+        {
+          "source": "blue_observation",
+          "reference": "alert:1",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:2",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:3",
+          "value": "type=auth_anomaly;host=host_a;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:4",
+          "value": "type=exploit_attempt;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:5",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:6",
+          "value": "type=credential_access;host=host_a;severity=high;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:7",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:8",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:9",
+          "value": "type=auth_anomaly;host=host_d;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:7",
+          "value": "type=benign_login;host=host_a;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:8",
+          "value": "type=benign_auth_failure;host=host_b;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:9",
+          "value": "type=benign_login;host=host_c;src=host_b"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:10",
+          "value": "type=credential_access;host=host_a;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:11",
+          "value": "type=benign_auth_failure;host=host_b;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:13",
+          "value": "type=benign_auth_failure;host=host_b;src=host_d"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:14",
+          "value": "type=benign_login;host=host_c;src=host_d"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:15",
+          "value": "type=benign_auth_failure;host=host_d;src=host_a"
+        }
+      ]
+    },
+    {
+      "id": "trace-13",
+      "sequence": 13,
+      "step": 6,
+      "role": "red",
+      "visibility_scope": "red",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "DISCOVER_SERVICE",
+        "target": "host_c",
+        "parameters": {},
+        "reason_category": "reconnaissance",
+        "expected_outcome": "discover services on the authorized simulated target"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Services identified."
+      },
+      "evidence": [
+        {
+          "source": "red_observation",
+          "reference": "host:host_a",
+          "value": "compromised=True;ports=[8080];services=['web']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_c",
+          "value": "compromised=False;ports=[22];services=[]"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_svc_backup",
+          "value": "principal=svc_backup"
+        }
+      ]
+    },
+    {
+      "id": "trace-14",
+      "sequence": 14,
+      "step": 6,
+      "role": "blue",
+      "visibility_scope": "blue",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "INVESTIGATE_ALERT",
+        "target": "host_b",
+        "parameters": {
+          "alert_id": "7"
+        },
+        "reason_category": "investigation",
+        "expected_outcome": "inspect the selected simulated alert evidence"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Alert evidence retrieved."
+      },
+      "evidence": [
+        {
+          "source": "blue_observation",
+          "reference": "alert:1",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:2",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:3",
+          "value": "type=auth_anomaly;host=host_a;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:4",
+          "value": "type=exploit_attempt;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:5",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:6",
+          "value": "type=credential_access;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:7",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:8",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:9",
+          "value": "type=auth_anomaly;host=host_d;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:11",
+          "value": "type=benign_auth_failure;host=host_b;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:13",
+          "value": "type=benign_auth_failure;host=host_b;src=host_d"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:14",
+          "value": "type=benign_login;host=host_c;src=host_d"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:15",
+          "value": "type=benign_auth_failure;host=host_d;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:17",
+          "value": "type=benign_login;host=host_b;src=host_c"
+        }
+      ]
+    },
+    {
+      "id": "trace-15",
+      "sequence": 15,
+      "step": 7,
+      "role": "red",
+      "visibility_scope": "red",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "DISCOVER_HOST",
+        "target": "host_d",
+        "parameters": {},
+        "reason_category": "reconnaissance",
+        "expected_outcome": "discover an authorized simulated host if reachable"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Host discovered."
+      },
+      "evidence": [
+        {
+          "source": "red_observation",
+          "reference": "host:host_a",
+          "value": "compromised=True;ports=[8080];services=['web']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_c",
+          "value": "compromised=False;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_svc_backup",
+          "value": "principal=svc_backup"
+        }
+      ]
+    },
+    {
+      "id": "trace-16",
+      "sequence": 16,
+      "step": 7,
+      "role": "blue",
+      "visibility_scope": "blue",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "INVESTIGATE_ALERT",
+        "target": "host_b",
+        "parameters": {
+          "alert_id": "8"
+        },
+        "reason_category": "investigation",
+        "expected_outcome": "inspect the selected simulated alert evidence"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Alert evidence retrieved."
+      },
+      "evidence": [
+        {
+          "source": "blue_observation",
+          "reference": "alert:1",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:2",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:3",
+          "value": "type=auth_anomaly;host=host_a;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:4",
+          "value": "type=exploit_attempt;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:5",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:6",
+          "value": "type=credential_access;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:7",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:8",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:9",
+          "value": "type=auth_anomaly;host=host_d;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:13",
+          "value": "type=benign_auth_failure;host=host_b;src=host_d"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:14",
+          "value": "type=benign_login;host=host_c;src=host_d"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:15",
+          "value": "type=benign_auth_failure;host=host_d;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:17",
+          "value": "type=benign_login;host=host_b;src=host_c"
+        }
+      ]
+    },
+    {
+      "id": "trace-17",
+      "sequence": 17,
+      "step": 8,
+      "role": "red",
+      "visibility_scope": "red",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "ENUMERATE_PORT",
+        "target": "host_d",
+        "parameters": {},
+        "reason_category": "reconnaissance",
+        "expected_outcome": "enumerate ports on the authorized simulated target"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Open ports found."
+      },
+      "evidence": [
+        {
+          "source": "red_observation",
+          "reference": "host:host_a",
+          "value": "compromised=True;ports=[8080];services=['web']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_c",
+          "value": "compromised=False;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_d",
+          "value": "compromised=False;ports=[];services=[]"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_svc_backup",
+          "value": "principal=svc_backup"
+        }
+      ]
+    },
+    {
+      "id": "trace-18",
+      "sequence": 18,
+      "step": 8,
+      "role": "blue",
+      "visibility_scope": "blue",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "INVESTIGATE_ALERT",
+        "target": "host_d",
+        "parameters": {
+          "alert_id": "9"
+        },
+        "reason_category": "investigation",
+        "expected_outcome": "inspect the selected simulated alert evidence"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Alert evidence retrieved."
+      },
+      "evidence": [
+        {
+          "source": "blue_observation",
+          "reference": "alert:1",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:2",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:3",
+          "value": "type=auth_anomaly;host=host_a;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:4",
+          "value": "type=exploit_attempt;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:5",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:6",
+          "value": "type=credential_access;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:7",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:8",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:9",
+          "value": "type=auth_anomaly;host=host_d;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:10",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:17",
+          "value": "type=benign_login;host=host_b;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:20",
+          "value": "type=benign_auth_failure;host=host_c;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:21",
+          "value": "type=benign_login;host=host_d;src=host_a"
+        }
+      ]
+    },
+    {
+      "id": "trace-19",
+      "sequence": 19,
+      "step": 9,
+      "role": "red",
+      "visibility_scope": "red",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "DISCOVER_SERVICE",
+        "target": "host_d",
+        "parameters": {},
+        "reason_category": "reconnaissance",
+        "expected_outcome": "discover services on the authorized simulated target"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Services identified."
+      },
+      "evidence": [
+        {
+          "source": "red_observation",
+          "reference": "host:host_a",
+          "value": "compromised=True;ports=[8080];services=['web']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_c",
+          "value": "compromised=False;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_d",
+          "value": "compromised=False;ports=[22];services=[]"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_svc_backup",
+          "value": "principal=svc_backup"
+        }
+      ]
+    },
+    {
+      "id": "trace-20",
+      "sequence": 20,
+      "step": 9,
+      "role": "blue",
+      "visibility_scope": "blue",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "INVESTIGATE_ALERT",
+        "target": "host_c",
+        "parameters": {
+          "alert_id": "10"
+        },
+        "reason_category": "investigation",
+        "expected_outcome": "inspect the selected simulated alert evidence"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Alert evidence retrieved."
+      },
+      "evidence": [
+        {
+          "source": "blue_observation",
+          "reference": "alert:1",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:2",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:3",
+          "value": "type=auth_anomaly;host=host_a;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:4",
+          "value": "type=exploit_attempt;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:5",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:6",
+          "value": "type=credential_access;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:7",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:8",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:9",
+          "value": "type=auth_anomaly;host=host_d;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:10",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:11",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:20",
+          "value": "type=benign_auth_failure;host=host_c;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:21",
+          "value": "type=benign_login;host=host_d;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:23",
+          "value": "type=benign_login;host=host_b;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:24",
+          "value": "type=benign_auth_failure;host=host_c;src=host_a"
+        }
+      ]
+    },
+    {
+      "id": "trace-21",
+      "sequence": 21,
+      "step": 10,
+      "role": "red",
+      "visibility_scope": "red",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "LATERAL_MOVE",
+        "target": "host_c",
+        "parameters": {
+          "credential_id": "cred_svc_backup"
+        },
+        "reason_category": "lateral_movement",
+        "expected_outcome": "attempt authorized simulated lateral movement"
+      },
+      "result": {
+        "outcome": "denied",
+        "success": false,
+        "message": "Credential rejected."
+      },
+      "evidence": [
+        {
+          "source": "red_observation",
+          "reference": "host:host_a",
+          "value": "compromised=True;ports=[8080];services=['web']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_c",
+          "value": "compromised=False;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_d",
+          "value": "compromised=False;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_svc_backup",
+          "value": "principal=svc_backup"
+        }
+      ]
+    },
+    {
+      "id": "trace-22",
+      "sequence": 22,
+      "step": 10,
+      "role": "blue",
+      "visibility_scope": "blue",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "INVESTIGATE_ALERT",
+        "target": "host_c",
+        "parameters": {
+          "alert_id": "11"
+        },
+        "reason_category": "investigation",
+        "expected_outcome": "inspect the selected simulated alert evidence"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Alert evidence retrieved."
+      },
+      "evidence": [
+        {
+          "source": "blue_observation",
+          "reference": "alert:1",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:2",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:3",
+          "value": "type=auth_anomaly;host=host_a;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:4",
+          "value": "type=exploit_attempt;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:5",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:6",
+          "value": "type=credential_access;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:7",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:8",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:9",
+          "value": "type=auth_anomaly;host=host_d;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:10",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:11",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:12",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:13",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:20",
+          "value": "type=benign_auth_failure;host=host_c;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:21",
+          "value": "type=benign_login;host=host_d;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:23",
+          "value": "type=benign_login;host=host_b;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:24",
+          "value": "type=benign_auth_failure;host=host_c;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:26",
+          "value": "type=benign_auth_failure;host=host_b;src=host_d"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:27",
+          "value": "type=auth_failure;host=host_c;src=host_a"
+        }
+      ]
+    },
+    {
+      "id": "trace-23",
+      "sequence": 23,
+      "step": 11,
+      "role": "red",
+      "visibility_scope": "red",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "LATERAL_MOVE",
+        "target": "host_d",
+        "parameters": {
+          "credential_id": "cred_svc_backup"
+        },
+        "reason_category": "lateral_movement",
+        "expected_outcome": "attempt authorized simulated lateral movement"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Access obtained."
+      },
+      "evidence": [
+        {
+          "source": "red_observation",
+          "reference": "host:host_a",
+          "value": "compromised=True;ports=[8080];services=['web']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_c",
+          "value": "compromised=False;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_d",
+          "value": "compromised=False;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_svc_backup",
+          "value": "principal=svc_backup"
+        }
+      ]
+    },
+    {
+      "id": "trace-24",
+      "sequence": 24,
+      "step": 11,
+      "role": "blue",
+      "visibility_scope": "blue",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "INVESTIGATE_ALERT",
+        "target": "host_b",
+        "parameters": {
+          "alert_id": "12"
+        },
+        "reason_category": "investigation",
+        "expected_outcome": "inspect the selected simulated alert evidence"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Alert evidence retrieved."
+      },
+      "evidence": [
+        {
+          "source": "blue_observation",
+          "reference": "alert:1",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:2",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:3",
+          "value": "type=auth_anomaly;host=host_a;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:4",
+          "value": "type=exploit_attempt;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:5",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:6",
+          "value": "type=credential_access;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:7",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:8",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:9",
+          "value": "type=auth_anomaly;host=host_d;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:10",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:11",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:12",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:13",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:14",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:15",
+          "value": "type=lateral_movement;host=host_d;severity=high;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:23",
+          "value": "type=benign_login;host=host_b;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:24",
+          "value": "type=benign_auth_failure;host=host_c;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:26",
+          "value": "type=benign_auth_failure;host=host_b;src=host_d"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:27",
+          "value": "type=auth_failure;host=host_c;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:28",
+          "value": "type=benign_login;host=host_a;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:29",
+          "value": "type=benign_login;host=host_b;src=host_d"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:30",
+          "value": "type=benign_auth_failure;host=host_c;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:31",
+          "value": "type=lateral_movement;host=host_d;src=host_a"
+        }
+      ]
+    },
+    {
+      "id": "trace-25",
+      "sequence": 25,
+      "step": 12,
+      "role": "red",
+      "visibility_scope": "red",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "OBTAIN_CREDENTIAL",
+        "target": "host_d",
+        "parameters": {},
+        "reason_category": "credential_access",
+        "expected_outcome": "attempt to obtain a modeled credential"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Credentials obtained."
+      },
+      "evidence": [
+        {
+          "source": "red_observation",
+          "reference": "host:host_a",
+          "value": "compromised=True;ports=[8080];services=['web']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_c",
+          "value": "compromised=False;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_d",
+          "value": "compromised=True;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_svc_backup",
+          "value": "principal=svc_backup"
+        }
+      ]
+    },
+    {
+      "id": "trace-26",
+      "sequence": 26,
+      "step": 12,
+      "role": "blue",
+      "visibility_scope": "blue",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "INVESTIGATE_ALERT",
+        "target": "host_c",
+        "parameters": {
+          "alert_id": "13"
+        },
+        "reason_category": "investigation",
+        "expected_outcome": "inspect the selected simulated alert evidence"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Alert evidence retrieved."
+      },
+      "evidence": [
+        {
+          "source": "blue_observation",
+          "reference": "alert:1",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:2",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:3",
+          "value": "type=auth_anomaly;host=host_a;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:4",
+          "value": "type=exploit_attempt;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:5",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:6",
+          "value": "type=credential_access;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:7",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:8",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:9",
+          "value": "type=auth_anomaly;host=host_d;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:10",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:11",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:12",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:13",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:14",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:15",
+          "value": "type=lateral_movement;host=host_d;severity=high;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:26",
+          "value": "type=benign_auth_failure;host=host_b;src=host_d"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:27",
+          "value": "type=auth_failure;host=host_c;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:28",
+          "value": "type=benign_login;host=host_a;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:29",
+          "value": "type=benign_login;host=host_b;src=host_d"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:30",
+          "value": "type=benign_auth_failure;host=host_c;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:31",
+          "value": "type=lateral_movement;host=host_d;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:32",
+          "value": "type=benign_login;host=host_a;src=host_c"
+        }
+      ]
+    },
+    {
+      "id": "trace-27",
+      "sequence": 27,
+      "step": 13,
+      "role": "red",
+      "visibility_scope": "red",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "DISCOVER_HOST",
+        "target": "host_b",
+        "parameters": {},
+        "reason_category": "reconnaissance",
+        "expected_outcome": "discover an authorized simulated host if reachable"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Host discovered."
+      },
+      "evidence": [
+        {
+          "source": "red_observation",
+          "reference": "host:host_a",
+          "value": "compromised=True;ports=[8080];services=['web']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_c",
+          "value": "compromised=False;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_d",
+          "value": "compromised=True;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_svc_backup",
+          "value": "principal=svc_backup"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_db_admin",
+          "value": "principal=db_admin"
+        }
+      ]
+    },
+    {
+      "id": "trace-28",
+      "sequence": 28,
+      "step": 13,
+      "role": "blue",
+      "visibility_scope": "blue",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "INVESTIGATE_ALERT",
+        "target": "host_c",
+        "parameters": {
+          "alert_id": "14"
+        },
+        "reason_category": "investigation",
+        "expected_outcome": "inspect the selected simulated alert evidence"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Alert evidence retrieved."
+      },
+      "evidence": [
+        {
+          "source": "blue_observation",
+          "reference": "alert:1",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:2",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:3",
+          "value": "type=auth_anomaly;host=host_a;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:4",
+          "value": "type=exploit_attempt;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:5",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:6",
+          "value": "type=credential_access;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:7",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:8",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:9",
+          "value": "type=auth_anomaly;host=host_d;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:10",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:11",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:12",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:13",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:14",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:15",
+          "value": "type=lateral_movement;host=host_d;severity=high;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:28",
+          "value": "type=benign_login;host=host_a;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:29",
+          "value": "type=benign_login;host=host_b;src=host_d"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:30",
+          "value": "type=benign_auth_failure;host=host_c;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:31",
+          "value": "type=lateral_movement;host=host_d;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:32",
+          "value": "type=benign_login;host=host_a;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:34",
+          "value": "type=benign_login;host=host_b;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:35",
+          "value": "type=benign_login;host=host_c;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:36",
+          "value": "type=benign_login;host=host_d;src=host_c"
+        }
+      ]
+    },
+    {
+      "id": "trace-29",
+      "sequence": 29,
+      "step": 14,
+      "role": "red",
+      "visibility_scope": "red",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "ENUMERATE_PORT",
+        "target": "host_b",
+        "parameters": {},
+        "reason_category": "reconnaissance",
+        "expected_outcome": "enumerate ports on the authorized simulated target"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Open ports found."
+      },
+      "evidence": [
+        {
+          "source": "red_observation",
+          "reference": "host:host_a",
+          "value": "compromised=True;ports=[8080];services=['web']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_c",
+          "value": "compromised=False;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_d",
+          "value": "compromised=True;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_b",
+          "value": "compromised=False;ports=[];services=[]"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_svc_backup",
+          "value": "principal=svc_backup"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_db_admin",
+          "value": "principal=db_admin"
+        }
+      ]
+    },
+    {
+      "id": "trace-30",
+      "sequence": 30,
+      "step": 14,
+      "role": "blue",
+      "visibility_scope": "blue",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "INVESTIGATE_ALERT",
+        "target": "host_d",
+        "parameters": {
+          "alert_id": "15"
+        },
+        "reason_category": "investigation",
+        "expected_outcome": "inspect the selected simulated alert evidence"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Alert evidence retrieved."
+      },
+      "evidence": [
+        {
+          "source": "blue_observation",
+          "reference": "alert:1",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:2",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:3",
+          "value": "type=auth_anomaly;host=host_a;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:4",
+          "value": "type=exploit_attempt;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:5",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:6",
+          "value": "type=credential_access;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:7",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:8",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:9",
+          "value": "type=auth_anomaly;host=host_d;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:10",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:11",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:12",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:13",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:14",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:15",
+          "value": "type=lateral_movement;host=host_d;severity=high;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:16",
+          "value": "type=auth_anomaly;host=host_d;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:32",
+          "value": "type=benign_login;host=host_a;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:34",
+          "value": "type=benign_login;host=host_b;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:35",
+          "value": "type=benign_login;host=host_c;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:36",
+          "value": "type=benign_login;host=host_d;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:38",
+          "value": "type=benign_login;host=host_a;src=host_b"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:39",
+          "value": "type=benign_login;host=host_b;src=host_d"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:40",
+          "value": "type=benign_login;host=host_c;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:41",
+          "value": "type=benign_auth_failure;host=host_d;src=host_a"
+        }
+      ]
+    },
+    {
+      "id": "trace-31",
+      "sequence": 31,
+      "step": 15,
+      "role": "red",
+      "visibility_scope": "red",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "DISCOVER_SERVICE",
+        "target": "host_b",
+        "parameters": {},
+        "reason_category": "reconnaissance",
+        "expected_outcome": "discover services on the authorized simulated target"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Services identified."
+      },
+      "evidence": [
+        {
+          "source": "red_observation",
+          "reference": "host:host_a",
+          "value": "compromised=True;ports=[8080];services=['web']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_c",
+          "value": "compromised=False;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_d",
+          "value": "compromised=True;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_b",
+          "value": "compromised=False;ports=[5432];services=[]"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_svc_backup",
+          "value": "principal=svc_backup"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_db_admin",
+          "value": "principal=db_admin"
+        }
+      ]
+    },
+    {
+      "id": "trace-32",
+      "sequence": 32,
+      "step": 15,
+      "role": "blue",
+      "visibility_scope": "blue",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "INVESTIGATE_ALERT",
+        "target": "host_d",
+        "parameters": {
+          "alert_id": "16"
+        },
+        "reason_category": "investigation",
+        "expected_outcome": "inspect the selected simulated alert evidence"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Alert evidence retrieved."
+      },
+      "evidence": [
+        {
+          "source": "blue_observation",
+          "reference": "alert:1",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:2",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:3",
+          "value": "type=auth_anomaly;host=host_a;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:4",
+          "value": "type=exploit_attempt;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:5",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:6",
+          "value": "type=credential_access;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:7",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:8",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:9",
+          "value": "type=auth_anomaly;host=host_d;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:10",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:11",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:12",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:13",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:14",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:15",
+          "value": "type=lateral_movement;host=host_d;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:16",
+          "value": "type=auth_anomaly;host=host_d;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:34",
+          "value": "type=benign_login;host=host_b;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:35",
+          "value": "type=benign_login;host=host_c;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:36",
+          "value": "type=benign_login;host=host_d;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:38",
+          "value": "type=benign_login;host=host_a;src=host_b"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:39",
+          "value": "type=benign_login;host=host_b;src=host_d"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:40",
+          "value": "type=benign_login;host=host_c;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:41",
+          "value": "type=benign_auth_failure;host=host_d;src=host_a"
+        }
+      ]
+    },
+    {
+      "id": "trace-33",
+      "sequence": 33,
+      "step": 16,
+      "role": "red",
+      "visibility_scope": "red",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "LATERAL_MOVE",
+        "target": "host_b",
+        "parameters": {
+          "credential_id": "cred_db_admin"
+        },
+        "reason_category": "lateral_movement",
+        "expected_outcome": "attempt authorized simulated lateral movement"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Access obtained."
+      },
+      "evidence": [
+        {
+          "source": "red_observation",
+          "reference": "host:host_a",
+          "value": "compromised=True;ports=[8080];services=['web']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_c",
+          "value": "compromised=False;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_d",
+          "value": "compromised=True;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_b",
+          "value": "compromised=False;ports=[5432];services=['db']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_svc_backup",
+          "value": "principal=svc_backup"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_db_admin",
+          "value": "principal=db_admin"
+        }
+      ]
+    },
+    {
+      "id": "trace-34",
+      "sequence": 34,
+      "step": 16,
+      "role": "blue",
+      "visibility_scope": "blue",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "INVESTIGATE_ALERT",
+        "target": "host_b",
+        "parameters": {
+          "alert_id": "17"
+        },
+        "reason_category": "investigation",
+        "expected_outcome": "inspect the selected simulated alert evidence"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Alert evidence retrieved."
+      },
+      "evidence": [
+        {
+          "source": "blue_observation",
+          "reference": "alert:1",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:2",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:3",
+          "value": "type=auth_anomaly;host=host_a;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:4",
+          "value": "type=exploit_attempt;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:5",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:6",
+          "value": "type=credential_access;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:7",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:8",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:9",
+          "value": "type=auth_anomaly;host=host_d;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:10",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:11",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:12",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:13",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:14",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:15",
+          "value": "type=lateral_movement;host=host_d;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:16",
+          "value": "type=auth_anomaly;host=host_d;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:17",
+          "value": "type=lateral_movement;host=host_b;severity=high;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:38",
+          "value": "type=benign_login;host=host_a;src=host_b"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:39",
+          "value": "type=benign_login;host=host_b;src=host_d"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:40",
+          "value": "type=benign_login;host=host_c;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:41",
+          "value": "type=benign_auth_failure;host=host_d;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:44",
+          "value": "type=lateral_movement;host=host_b;src=host_d"
+        }
+      ]
+    },
+    {
+      "id": "trace-35",
+      "sequence": 35,
+      "step": 17,
+      "role": "red",
+      "visibility_scope": "red",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "ACCESS_SENSITIVE_ASSET",
+        "target": "host_b",
+        "parameters": {
+          "asset_id": "asset_customer_db"
+        },
+        "reason_category": "collection",
+        "expected_outcome": "access the modeled sensitive asset"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Asset accessed."
+      },
+      "evidence": [
+        {
+          "source": "red_observation",
+          "reference": "host:host_a",
+          "value": "compromised=True;ports=[8080];services=['web']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_c",
+          "value": "compromised=False;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_d",
+          "value": "compromised=True;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_b",
+          "value": "compromised=True;ports=[5432];services=['db']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_svc_backup",
+          "value": "principal=svc_backup"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_db_admin",
+          "value": "principal=db_admin"
+        }
+      ]
+    },
+    {
+      "id": "trace-36",
+      "sequence": 36,
+      "step": 17,
+      "role": "blue",
+      "visibility_scope": "blue",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "INVESTIGATE_ALERT",
+        "target": "host_b",
+        "parameters": {
+          "alert_id": "18"
+        },
+        "reason_category": "investigation",
+        "expected_outcome": "inspect the selected simulated alert evidence"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Alert evidence retrieved."
+      },
+      "evidence": [
+        {
+          "source": "blue_observation",
+          "reference": "alert:1",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:2",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:3",
+          "value": "type=auth_anomaly;host=host_a;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:4",
+          "value": "type=exploit_attempt;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:5",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:6",
+          "value": "type=credential_access;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:7",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:8",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:9",
+          "value": "type=auth_anomaly;host=host_d;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:10",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:11",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:12",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:13",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:14",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:15",
+          "value": "type=lateral_movement;host=host_d;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:16",
+          "value": "type=auth_anomaly;host=host_d;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:17",
+          "value": "type=lateral_movement;host=host_b;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:18",
+          "value": "type=sensitive_data_access;host=host_b;severity=high;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:44",
+          "value": "type=lateral_movement;host=host_b;src=host_d"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:45",
+          "value": "type=benign_login;host=host_c;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:46",
+          "value": "type=benign_login;host=host_d;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:47",
+          "value": "type=sensitive_data_access;host=host_b;src=host_b"
+        }
+      ]
+    },
+    {
+      "id": "trace-37",
+      "sequence": 37,
+      "step": 18,
+      "role": "red",
+      "visibility_scope": "red",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "COLLECT_DATA",
+        "target": "host_b",
+        "parameters": {
+          "asset_id": "asset_customer_db"
+        },
+        "reason_category": "collection",
+        "expected_outcome": "collect the modeled asset data"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Data collected."
+      },
+      "evidence": [
+        {
+          "source": "red_observation",
+          "reference": "host:host_a",
+          "value": "compromised=True;ports=[8080];services=['web']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_c",
+          "value": "compromised=False;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_d",
+          "value": "compromised=True;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_b",
+          "value": "compromised=True;ports=[5432];services=['db']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_svc_backup",
+          "value": "principal=svc_backup"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_db_admin",
+          "value": "principal=db_admin"
+        }
+      ]
+    },
+    {
+      "id": "trace-38",
+      "sequence": 38,
+      "step": 18,
+      "role": "blue",
+      "visibility_scope": "blue",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "INVESTIGATE_ALERT",
+        "target": "host_c",
+        "parameters": {
+          "alert_id": "19"
+        },
+        "reason_category": "investigation",
+        "expected_outcome": "inspect the selected simulated alert evidence"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Alert evidence retrieved."
+      },
+      "evidence": [
+        {
+          "source": "blue_observation",
+          "reference": "alert:1",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:2",
+          "value": "type=scan_activity;host=host_a;severity=low;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:3",
+          "value": "type=auth_anomaly;host=host_a;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:4",
+          "value": "type=exploit_attempt;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:5",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:6",
+          "value": "type=credential_access;host=host_a;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:7",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:8",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:9",
+          "value": "type=auth_anomaly;host=host_d;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:10",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:11",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:12",
+          "value": "type=auth_anomaly;host=host_b;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:13",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:14",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:15",
+          "value": "type=lateral_movement;host=host_d;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:16",
+          "value": "type=auth_anomaly;host=host_d;severity=medium;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:17",
+          "value": "type=lateral_movement;host=host_b;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:18",
+          "value": "type=sensitive_data_access;host=host_b;severity=high;investigated=True"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "alert:19",
+          "value": "type=auth_anomaly;host=host_c;severity=medium;investigated=False"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:44",
+          "value": "type=lateral_movement;host=host_b;src=host_d"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:45",
+          "value": "type=benign_login;host=host_c;src=host_a"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:46",
+          "value": "type=benign_login;host=host_d;src=host_c"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:47",
+          "value": "type=sensitive_data_access;host=host_b;src=host_b"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:48",
+          "value": "type=benign_login;host=host_a;src=host_b"
+        },
+        {
+          "source": "blue_observation",
+          "reference": "event:49",
+          "value": "type=benign_auth_failure;host=host_c;src=host_d"
+        }
+      ]
+    },
+    {
+      "id": "trace-39",
+      "sequence": 39,
+      "step": 19,
+      "role": "red",
+      "visibility_scope": "red",
+      "validation": {
+        "accepted": true,
+        "reason": "accepted"
+      },
+      "authorization": {
+        "authorized": true,
+        "policy_reason": "authorized"
+      },
+      "action": {
+        "type": "EXFILTRATE_SIMULATED_DATA",
+        "target": "host_b",
+        "parameters": {
+          "asset_id": "asset_customer_db"
+        },
+        "reason_category": "exfiltration",
+        "expected_outcome": "complete the modeled data exfiltration objective"
+      },
+      "result": {
+        "outcome": "success",
+        "success": true,
+        "message": "Data exfiltrated."
+      },
+      "evidence": [
+        {
+          "source": "red_observation",
+          "reference": "host:host_a",
+          "value": "compromised=True;ports=[8080];services=['web']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_c",
+          "value": "compromised=False;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_d",
+          "value": "compromised=True;ports=[22];services=['ssh']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "host:host_b",
+          "value": "compromised=True;ports=[5432];services=['db']"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_svc_backup",
+          "value": "principal=svc_backup"
+        },
+        {
+          "source": "red_observation",
+          "reference": "credential:cred_db_admin",
+          "value": "principal=db_admin"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "One deterministic synthetic episode with scripted policies; it is not representative evidence of real-world security effectiveness.",
+    "The scenario/seed is a training sample from the experiment split, not held-out evaluation evidence.",
+    "Decision latency was not collected for this export and is omitted.",
+    "Evidence is limited to the role-specific pre-action observations recorded by the XAI trace.",
+    "This public page replays static JSON and does not run the simulator or perform network activity."
+  ]
+}

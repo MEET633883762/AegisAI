@@ -30,4 +30,4 @@ Threat-intelligence/RAG foundation added under `threat_intelligence/`. It is det
 
 ## Local website security demo
 
-Start the loopback-only demo site with `python demo_site/server.py`, then check its security-header baseline in another terminal with `python scripts/check_demo_site.py`. See `demo_site/README.md` for scope and limitations.
+Start the loopback-only demo site with `python demo_site/server.py`, then check it in another terminal with `python scripts/check_demo_site.py`. The checker preserves profile-specific JSON reports under `results/`; load one or both in the read-only frontend dashboard. See `demo_site/README.md` for the baseline/hardened workflow and limitations.

@@ -1,13 +1,87 @@
-<!doctype html>
+    <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="AegisAI read-only Purple-Team security dashboard"><title>AegisAI Dashboard</title><link rel="stylesheet" href="styles.css"></head>
-<body>
-<main>
-<header class="top"><div><div class="eyebrow">AEGISAI</div><h1>Purple-Team Security Dashboard</h1><p class="muted">Simulator evidence, agent decisions, metrics and validated knowledge.</p></div><div class="status"><span class="dot"></span>COMPLETED</div></header>
-<section class="meta"><span>Episode <b>ep-demo-001</b></span><span>Scenario <b>web_exploit_lateral_exfil</b></span><span>Execution boundary <b>Controller-gated</b></span></section>
-<section class="metrics" id="metrics"></section>
-<section class="card"><div class="section-head"><h2>Red / Blue Timeline</h2><span class="badge">Read-only</span></div><div id="timeline"></div></section>
-<section class="card"><div class="section-head"><h2>Decision Traces</h2><span class="badge">No hidden CoT</span></div><div id="traces"></div></section>
-<div class="two-col"><section class="card"><h2>Adaptive Knowledge</h2><div id="patches"></div></section><section class="card"><h2>Threat Intelligence</h2><div id="threats"></div></section></div>
-<footer class="footer">AegisAI dashboard is observational only. Actions are never executed from the frontend.</footer>
-</main><script src="app.js"></script></body></html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="AegisAI read-only Purple-Team security dashboard"
+    />
+    <title>AegisAI Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="website_assessment.css" />
+  </head>
+  <body>
+    <main>
+      <header class="top">
+        <div>
+          <div class="eyebrow">AEGISAI</div>
+          <h1>Purple-Team Security Dashboard</h1>
+          <p class="muted">
+            Simulator evidence, agent decisions, metrics and validated
+            knowledge.
+          </p>
+        </div>
+        <div class="status"><span class="dot"></span>COMPLETED</div>
+      </header>
+      <section class="meta">
+        <span>Episode <b>ep-demo-001</b></span
+        ><span>Scenario <b>web_exploit_lateral_exfil</b></span
+        ><span>Execution boundary <b>Controller-gated</b></span>
+      </section>
+      <section class="card">
+        <div class="section-head">
+          <h2>Website Header Assessment</h2>
+          <span class="badge">Local evidence · Read-only</span>
+        </div>
+        <p class="muted">
+          Select one report to inspect it, or select both the baseline and
+          hardened JSON files to compare remediation. This checks response
+          headers only.
+        </p>
+        <label for="assessment-file">Assessment JSON files</label>
+        <input
+          id="assessment-file"
+          type="file"
+          accept="application/json,.json"
+          multiple
+        />
+        <p id="assessment-status" class="muted" role="status">
+          No website assessment loaded.
+        </p>
+        <div id="assessment-results"></div>
+      </section>
+      <section class="metrics" id="metrics"></section>
+      <section class="card">
+        <div class="section-head">
+          <h2>Red / Blue Timeline</h2>
+          <span class="badge">Read-only</span>
+        </div>
+        <div id="timeline"></div>
+      </section>
+      <section class="card">
+        <div class="section-head">
+          <h2>Decision Traces</h2>
+          <span class="badge">No hidden CoT</span>
+        </div>
+        <div id="traces"></div>
+      </section>
+      <div class="two-col">
+        <section class="card">
+          <h2>Adaptive Knowledge</h2>
+          <div id="patches"></div>
+        </section>
+        <section class="card">
+          <h2>Threat Intelligence</h2>
+          <div id="threats"></div>
+        </section>
+      </div>
+      <footer class="footer">
+        AegisAI dashboard is observational only. Actions are never executed from
+        the frontend.
+      </footer>
+    </main>
+    <script src="app.js"></script>
+    <script src="website_assessment.js"></script>
+  </body>
+</html>

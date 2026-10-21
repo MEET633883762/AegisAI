@@ -1,0 +1,88 @@
+{
+  "schema_version": "1.0",
+  "assessment_type": "http_security_header_check",
+  "checked_at_utc": "2026-10-21T11:03:15.531921+00:00",
+  "status": "findings",
+  "ok": false,
+  "artifact": "C:\\AegisAI\\results\\demo_site_assessment_baseline.json",
+  "url": "http://127.0.0.1:8765/",
+  "http_status": 200,
+  "profile": "baseline",
+  "checked_headers": [
+    "Content-Security-Policy",
+    "X-Content-Type-Options",
+    "Referrer-Policy",
+    "Permissions-Policy"
+  ],
+  "header_results": [
+    {
+      "header": "Content-Security-Policy",
+      "expected_value": "default-src 'self'",
+      "observed_value": null,
+      "present": false
+    },
+    {
+      "header": "X-Content-Type-Options",
+      "expected_value": "nosniff",
+      "observed_value": null,
+      "present": false
+    },
+    {
+      "header": "Referrer-Policy",
+      "expected_value": "strict-origin-when-cross-origin",
+      "observed_value": null,
+      "present": false
+    },
+    {
+      "header": "Permissions-Policy",
+      "expected_value": "camera=()",
+      "observed_value": null,
+      "present": false
+    }
+  ],
+  "missing_or_incorrect_headers": [
+    "Content-Security-Policy",
+    "X-Content-Type-Options",
+    "Referrer-Policy",
+    "Permissions-Policy"
+  ],
+  "finding_count": 4,
+  "findings": [
+    {
+      "id": "missing_content_security_policy",
+      "severity": "medium",
+      "title": "Missing or incorrect Content-Security-Policy",
+      "description": "Restricts which sources the browser may load content from.",
+      "evidence": "The response did not include this header.",
+      "remediation": "Set a Content-Security-Policy that matches the site's required resources."
+    },
+    {
+      "id": "missing_x_content_type_options",
+      "severity": "low",
+      "title": "Missing or incorrect X-Content-Type-Options",
+      "description": "Prevents browsers from guessing a different content type.",
+      "evidence": "The response did not include this header.",
+      "remediation": "Set X-Content-Type-Options to nosniff."
+    },
+    {
+      "id": "missing_referrer_policy",
+      "severity": "low",
+      "title": "Missing or incorrect Referrer-Policy",
+      "description": "Controls how much referrer information is sent with navigation requests.",
+      "evidence": "The response did not include this header.",
+      "remediation": "Set Referrer-Policy to strict-origin-when-cross-origin or a stricter policy."
+    },
+    {
+      "id": "missing_permissions_policy",
+      "severity": "low",
+      "title": "Missing or incorrect Permissions-Policy",
+      "description": "Restricts access to browser features that this demo does not need.",
+      "evidence": "The response did not include this header.",
+      "remediation": "Set a Permissions-Policy that disables unused browser features."
+    }
+  ],
+  "limitations": [
+    "Checks only the listed HTTP response headers and status code.",
+    "Does not assess application vulnerabilities or establish that a website is secure."
+  ]
+}

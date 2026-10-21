@@ -18,13 +18,13 @@ In a second PowerShell window, check the baseline and inspect the structured fin
 python scripts/check_demo_site.py
 ```
 
-The baseline check reports four header findings and exits with code `1`, which is expected. Stop the server with `Ctrl+C`, then start the hardened profile:
+The checker writes a profile-specific report to `results/demo_site_assessment_baseline.json` or `results/demo_site_assessment_hardened.json`, so the before and after evidence are preserved. The baseline check reports four header findings and exits with code `1`, which is expected. Stop the server with `Ctrl+C`, then start the hardened profile:
 
 ```powershell
 python demo_site/server.py --profile hardened
 ```
 
-Run `python scripts/check_demo_site.py` again. It should report `"ok": true`, zero findings, and exit with code `0`. The page also displays the active profile.
+Run `python scripts/check_demo_site.py` again. It should report `"ok": true`, zero findings, and exit with code `0`. The page also displays the active profile. Open `frontend/index.html` and select both JSON reports in its **Website Header Assessment** section to compare findings resolved by hardening.
 
 The checker is fixed to this loopback URL; it is not a general-purpose scanner. A passing result checks only the listed HTTP headers and HTTP status. It does not establish that a website is secure.
 

@@ -27,3 +27,7 @@ and factual environment outcome. Hidden chain-of-thought is never captured.
 
 ## Phase 11
 Threat-intelligence/RAG foundation added under `threat_intelligence/`. It is deterministic, offline, bounded, and treats retrieved material as untrusted data.
+
+## Local website security demo
+
+Start the loopback-only demo site with `python demo_site/server.py`, then check its security-header baseline in another terminal with `python scripts/check_demo_site.py`. See `demo_site/README.md` for scope and limitations.

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A local website for AegisAI defensive integration work.">
+    <title>AegisAI Local Security Demo</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <main class="card">
+      <p class="eyebrow">LOCAL DEMO · LOOPBACK ONLY</p>
+      <h1>AegisAI website security demo</h1>
+      <p>This static site is a controlled target for building and validating defensive website checks. Its baseline profile intentionally omits selected response headers; it contains no exploitable application features.</p>
+      <section aria-labelledby="status-heading">
+        <h2 id="status-heading">Site status</h2>
+        <p id="status" role="status">Checking local site…</p>
+      </section>
+      <section aria-labelledby="scope-heading">
+        <h2 id="scope-heading">Current scope</h2>
+        <ul>
+          <li>Static content only; no accounts, database, or user-submitted data.</li>
+          <li>Read-only HTTP behavior with a defensive security-header baseline.</li>
+          <li>Server listens only on <code>127.0.0.1</code>.</li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>

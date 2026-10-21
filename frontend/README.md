@@ -31,6 +31,20 @@ The dashboard preserves local file import and baseline-versus-hardened compariso
 
 The report import happens in the browser using locally selected files. The importer validates the expected local assessment schema, fixed loopback target, profile, required fields, and 1 MB maximum. Report strings are escaped before rendering.
 
+The dashboard also loads the two sanitized, reviewed sample reports from `data/public_demo_assessment_baseline.json` and `data/public_demo_assessment_hardened.json`. This button fetches fixed same-origin sample paths; selected local files are still only read in the browser. Original evidence artifacts in the repository `results/` directory are not included in the static deployment output.
+
+## Privacy and static release
+
+See `privacy.html` for the current visitor data disclosure. The site contains no accounts, database, analytics, or report upload. The hosting provider may process connection/request metadata under its own policies.
+
+Build the strict, dependency-free publication allowlist from the repository root with:
+
+```powershell
+python scripts/build_static_site.py
+```
+
+This writes only the approved website files to `dist/aegisai-static/` and refuses to write into a non-empty output directory. Publish that generated directory only; do not publish the repository root or `frontend/` directly. See `docs/PHASE4_RELEASE_HARDENING_AND_DEPLOYMENT.md` for the release procedure and checks.
+
 ## Tests
 
 Run the frontend tests with:

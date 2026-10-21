@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const { MAX_ARTIFACT_BYTES, parseArtifact, validateArtifact, renderArtifact } = require('../../frontend/research_demo.js');
+const { readBoundedResponseText } = require('../../frontend/research_demo.js');
 
 const artifactPath = path.resolve(__dirname, '../../frontend/data/public_demo_episode.json');
 const artifactText = fs.readFileSync(artifactPath, 'utf8');
@@ -129,4 +130,39 @@ test('invalid visibility scope and inconsistent metric denominator are rejected'
   const wrongMetric = structuredClone(validArtifact);
   wrongMetric.metrics[0].denominator = 0;
   assert.throws(() => validateArtifact(wrongMetric), /invalid metric or denominator/);
+});
+
+test('metric identifiers must be unique and recorded steps must be in range', () => {
+  const duplicateMetric = structuredClone(validArtifact);
+  duplicateMetric.metrics[1].id = duplicateMetric.metrics[0].id;
+  assert.throws(() => validateArtifact(duplicateMetric), /invalid metric or denominator/);
+
+  const outOfRangeStep = structuredClone(validArtifact);
+  outOfRangeStep.records[0].step = outOfRangeStep.provenance.recorded_steps;
+  assert.throws(() => validateArtifact(outOfRangeStep), /invalid action timeline entry/);
+
+  const unknownRootField = structuredClone(validArtifact);
+  unknownRootField.state_changes = [];
+  assert.throws(() => validateArtifact(unknownRootField), /unsupported type or schema version/);
+});
+
+test('response body is capped while streaming even when Content-Length is missing or false', async () => {
+  const body = new ReadableStream({
+    start(controller) {
+      controller.enqueue(new Uint8Array(MAX_ARTIFACT_BYTES + 1));
+      controller.close();
+    }
+  });
+  const response = new Response(body, { headers: { 'content-length': '1' } });
+  await assert.rejects(() => readBoundedResponseText(response), /1 MB size limit/);
+});
+
+test('bounded stream accepts valid text and rejects responses without a stream', async () => {
+  const expected = '{"ok":true}';
+  const response = new Response(expected);
+  assert.equal(await readBoundedResponseText(response), expected);
+  await assert.rejects(
+    () => readBoundedResponseText({ headers: new Headers(), body: null }),
+    /bounded streaming/
+  );
 });

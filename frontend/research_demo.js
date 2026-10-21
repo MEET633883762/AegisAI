@@ -4,8 +4,49 @@
   const MAX_ARTIFACT_BYTES = 1024 * 1024;
   const MAX_RECORDS = 120;
   const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
-  const text = value => typeof value === 'string';
+  const text = (value, maximum = 4096) => typeof value === 'string' && value.length <= maximum;
   const integer = value => Number.isInteger(value) && value >= 0;
+  const exactKeys = (value, expected) => object(value)
+    && Object.keys(value).length === expected.length
+    && expected.every(key => Object.prototype.hasOwnProperty.call(value, key));
+
+  async function readBoundedResponseText(response) {
+    const declaredSize = Number(response.headers.get('content-length'));
+    if (Number.isFinite(declaredSize) && declaredSize > MAX_ARTIFACT_BYTES) {
+      throw new Error('Sample artifact exceeds the 1 MB size limit.');
+    }
+    if (!response.body || typeof response.body.getReader !== 'function') {
+      throw new Error('Sample artifact response does not support bounded streaming.');
+    }
+    const reader = response.body.getReader();
+    const chunks = [];
+    let totalBytes = 0;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        totalBytes += value.byteLength;
+        if (totalBytes > MAX_ARTIFACT_BYTES) {
+          await reader.cancel();
+          throw new Error('Sample artifact exceeds the 1 MB size limit.');
+        }
+        chunks.push(value);
+      }
+    } finally {
+      reader.releaseLock();
+    }
+    const bytes = new Uint8Array(totalBytes);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    try {
+      return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    } catch {
+      throw new Error('Sample artifact is not valid UTF-8 text.');
+    }
+  }
 
   function parseArtifact(jsonText) {
     if (typeof jsonText !== 'string') throw new Error('Sample artifact must be text.');
@@ -23,25 +64,31 @@
   }
 
   function validateArtifact(artifact) {
-    if (!object(artifact) || artifact.schema_version !== '1.0'
+    if (!exactKeys(artifact, ['schema_version', 'artifact_type', 'labels', 'provenance', 'objective_result', 'metrics', 'records', 'limitations'])
+      || artifact.schema_version !== '1.0'
       || artifact.artifact_type !== 'aegisai_public_research_episode') {
       throw new Error('Sample artifact has an unsupported type or schema version.');
     }
-    if (!object(artifact.labels) || artifact.labels.synthetic !== true
+    if (!exactKeys(artifact.labels, ['display', 'synthetic', 'precomputed', 'public_execution'])
+      || artifact.labels.synthetic !== true
       || artifact.labels.precomputed !== true || artifact.labels.public_execution !== false
-      || !text(artifact.labels.display)) {
+      || !text(artifact.labels.display, 120)) {
       throw new Error('Sample artifact is missing its synthetic/read-only labels.');
     }
     const provenance = artifact.provenance;
-    if (!object(provenance) || !text(provenance.episode_id) || !text(provenance.scenario_id)
-      || !text(provenance.scenario_template) || !integer(provenance.seed)
-      || !text(provenance.research_split) || !text(provenance.red_policy)
-      || !text(provenance.blue_policy) || !text(provenance.generator)
-      || !text(provenance.generation_mode) || !integer(provenance.recorded_steps)) {
+    if (!exactKeys(provenance, ['episode_id', 'scenario_id', 'scenario_template', 'seed', 'research_split', 'red_policy', 'blue_policy', 'generator', 'generation_mode', 'recorded_steps'])
+      || !text(provenance.episode_id, 160) || !text(provenance.scenario_id, 160)
+      || !text(provenance.scenario_template, 120) || !integer(provenance.seed)
+      || !text(provenance.research_split, 240) || !text(provenance.red_policy, 120)
+      || !text(provenance.blue_policy, 120) || !text(provenance.generator, 160)
+      || !text(provenance.generation_mode, 240) || !integer(provenance.recorded_steps)
+      || provenance.recorded_steps < 1 || provenance.recorded_steps > MAX_RECORDS) {
       throw new Error('Sample artifact is missing required provenance fields.');
     }
-    if (!object(artifact.objective_result) || typeof artifact.objective_result.achieved !== 'boolean'
-      || !text(artifact.objective_result.definition) || artifact.objective_result.episode_count !== 1) {
+    if (!exactKeys(artifact.objective_result, ['achieved', 'definition', 'episode_count'])
+      || typeof artifact.objective_result.achieved !== 'boolean'
+      || !text(artifact.objective_result.definition, 500)
+      || artifact.objective_result.episode_count !== 1) {
       throw new Error('Sample artifact has an invalid objective result.');
     }
     if (!Array.isArray(artifact.records) || artifact.records.length < 1
@@ -49,50 +96,61 @@
       throw new Error('Sample artifact has an invalid or oversized action timeline.');
     }
     let previousSequence = 0;
+    const observedRoleSteps = new Set();
     for (const record of artifact.records) {
-      if (!object(record) || !/^trace-[1-9][0-9]*$/.test(record.id)
+      if (!exactKeys(record, ['id', 'sequence', 'step', 'role', 'visibility_scope', 'validation', 'authorization', 'action', 'result', 'evidence'])
+        || !/^trace-[1-9][0-9]*$/.test(record.id)
         || !integer(record.sequence) || record.sequence <= previousSequence
         || record.id !== `trace-${record.sequence}` || !integer(record.step)
-        || !['red', 'blue'].includes(record.role) || record.visibility_scope !== record.role) {
+        || record.step >= provenance.recorded_steps
+        || !['red', 'blue'].includes(record.role) || record.visibility_scope !== record.role
+        || observedRoleSteps.has(`${record.step}:${record.role}`)) {
         throw new Error('Sample artifact contains an invalid action timeline entry.');
       }
       previousSequence = record.sequence;
-      if (!object(record.validation) || typeof record.validation.accepted !== 'boolean'
-        || !text(record.validation.reason) || !object(record.authorization)
+      observedRoleSteps.add(`${record.step}:${record.role}`);
+      if (!exactKeys(record.validation, ['accepted', 'reason']) || typeof record.validation.accepted !== 'boolean'
+        || !text(record.validation.reason, 240)
+        || !exactKeys(record.authorization, ['authorized', 'policy_reason'])
         || typeof record.authorization.authorized !== 'boolean'
-        || !text(record.authorization.policy_reason)) {
+        || !text(record.authorization.policy_reason, 240)) {
         throw new Error('Sample artifact is missing validation or Controller authorization data.');
       }
-      if (!object(record.action) || !text(record.action.type) || !text(record.action.target)
-        || !object(record.action.parameters) || !text(record.action.reason_category)
-        || !text(record.action.expected_outcome)
+      if (!exactKeys(record.action, ['type', 'target', 'parameters', 'reason_category', 'expected_outcome'])
+        || !text(record.action.type, 120) || !text(record.action.target, 160)
+        || !object(record.action.parameters) || !text(record.action.reason_category, 120)
+        || !text(record.action.expected_outcome, 500)
         || Object.keys(record.action.parameters).length > 8
-        || Object.values(record.action.parameters).some(value => !text(value))) {
+        || Object.values(record.action.parameters).some(value => !text(value, 240))) {
         throw new Error('Sample artifact contains an invalid structured action.');
       }
-      if (!object(record.result) || !text(record.result.outcome)
-        || typeof record.result.success !== 'boolean' || !text(record.result.message)) {
+      if (!exactKeys(record.result, ['outcome', 'success', 'message'])
+        || !text(record.result.outcome, 120)
+        || typeof record.result.success !== 'boolean' || !text(record.result.message, 500)) {
         throw new Error('Sample artifact is missing its recorded action result.');
       }
       if (!Array.isArray(record.evidence) || record.evidence.length > 50
-        || record.evidence.some(item => !object(item)
+        || record.evidence.some(item => !exactKeys(item, ['source', 'reference', 'value'])
           || item.source !== `${record.role}_observation`
-          || !text(item.reference) || !text(item.value))) {
+          || !text(item.reference, 240) || !text(item.value, 2000))) {
         throw new Error('Sample artifact contains evidence outside its role-specific observation.');
       }
     }
+    const metricIds = new Set();
     if (!Array.isArray(artifact.metrics) || artifact.metrics.length > 20
-      || artifact.metrics.some(metric => !object(metric)
+      || artifact.metrics.some(metric => !exactKeys(metric, ['id', 'label', 'value', 'numerator', 'denominator', 'unit', 'definition'])
         || !/^[a-z][a-z0-9_]{0,63}$/.test(metric.id)
-        || !text(metric.label) || !text(metric.definition) || !text(metric.unit)
+        || metricIds.has(metric.id) || !text(metric.label, 160)
+        || !text(metric.definition, 1000) || !text(metric.unit, 80)
         || !Number.isFinite(metric.value) || metric.value < 0 || metric.value > 1
         || !integer(metric.numerator) || !integer(metric.denominator) || metric.denominator < 1
         || metric.numerator > metric.denominator
-        || Math.abs(metric.value - metric.numerator / metric.denominator) > 1e-9)) {
+        || Math.abs(metric.value - metric.numerator / metric.denominator) > 1e-9
+        || !metricIds.add(metric.id))) {
       throw new Error('Sample artifact contains an invalid metric or denominator.');
     }
     if (!Array.isArray(artifact.limitations) || artifact.limitations.length < 1
-      || artifact.limitations.length > 20 || artifact.limitations.some(item => !text(item))) {
+      || artifact.limitations.length > 20 || artifact.limitations.some(item => !text(item, 1000))) {
       throw new Error('Sample artifact is missing its limitations.');
     }
     return true;
@@ -209,11 +267,7 @@
       status.textContent = 'Loading the precomputed sample…';
       const response = await fetch('data/public_demo_episode.json', { cache: 'no-cache' });
       if (!response.ok) throw new Error(`Sample artifact request failed (${response.status}).`);
-      const declaredSize = Number(response.headers.get('content-length'));
-      if (Number.isFinite(declaredSize) && declaredSize > MAX_ARTIFACT_BYTES) {
-        throw new Error('Sample artifact exceeds the 1 MB size limit.');
-      }
-      const artifact = parseArtifact(await response.text());
+      const artifact = parseArtifact(await readBoundedResponseText(response));
       renderArtifact(artifact);
     } catch (error) {
       status.textContent = `Could not load the sample: ${error.message}`;
@@ -221,7 +275,7 @@
   }
 
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { MAX_ARTIFACT_BYTES, parseArtifact, validateArtifact, renderArtifact };
+    module.exports = { MAX_ARTIFACT_BYTES, parseArtifact, validateArtifact, renderArtifact, readBoundedResponseText };
   }
   if (typeof document !== 'undefined' && document.getElementById('research-demo')) {
     loadArtifact();

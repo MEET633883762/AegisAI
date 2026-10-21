@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0",
+  "assessment_type": "http_security_header_check",
+  "checked_at_utc": "2026-10-21T11:03:53.262318+00:00",
+  "status": "passed",
+  "ok": true,
+  "url": "http://127.0.0.1:8765/",
+  "http_status": 200,
+  "profile": "hardened",
+  "checked_headers": [
+    "Content-Security-Policy",
+    "X-Content-Type-Options",
+    "Referrer-Policy",
+    "Permissions-Policy"
+  ],
+  "header_results": [
+    {
+      "header": "Content-Security-Policy",
+      "expected_value": "default-src 'self'",
+      "observed_value": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
+      "present": true
+    },
+    {
+      "header": "X-Content-Type-Options",
+      "expected_value": "nosniff",
+      "observed_value": "nosniff",
+      "present": true
+    },
+    {
+      "header": "Referrer-Policy",
+      "expected_value": "strict-origin-when-cross-origin",
+      "observed_value": "strict-origin-when-cross-origin",
+      "present": true
+    },
+    {
+      "header": "Permissions-Policy",
+      "expected_value": "camera=()",
+      "observed_value": "camera=(), microphone=(), geolocation=()",
+      "present": true
+    }
+  ],
+  "missing_or_incorrect_headers": [],
+  "finding_count": 0,
+  "findings": [],
+  "limitations": [
+    "Checks only the listed HTTP response headers and status code.",
+    "Does not assess application vulnerabilities or establish that a website is secure."
+  ],
+  "publication": {
+    "synthetic": true,
+    "precomputed": true,
+    "public_execution": false,
+    "display": "Sanitized sample from the local AegisAI demo site"
+  }
+}

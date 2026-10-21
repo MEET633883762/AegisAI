@@ -97,6 +97,8 @@ h1, h2, h3, p { margin-top: 0; }
 .closing-cta { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding-block: 60px; }
 .closing-cta .eyebrow { margin-bottom: 9px; }.closing-cta h2 { margin-bottom: 7px; font-size: 23px; letter-spacing: -.035em; }.closing-cta p:last-child { color: var(--muted); margin-bottom: 0; font-size: 12px; }
 .site-footer { border-top: 1px solid var(--line); background: white; }.footer-inner { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }.footer-brand { font-size: 15px; }.footer-brand .brand-mark { width: 26px; height: 26px; border-radius: 8px 8px 8px 2px; font-size: 13px; }.footer-inner p, .footer-inner > a:last-child { margin: 0; color: var(--muted); font-size: 10px; }.footer-inner > a:last-child { text-decoration: none; }
+.footer-inner > a { color: var(--muted); font-size: 10px; text-decoration: none; }.footer-inner > a:focus-visible { outline: 3px solid #2e9b88; outline-offset: 4px; }
+.privacy-content { max-width: 760px; color: var(--ink-soft); font-size: 14px; line-height: 1.75; }.privacy-content h2 { margin-top: 28px; color: var(--ink); font-size: 20px; }.privacy-content a { color: var(--teal); }
 
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr 0.82fr; gap: 35px; padding-block: 70px; }

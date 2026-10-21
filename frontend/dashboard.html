@@ -12,7 +12,7 @@
     <a class="skip-link" href="#dashboard-main">Skip to dashboard</a>
     <nav class="dashboard-nav" aria-label="Main navigation">
       <a class="dashboard-brand" href="index.html"><span aria-hidden="true">A</span> AegisAI</a>
-      <div><a href="index.html">Home</a><a class="dashboard-nav-current" href="dashboard.html" aria-current="page">Research demo</a></div>
+      <div><a href="index.html">Home</a><a class="dashboard-nav-current" href="dashboard.html" aria-current="page">Research demo</a><a href="privacy.html">Privacy</a></div>
     </nav>
     <main id="dashboard-main">
       <header class="top">
@@ -72,7 +72,9 @@
           <h2>Website Header Assessment</h2>
           <span class="badge">Local demo · Read-only</span>
         </div>
-        <p class="muted">Select one local demo report to inspect it, or select baseline and hardened reports to compare remediation. This checks HTTP status and four response headers only; it is not a general website security assessment.</p>
+        <p class="muted">Load the sanitized published samples or select local demo reports to compare remediation. This checks HTTP status and four response headers only; it is not a general website security assessment.</p>
+        <button class="assessment-sample-button" id="load-assessment-samples" type="button">Load published baseline and hardened samples</button>
+        <p class="assessment-downloads">Download: <a href="data/public_demo_assessment_baseline.json" download="aegisai-assessment-baseline-sample.json">baseline JSON</a> · <a href="data/public_demo_assessment_hardened.json" download="aegisai-assessment-hardened-sample.json">hardened JSON</a></p>
         <label for="assessment-file">Assessment JSON files</label>
         <input id="assessment-file" type="file" accept="application/json,.json" multiple />
         <p id="assessment-status" class="muted" role="status" aria-live="polite">No website assessment loaded.</p>
@@ -98,7 +100,7 @@
           <section class="card" aria-labelledby="threat-title"><h2 id="threat-title">Illustrative Threat Intelligence</h2><div id="threats"></div></section>
         </div>
       </details>
-      <footer class="footer">Observational sample only. Actions are never executed from this frontend. Synthetic results do not establish security or real-world effectiveness.</footer>
+      <footer class="footer">Observational sample only. Actions are never executed from this frontend. Synthetic results do not establish security or real-world effectiveness. <a href="privacy.html">Privacy</a></footer>
     </main>
     <script src="app.js"></script>
     <script src="website_assessment.js"></script>

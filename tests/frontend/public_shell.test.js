@@ -37,6 +37,10 @@ test('dashboard destination preserves assessment import and labels its hardcoded
 });
 
 function makeReport(profile, findings = []) {
+  const headers = [
+    'Content-Security-Policy', 'X-Content-Type-Options',
+    'Referrer-Policy', 'Permissions-Policy'
+  ];
   return {
     schema_version: '1.0',
     assessment_type: 'http_security_header_check',
@@ -46,11 +50,10 @@ function makeReport(profile, findings = []) {
     url: 'http://127.0.0.1:8765/',
     http_status: 200,
     profile,
-    checked_headers: ['Content-Security-Policy'],
-    header_results: [{
-      header: 'Content-Security-Policy', expected_value: "default-src 'self'",
-      observed_value: null, present: profile === 'hardened'
-    }],
+    checked_headers: headers,
+    header_results: headers.map(header => ({
+      header, expected_value: 'expected', observed_value: null, present: profile === 'hardened'
+    })),
     missing_or_incorrect_headers: findings.map(item => item.id),
     finding_count: findings.length,
     findings,
@@ -60,6 +63,7 @@ function makeReport(profile, findings = []) {
 
 function makeDashboardHarness() {
   const nodes = new Map();
+  let fetchHandler = async () => { throw new Error('Unexpected fetch'); };
   const getNode = id => {
     if (!nodes.has(id)) nodes.set(id, {
       innerHTML: '', textContent: '', files: [], listeners: {},
@@ -77,10 +81,15 @@ function makeDashboardHarness() {
   const sandbox = {
     document: { getElementById: getNode },
     FileReader: MockFileReader,
-    Promise, Set, String, Error, JSON, Math
+    Promise, Set, String, Error, JSON, Math,
+    fetch: (...args) => fetchHandler(...args)
   };
   vm.runInNewContext(read('website_assessment.js'), sandbox, { filename: 'website_assessment.js' });
-  return { input: getNode('assessment-file'), status: getNode('assessment-status'), results: getNode('assessment-results') };
+  return {
+    input: getNode('assessment-file'), status: getNode('assessment-status'),
+    results: getNode('assessment-results'), sampleButton: getNode('load-assessment-samples'),
+    setFetch(handler) { fetchHandler = handler; }
+  };
 }
 
 const finding = overrides => ({
@@ -141,5 +150,38 @@ test('report import rejects oversized files and nonnumeric finding counts', asyn
   ui.input.files = [file('bad-count.json', badCount)];
   await ui.input.listeners.change();
   assert.match(ui.status.textContent, /not a supported local header assessment/);
+  assert.equal(ui.results.innerHTML, '');
+});
+
+test('published baseline and hardened files load from fixed same-origin paths and compare', async () => {
+  const ui = makeDashboardHarness();
+  const publicReports = Object.fromEntries(['baseline', 'hardened'].map(profile => [
+    `data/public_demo_assessment_${profile}.json`,
+    JSON.parse(fs.readFileSync(path.join(root, 'frontend', 'data', `public_demo_assessment_${profile}.json`), 'utf8'))
+  ]));
+  const requested = [];
+  ui.setFetch(async (url, options) => {
+    requested.push([url, options.credentials]);
+    return new Response(JSON.stringify(publicReports[url]), { headers: { 'content-type': 'application/json' } });
+  });
+  await ui.sampleButton.listeners.click();
+  assert.equal(requested.length, 2);
+  assert.ok(requested.every(([url]) => Object.hasOwn(publicReports, url)));
+  assert.ok(requested.every(([, credentials]) => credentials === 'same-origin'));
+  assert.match(ui.status.textContent, /2 published sample reports loaded/);
+  assert.match(ui.results.innerHTML, /4 finding\(s\) resolved/);
+  assert.match(ui.results.innerHTML, /baseline profile/);
+  assert.match(ui.results.innerHTML, /hardened profile/);
+});
+
+test('published sample load rejects malformed or oversized declared content safely', async () => {
+  const ui = makeDashboardHarness();
+  ui.setFetch(async () => ({
+    ok: true,
+    headers: { get: () => String(1024 * 1024 + 1) },
+    json: async () => ({})
+  }));
+  await ui.sampleButton.listeners.click();
+  assert.match(ui.status.textContent, /exceeds the 1 MB size limit/);
   assert.equal(ui.results.innerHTML, '');
 });

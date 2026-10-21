@@ -29,5 +29,8 @@ Thumbs.db
 .coverage
 htmlcov/
 
+# Generated static deployment package
+dist/
+
 # Logs
 *.log

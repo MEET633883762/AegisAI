@@ -34,5 +34,8 @@ dist/
 node_modules/
 frontend/.vite-build/
 
+# Local-only synthetic private API database
+.aegisai-local/
+
 # Logs
 *.log

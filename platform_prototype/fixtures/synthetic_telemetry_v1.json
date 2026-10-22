@@ -1,0 +1,105 @@
+{
+  "schema_version": "1.0",
+  "source_id": "local_synthetic_fixture_v1",
+  "data_classification": "synthetic",
+  "label": "SYNTHETIC - NOT REAL CLIENT DATA",
+  "generated_at": "2026-10-22T12:00:00Z",
+  "events": [
+    {
+      "event_id": "syn-phase3-auth-001",
+      "occurred_at": "2026-10-22T10:00:00-04:00",
+      "event_type": "auth_failure",
+      "asset_ref": "synthetic-web-03",
+      "actor_ref": "synthetic-user-31",
+      "source_ref": "synthetic-source-503",
+      "evidence_ref": "synthetic-p3-evidence-001"
+    },
+    {
+      "event_id": "syn-phase3-auth-002",
+      "occurred_at": "2026-10-22T10:01:00-04:00",
+      "event_type": "auth_failure",
+      "asset_ref": "synthetic-web-03",
+      "actor_ref": "synthetic-user-31",
+      "source_ref": "synthetic-source-503",
+      "evidence_ref": "synthetic-p3-evidence-002"
+    },
+    {
+      "event_id": "syn-phase3-auth-003",
+      "occurred_at": "2026-10-22T10:02:00-04:00",
+      "event_type": "auth_failure",
+      "asset_ref": "synthetic-web-03",
+      "actor_ref": "synthetic-user-31",
+      "source_ref": "synthetic-source-503",
+      "evidence_ref": "synthetic-p3-evidence-003"
+    },
+    {
+      "event_id": "syn-phase3-auth-004",
+      "occurred_at": "2026-10-22T10:03:00-04:00",
+      "event_type": "auth_failure",
+      "asset_ref": "synthetic-web-03",
+      "actor_ref": "synthetic-user-31",
+      "source_ref": "synthetic-source-503",
+      "evidence_ref": "synthetic-p3-evidence-004"
+    },
+    {
+      "event_id": "syn-phase3-auth-005",
+      "occurred_at": "2026-10-22T10:04:00-04:00",
+      "event_type": "auth_success",
+      "asset_ref": "synthetic-web-03",
+      "actor_ref": "synthetic-user-31",
+      "source_ref": "synthetic-source-503",
+      "evidence_ref": "synthetic-p3-evidence-005"
+    },
+    {
+      "event_id": "syn-phase3-rate-001",
+      "occurred_at": "2026-10-22T14:05:00Z",
+      "event_type": "request_rate_indicator",
+      "asset_ref": "synthetic-api-04",
+      "actor_ref": "synthetic-service-4",
+      "source_ref": "synthetic-source-604",
+      "evidence_ref": "synthetic-p3-evidence-006",
+      "request_count": 640,
+      "window_seconds": 60
+    },
+    {
+      "event_id": "syn-phase3-app-001",
+      "occurred_at": "2026-10-22T14:07:00Z",
+      "event_type": "simulated_suspicious_activity",
+      "asset_ref": "synthetic-app-05",
+      "actor_ref": "synthetic-user-52",
+      "source_ref": "synthetic-source-705",
+      "evidence_ref": "synthetic-p3-evidence-007",
+      "activity_code": "unexpected_admin_setting_change"
+    },
+    {
+      "event_id": "syn-phase3-vuln-001",
+      "occurred_at": "2026-10-22T14:09:00Z",
+      "event_type": "synthetic_vulnerability_finding",
+      "asset_ref": "synthetic-lab-06",
+      "actor_ref": "synthetic-checker-1",
+      "source_ref": "synthetic-source-806",
+      "evidence_ref": "synthetic-p3-evidence-008",
+      "check_code": "test_component_outdated"
+    },
+    {
+      "event_id": "syn-phase3-config-001",
+      "occurred_at": "2026-10-22T14:10:00Z",
+      "event_type": "synthetic_configuration_finding",
+      "asset_ref": "synthetic-lab-07",
+      "actor_ref": "synthetic-checker-1",
+      "source_ref": "synthetic-source-807",
+      "evidence_ref": "synthetic-p3-evidence-009",
+      "check_code": "debug_mode_enabled"
+    },
+    {
+      "event_id": "syn-phase3-config-001",
+      "occurred_at": "2026-10-22T14:10:00Z",
+      "event_type": "synthetic_configuration_finding",
+      "asset_ref": "synthetic-lab-07",
+      "actor_ref": "synthetic-checker-1",
+      "source_ref": "synthetic-source-807",
+      "evidence_ref": "synthetic-p3-evidence-009",
+      "check_code": "debug_mode_enabled"
+    }
+  ]
+}

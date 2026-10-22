@@ -10,3 +10,36 @@
 @media(max-width:520px){.research-demo-head{display:block}.research-demo-head>.badge{display:inline-block;margin-top:10px}.research-demo-head h2{font-size:18px}.research-summary{grid-template-columns:1fr;gap:3px}.research-summary dd{margin-bottom:7px}.research-download-row{align-items:flex-start;flex-direction:column}.download-sample{width:100%;justify-content:center}.research-provenance{padding:12px}.research-detail-panel,.research-timeline-panel{padding:12px}}
 button,input{font:inherit}button:focus-visible,input:focus-visible{outline:3px solid #298b79;outline-offset:3px}.research-timeline-button,.assessment-sample-button{min-height:44px}#assessment-file{display:block;max-width:100%;min-height:44px;margin:8px 0 12px}
 @media(max-width:480px){.dashboard-nav{align-items:flex-start;flex-wrap:wrap;gap:8px}.dashboard-nav>div{width:100%;justify-content:space-between;gap:10px}.dashboard-nav>div a{min-height:44px;display:inline-flex;align-items:center}}
+
+/* Keep dashboard content readable and within narrow phone viewports. */
+@media(max-width:760px){
+  #dashboard-main{padding:24px 18px}
+  #dashboard-main>.card{padding:16px}
+  #dashboard-main .section-head{flex-wrap:wrap;align-items:flex-start;row-gap:8px}
+  #dashboard-main .section-head h2{min-width:0;overflow-wrap:anywhere}
+  .research-demo-grid{grid-template-columns:minmax(0,1fr)}
+  .research-timeline{max-height:300px}
+  .assessment-grid{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:520px){
+  #dashboard-main{padding:18px 14px}
+  #dashboard-main>.card{padding:14px}
+  #dashboard-main .meta span{min-width:0;overflow-wrap:anywhere}
+  .research-metrics{grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))}
+  .research-provenance p,.research-metric-definition,.assessment-row code,.finding code{overflow-wrap:anywhere}
+  .research-timeline{max-height:260px}
+  .research-timeline-button{min-height:48px;padding:11px;font-size:12px}
+  .research-detail-kicker{font-size:10px}
+  .research-summary dt,.research-summary dd,.research-evidence-list strong,.research-evidence-list span,.research-limitations ul{font-size:12px}
+  .assessment-sample-button{width:100%;min-height:48px}
+  #assessment-file{width:100%;font-size:14px}
+  .assessment-downloads{display:flex;flex-wrap:wrap;gap:8px}
+  .assessment-downloads a{min-height:44px;display:inline-flex;align-items:center}
+}
+@media(max-width:360px){
+  #dashboard-main{padding-inline:12px}
+  #dashboard-main>.card{padding:12px}
+  .dashboard-nav{padding-inline:12px}
+  .research-timeline-panel,.research-detail-panel{padding:10px}
+  .research-provenance{padding:10px}
+}

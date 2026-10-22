@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "dataset_id": "synthetic-auth-investigation-v1",
+  "data_classification": "synthetic",
+  "label": "SYNTHETIC - NOT REAL CLIENT DATA",
+  "generated_at": "2026-10-22T00:00:00Z",
+  "events": [
+    {
+      "event_id": "syn-auth-001",
+      "occurred_at": "2026-10-22T10:00:00-04:00",
+      "event_type": "auth_failure",
+      "asset_ref": "synthetic-web-01",
+      "actor_ref": "synthetic-user-17",
+      "source_ref": "synthetic-source-203",
+      "evidence_ref": "synthetic-evidence-001"
+    },
+    {
+      "event_id": "syn-auth-002",
+      "occurred_at": "2026-10-22T10:01:00-04:00",
+      "event_type": "auth_failure",
+      "asset_ref": "synthetic-web-01",
+      "actor_ref": "synthetic-user-17",
+      "source_ref": "synthetic-source-203",
+      "evidence_ref": "synthetic-evidence-002"
+    },
+    {
+      "event_id": "syn-auth-003",
+      "occurred_at": "2026-10-22T10:02:00-04:00",
+      "event_type": "auth_failure",
+      "asset_ref": "synthetic-web-01",
+      "actor_ref": "synthetic-user-17",
+      "source_ref": "synthetic-source-203",
+      "evidence_ref": "synthetic-evidence-003"
+    },
+    {
+      "event_id": "syn-auth-004",
+      "occurred_at": "2026-10-22T10:03:00-04:00",
+      "event_type": "auth_failure",
+      "asset_ref": "synthetic-web-01",
+      "actor_ref": "synthetic-user-17",
+      "source_ref": "synthetic-source-203",
+      "evidence_ref": "synthetic-evidence-004"
+    },
+    {
+      "event_id": "syn-auth-005",
+      "occurred_at": "2026-10-22T10:04:00-04:00",
+      "event_type": "auth_success",
+      "asset_ref": "synthetic-web-01",
+      "actor_ref": "synthetic-user-17",
+      "source_ref": "synthetic-source-203",
+      "evidence_ref": "synthetic-evidence-005"
+    },
+    {
+      "event_id": "syn-auth-006",
+      "occurred_at": "2026-10-22T11:00:00Z",
+      "event_type": "auth_failure",
+      "asset_ref": "synthetic-api-02",
+      "actor_ref": "synthetic-user-29",
+      "source_ref": "synthetic-source-411",
+      "evidence_ref": "synthetic-evidence-006"
+    },
+    {
+      "event_id": "syn-auth-007",
+      "occurred_at": "2026-10-22T11:01:00Z",
+      "event_type": "auth_failure",
+      "asset_ref": "synthetic-api-02",
+      "actor_ref": "synthetic-user-29",
+      "source_ref": "synthetic-source-411",
+      "evidence_ref": "synthetic-evidence-007"
+    },
+    {
+      "event_id": "syn-auth-008",
+      "occurred_at": "2026-10-22T11:02:00Z",
+      "event_type": "auth_failure",
+      "asset_ref": "synthetic-api-02",
+      "actor_ref": "synthetic-user-29",
+      "source_ref": "synthetic-source-411",
+      "evidence_ref": "synthetic-evidence-008"
+    },
+    {
+      "event_id": "syn-auth-008",
+      "occurred_at": "2026-10-22T11:02:00Z",
+      "event_type": "auth_failure",
+      "asset_ref": "synthetic-api-02",
+      "actor_ref": "synthetic-user-29",
+      "source_ref": "synthetic-source-411",
+      "evidence_ref": "synthetic-evidence-008"
+    }
+  ]
+}

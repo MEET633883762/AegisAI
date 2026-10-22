@@ -1,0 +1,53 @@
+export type Severity = "low" | "medium" | "high" | "critical";
+export type FindingStatus = "open" | "acknowledged" | "closed";
+export type TelemetryFinding = {
+  finding_id: string;
+  rule_id: string;
+  rule_version: string;
+  severity: Severity;
+  confidence: number;
+  first_seen_utc: string;
+  last_seen_utc: string;
+  asset_ref: string;
+  evidence_refs: string[];
+  event_ids: string[];
+  explanation: string;
+  confidence_factors: string[];
+  status: FindingStatus;
+};
+export type FindingsResponse = { data_classification: "synthetic"; label: string; findings: TelemetryFinding[] };
+export type ProcessingRun = {
+  run_id: string;
+  source_id: string;
+  status: "started" | "completed" | "skipped" | "failed";
+  started_at_utc: string;
+  completed_at_utc: string | null;
+  attempt: number;
+  input_event_count: number;
+  accepted_event_count: number;
+  duplicate_event_count: number;
+  finding_count: number;
+  error_code: string | null;
+};
+export type ProcessingResponse = { scheduler_state: string; interval_seconds: number; latest_run: ProcessingRun | null };
+export type SourceResponse = {
+  status: "running" | "healthy" | "failed";
+  last_attempt_at_utc: string;
+  last_success_at_utc: string | null;
+  input_event_count: number;
+  accepted_event_count: number;
+  duplicate_event_count: number;
+  rejected_record_count: number;
+  error_code: string | null;
+};
+export type EvidenceItem = {
+  evidence_ref: string;
+  event_id: string;
+  event_type: string;
+  occurred_at_utc: string;
+  asset_ref: string;
+  actor_ref: string;
+  source_ref: string;
+};
+export type EvidenceResponse = { evidence: EvidenceItem[] };
+export type HealthResponse = { status: "ok"; mode: "local_synthetic" };

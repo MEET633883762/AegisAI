@@ -1,0 +1,86 @@
+{
+  "schema_version": "1.0",
+  "source_id": "synthetic_demo_site_access_error_logs_v1",
+  "data_classification": "synthetic",
+  "label": "SYNTHETIC WEBSITE LOGS - NOT REAL REQUESTS",
+  "generated_at": "2026-10-22T12:00:00Z",
+  "records": [
+    {
+      "record_id": "wlog-access-home-001",
+      "occurred_at": "2026-10-22T11:50:00-04:00",
+      "record_type": "http_access",
+      "actor_ref": "synthetic-user-a",
+      "evidence_id": "website-evidence-access-home-001",
+      "method": "GET",
+      "route_code": "home",
+      "status_code": 200
+    },
+    {
+      "record_id": "wlog-access-health-001",
+      "occurred_at": "2026-10-22T15:50:10Z",
+      "record_type": "http_access",
+      "actor_ref": "synthetic-monitor",
+      "evidence_id": "website-evidence-access-health-001",
+      "method": "GET",
+      "route_code": "health",
+      "status_code": 200
+    },
+    {
+      "record_id": "wlog-auth-fail-001",
+      "occurred_at": "2026-10-22T15:51:00Z",
+      "record_type": "auth_failure",
+      "actor_ref": "synthetic-account-test",
+      "evidence_id": "website-evidence-auth-fail-001",
+      "method": "POST",
+      "route_code": "login",
+      "status_code": 401
+    },
+    {
+      "record_id": "wlog-auth-fail-002",
+      "occurred_at": "2026-10-22T15:51:30Z",
+      "record_type": "auth_failure",
+      "actor_ref": "synthetic-account-test",
+      "evidence_id": "website-evidence-auth-fail-002",
+      "method": "POST",
+      "route_code": "login",
+      "status_code": 401
+    },
+    {
+      "record_id": "wlog-auth-fail-003",
+      "occurred_at": "2026-10-22T15:52:00Z",
+      "record_type": "auth_failure",
+      "actor_ref": "synthetic-account-test",
+      "evidence_id": "website-evidence-auth-fail-003",
+      "method": "POST",
+      "route_code": "login",
+      "status_code": 403
+    },
+    {
+      "record_id": "wlog-auth-fail-004",
+      "occurred_at": "2026-10-22T15:52:30Z",
+      "record_type": "auth_failure",
+      "actor_ref": "synthetic-account-test",
+      "evidence_id": "website-evidence-auth-fail-004",
+      "method": "POST",
+      "route_code": "login",
+      "status_code": 401
+    },
+    {
+      "record_id": "wlog-rate-high-001",
+      "occurred_at": "2026-10-22T15:53:00Z",
+      "record_type": "request_rate",
+      "actor_ref": "synthetic-user-a",
+      "evidence_id": "website-evidence-rate-high-001",
+      "request_count": 640,
+      "window_seconds": 60
+    },
+    {
+      "record_id": "wlog-error-handler-001",
+      "occurred_at": "2026-10-22T15:54:00Z",
+      "record_type": "application_error",
+      "actor_ref": "synthetic-monitor",
+      "evidence_id": "website-evidence-error-handler-001",
+      "error_code": "HANDLER_TIMEOUT"
+    }
+  ]
+}

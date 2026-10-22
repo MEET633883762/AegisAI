@@ -1,0 +1,8 @@
+{
+  "schema_version": "9.0",
+  "library_id": "aegisai_synthetic_replay_library",
+  "library_version": "1.0",
+  "data_classification": "synthetic",
+  "label": "SYNTHETIC SIMULATION - NOT REAL ATTACK TRAFFIC",
+  "scenarios": []
+}

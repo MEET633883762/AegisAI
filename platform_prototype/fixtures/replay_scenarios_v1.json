@@ -1,0 +1,153 @@
+{
+  "schema_version": "1.0",
+  "library_id": "aegisai_synthetic_replay_library",
+  "library_version": "1.0",
+  "data_classification": "synthetic",
+  "label": "SYNTHETIC SIMULATION - NOT REAL ATTACK TRAFFIC",
+  "scenarios": [
+    {
+      "scenario_id": "scenario-auth-failure-success",
+      "scenario_version": "1.0",
+      "data_classification": "synthetic",
+      "scenario_class": "positive",
+      "category": "authentication",
+      "description": "Three synthetic authentication failures followed by a success.",
+      "events": [
+        {"event_id":"syn-replay-auth-01","occurred_at":"2026-10-22T09:00:00Z","event_type":"auth_failure","asset_ref":"synthetic-auth-service","actor_ref":"synthetic-user-a","source_ref":"synthetic-source-a","evidence_ref":"synthetic-replay-auth-01"},
+        {"event_id":"syn-replay-auth-02","occurred_at":"2026-10-22T09:01:00Z","event_type":"auth_failure","asset_ref":"synthetic-auth-service","actor_ref":"synthetic-user-a","source_ref":"synthetic-source-a","evidence_ref":"synthetic-replay-auth-02"},
+        {"event_id":"syn-replay-auth-03","occurred_at":"2026-10-22T09:02:00Z","event_type":"auth_failure","asset_ref":"synthetic-auth-service","actor_ref":"synthetic-user-a","source_ref":"synthetic-source-a","evidence_ref":"synthetic-replay-auth-03"},
+        {"event_id":"syn-replay-auth-04","occurred_at":"2026-10-22T09:03:00Z","event_type":"auth_success","asset_ref":"synthetic-auth-service","actor_ref":"synthetic-user-a","source_ref":"synthetic-source-a","evidence_ref":"synthetic-replay-auth-04"}
+      ],
+      "expected_rule_ids": ["AUTH-001"],
+      "expected_evidence_refs": ["synthetic-replay-auth-01","synthetic-replay-auth-02","synthetic-replay-auth-03","synthetic-replay-auth-04"],
+      "rationale": "The existing authentication rule requires at least three failures in its ten-minute correlation window; the following success is within five minutes."
+    },
+    {
+      "scenario_id": "scenario-rate-high",
+      "scenario_version": "1.0",
+      "data_classification": "synthetic",
+      "scenario_class": "positive",
+      "category": "request_rate",
+      "description": "A high synthetic request-rate indicator exceeds the demonstration threshold.",
+      "events": [
+        {"event_id":"syn-replay-rate-01","occurred_at":"2026-10-22T09:10:00Z","event_type":"request_rate_indicator","asset_ref":"synthetic-web-a","actor_ref":"synthetic-actor-a","source_ref":"synthetic-source-rate","evidence_ref":"synthetic-replay-rate-01","request_count":800,"window_seconds":60}
+      ],
+      "expected_rule_ids": ["WEB-001"],
+      "expected_evidence_refs": ["synthetic-replay-rate-01"],
+      "rationale": "The synthetic count exceeds the existing high indicator threshold of 500 requests in a window no longer than 60 seconds."
+    },
+    {
+      "scenario_id": "scenario-app-setting-change",
+      "scenario_version": "1.0",
+      "data_classification": "synthetic",
+      "scenario_class": "positive",
+      "category": "application",
+      "description": "An allowlisted synthetic administrative-setting change is recorded.",
+      "events": [
+        {"event_id":"syn-replay-app-01","occurred_at":"2026-10-22T09:20:00Z","event_type":"simulated_suspicious_activity","asset_ref":"synthetic-app-a","actor_ref":"synthetic-actor-app","source_ref":"synthetic-source-app","evidence_ref":"synthetic-replay-app-01","activity_code":"unexpected_admin_setting_change"}
+      ],
+      "expected_rule_ids": ["APP-001"],
+      "expected_evidence_refs": ["synthetic-replay-app-01"],
+      "rationale": "The existing application rule reports allowlisted simulated suspicious-activity codes."
+    },
+    {
+      "scenario_id": "scenario-component-outdated",
+      "scenario_version": "1.0",
+      "data_classification": "synthetic",
+      "scenario_class": "positive",
+      "category": "vulnerability",
+      "description": "A synthetic component-version check reports the allowlisted outdated test component.",
+      "events": [
+        {"event_id":"syn-replay-vuln-01","occurred_at":"2026-10-22T09:30:00Z","event_type":"synthetic_vulnerability_finding","asset_ref":"synthetic-app-b","actor_ref":"synthetic-checker","source_ref":"synthetic-source-vuln","evidence_ref":"synthetic-replay-vuln-01","check_code":"test_component_outdated"}
+      ],
+      "expected_rule_ids": ["VULN-001"],
+      "expected_evidence_refs": ["synthetic-replay-vuln-01"],
+      "rationale": "The existing vulnerability demonstration rule matches the allowlisted test_component_outdated check code."
+    },
+    {
+      "scenario_id": "scenario-debug-enabled",
+      "scenario_version": "1.0",
+      "data_classification": "synthetic",
+      "scenario_class": "positive",
+      "category": "configuration",
+      "description": "A synthetic configuration check reports debug mode enabled.",
+      "events": [
+        {"event_id":"syn-replay-config-01","occurred_at":"2026-10-22T09:40:00Z","event_type":"synthetic_configuration_finding","asset_ref":"synthetic-app-c","actor_ref":"synthetic-checker","source_ref":"synthetic-source-config","evidence_ref":"synthetic-replay-config-01","check_code":"debug_mode_enabled"}
+      ],
+      "expected_rule_ids": ["CONFIG-001"],
+      "expected_evidence_refs": ["synthetic-replay-config-01"],
+      "rationale": "The existing configuration demonstration rule matches the allowlisted debug_mode_enabled check code."
+    },
+    {
+      "scenario_id": "scenario-auth-benign-low-count",
+      "scenario_version": "1.0",
+      "data_classification": "synthetic",
+      "scenario_class": "benign",
+      "category": "authentication",
+      "description": "Two synthetic authentication failures remain below the existing correlation threshold.",
+      "events": [
+        {"event_id":"syn-replay-auth-benign-01","occurred_at":"2026-10-22T10:00:00Z","event_type":"auth_failure","asset_ref":"synthetic-auth-service","actor_ref":"synthetic-user-b","source_ref":"synthetic-source-b","evidence_ref":"synthetic-replay-auth-benign-01"},
+        {"event_id":"syn-replay-auth-benign-02","occurred_at":"2026-10-22T10:01:00Z","event_type":"auth_failure","asset_ref":"synthetic-auth-service","actor_ref":"synthetic-user-b","source_ref":"synthetic-source-b","evidence_ref":"synthetic-replay-auth-benign-02"}
+      ],
+      "expected_rule_ids": [],
+      "expected_evidence_refs": [],
+      "rationale": "The Phase 1 authentication rule requires at least three failures; two failures should produce no finding."
+    },
+    {
+      "scenario_id": "scenario-rate-benign-low-count",
+      "scenario_version": "1.0",
+      "data_classification": "synthetic",
+      "scenario_class": "benign",
+      "category": "request_rate",
+      "description": "A synthetic request-rate indicator remains below the rule threshold.",
+      "events": [
+        {"event_id":"syn-replay-rate-benign-01","occurred_at":"2026-10-22T10:10:00Z","event_type":"request_rate_indicator","asset_ref":"synthetic-web-a","actor_ref":"synthetic-actor-b","source_ref":"synthetic-source-rate","evidence_ref":"synthetic-replay-rate-benign-01","request_count":40,"window_seconds":60}
+      ],
+      "expected_rule_ids": [],
+      "expected_evidence_refs": [],
+      "rationale": "The existing request-rate rule starts at 100 requests in a window no longer than 60 seconds."
+    },
+    {
+      "scenario_id": "scenario-app-benign-auth-success",
+      "scenario_version": "1.0",
+      "data_classification": "synthetic",
+      "scenario_class": "benign",
+      "category": "application",
+      "description": "A routine synthetic application setting read is a benign control for the application rule.",
+      "events": [
+        {"event_id":"syn-replay-app-benign-01","occurred_at":"2026-10-22T10:20:00Z","event_type":"simulated_suspicious_activity","asset_ref":"synthetic-app-a","actor_ref":"synthetic-user-c","source_ref":"synthetic-source-app","evidence_ref":"synthetic-replay-app-benign-01","activity_code":"routine_setting_read"}
+      ],
+      "expected_rule_ids": [],
+      "expected_evidence_refs": [],
+      "rationale": "routine_setting_read is explicitly classified as a benign synthetic control code and must not match APP-001."
+    },
+    {
+      "scenario_id": "scenario-vulnerability-benign-control",
+      "scenario_version": "1.0",
+      "data_classification": "synthetic",
+      "scenario_class": "benign",
+      "category": "vulnerability",
+      "description": "A synthetic current-component check is a benign control for the vulnerability rule.",
+      "events": [
+        {"event_id":"syn-replay-vuln-benign-01","occurred_at":"2026-10-22T10:30:00Z","event_type":"synthetic_vulnerability_finding","asset_ref":"synthetic-app-b","actor_ref":"synthetic-checker","source_ref":"synthetic-source-vuln","evidence_ref":"synthetic-replay-vuln-benign-01","check_code":"test_component_current"}
+      ],
+      "expected_rule_ids": [],
+      "expected_evidence_refs": [],
+      "rationale": "test_component_current is explicitly classified as a benign synthetic check code and must not match VULN-001."
+    },
+    {
+      "scenario_id": "scenario-configuration-benign-control",
+      "scenario_version": "1.0",
+      "data_classification": "synthetic",
+      "scenario_class": "benign",
+      "category": "configuration",
+      "description": "A synthetic debug-mode-disabled check is a benign control for the configuration rule.",
+      "events": [
+        {"event_id":"syn-replay-config-benign-01","occurred_at":"2026-10-22T10:40:00Z","event_type":"synthetic_configuration_finding","asset_ref":"synthetic-app-c","actor_ref":"synthetic-checker","source_ref":"synthetic-source-config","evidence_ref":"synthetic-replay-config-benign-01","check_code":"debug_mode_disabled"}
+      ],
+      "expected_rule_ids": [],
+      "expected_evidence_refs": [],
+      "rationale": "debug_mode_disabled is explicitly classified as a benign synthetic check code and must not match CONFIG-001."
+    }
+  ]
+}

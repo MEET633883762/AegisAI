@@ -38,6 +38,8 @@ test('CSP permits only built same-origin script, styles and report loading', () 
   }
   assert.match(pages, /assets\/main\.js/);
   assert.match(pages, /assets\/app\.css/);
+  assert.equal(fs.existsSync(path.join(build, 'local-dashboard.html')), false, 'local-only dashboard must not enter the public Vite build');
+  assert.doesNotMatch(read(build, 'assets/main.js'), /127\.0\.0\.1:8766|localDashboard|local-dashboard/i);
   const outputText = expectedAssets.map((name) => read(name === '_headers' ? frontend : build, name)).join('\n');
   assert.doesNotMatch(outputText, /C:\\AegisAI|demo_site_assessment_(baseline|hardened)\.json/i);
 });
@@ -70,6 +72,7 @@ test('static publisher emits exactly the allowlist and excludes repository evide
     };
     visit(output);
     assert.deepEqual(actualAssets.sort(), expectedAssets);
+    assert.equal(fs.existsSync(path.join(output, 'local-dashboard.html')), false);
     for (const excluded of ['server.py', 'results', '.git', 'requirements.txt', 'README.md', 'tests', 'original-reports']) {
       assert.equal(fs.existsSync(path.join(output, excluded)), false);
     }

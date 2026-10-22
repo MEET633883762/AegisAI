@@ -32,7 +32,7 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
-    include: ["tests/public_shell.test.ts", "tests/research_demo.test.ts"],
+    include: ["tests/public_shell.test.ts", "tests/research_demo.test.ts", "tests/local_dashboard.test.tsx"],
     restoreMocks: true,
     clearMocks: true,
   },

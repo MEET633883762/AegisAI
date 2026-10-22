@@ -1,0 +1,183 @@
+{
+  "schema_version": "1.0",
+  "dataset_id": "aegisai_synthetic_detection_evaluation",
+  "dataset_version": "1.0",
+  "data_classification": "synthetic",
+  "label": "SYNTHETIC EVALUATION DATA - NOT REAL SECURITY EVENTS",
+  "scenarios": [
+    {
+      "scenario_id": "p6a-auth-at-window-boundary",
+      "category": "threshold_boundary",
+      "difficulty": "edge",
+      "description": "Three failures and a success exactly at the existing five-minute follow-up boundary.",
+      "detector_input": [
+        {"event_id":"syn-p6a-auth-01","occurred_at":"2026-10-22T09:00:00Z","event_type":"auth_failure","asset_ref":"synthetic-auth-a","actor_ref":"synthetic-user-a","source_ref":"synthetic-source-auth","evidence_ref":"synthetic-p6a-auth-01"},
+        {"event_id":"syn-p6a-auth-02","occurred_at":"2026-10-22T09:01:00Z","event_type":"auth_failure","asset_ref":"synthetic-auth-a","actor_ref":"synthetic-user-a","source_ref":"synthetic-source-auth","evidence_ref":"synthetic-p6a-auth-02"},
+        {"event_id":"syn-p6a-auth-03","occurred_at":"2026-10-22T09:02:00Z","event_type":"auth_failure","asset_ref":"synthetic-auth-a","actor_ref":"synthetic-user-a","source_ref":"synthetic-source-auth","evidence_ref":"synthetic-p6a-auth-03"},
+        {"event_id":"syn-p6a-auth-04","occurred_at":"2026-10-22T09:07:00Z","event_type":"auth_success","asset_ref":"synthetic-auth-a","actor_ref":"synthetic-user-a","source_ref":"synthetic-source-auth","evidence_ref":"synthetic-p6a-auth-04"}
+      ],
+      "ground_truth": {"expected_input_outcome":"accept","expected_rejection_category":null,"expected_finding_types":["AUTH-001"],"expected_no_finding_types":["APP-001","CONFIG-001","VULN-001","WEB-001"],"required_evidence":[{"rule_id":"AUTH-001","evidence_refs":["synthetic-p6a-auth-01","synthetic-p6a-auth-02","synthetic-p6a-auth-03","synthetic-p6a-auth-04"]}]}
+    },
+    {
+      "scenario_id": "p6a-auth-two-failure-control",
+      "category": "benign_control",
+      "difficulty": "introductory",
+      "description": "Two failures remain below the existing authentication count threshold.",
+      "detector_input": [
+        {"event_id":"syn-p6a-auth-low-01","occurred_at":"2026-10-22T09:10:00Z","event_type":"auth_failure","asset_ref":"synthetic-auth-a","actor_ref":"synthetic-user-b","source_ref":"synthetic-source-auth","evidence_ref":"synthetic-p6a-auth-low-01"},
+        {"event_id":"syn-p6a-auth-low-02","occurred_at":"2026-10-22T09:11:00Z","event_type":"auth_failure","asset_ref":"synthetic-auth-a","actor_ref":"synthetic-user-b","source_ref":"synthetic-source-auth","evidence_ref":"synthetic-p6a-auth-low-02"}
+      ],
+      "ground_truth": {"expected_input_outcome":"accept","expected_rejection_category":null,"expected_finding_types":[],"expected_no_finding_types":["APP-001","AUTH-001","CONFIG-001","VULN-001","WEB-001"],"required_evidence":[]}
+    },
+    {
+      "scenario_id": "p6a-rate-exact-threshold",
+      "category": "threshold_boundary",
+      "difficulty": "edge",
+      "description": "A rate indicator equals the existing 100-request threshold in a 60-second window.",
+      "detector_input": [{"event_id":"syn-p6a-rate-100","occurred_at":"2026-10-22T09:20:00Z","event_type":"request_rate_indicator","asset_ref":"synthetic-web-a","actor_ref":"synthetic-actor-a","source_ref":"synthetic-source-rate","evidence_ref":"synthetic-p6a-rate-100","request_count":100,"window_seconds":60}],
+      "ground_truth": {"expected_input_outcome":"accept","expected_rejection_category":null,"expected_finding_types":["WEB-001"],"expected_no_finding_types":["APP-001","AUTH-001","CONFIG-001","VULN-001"],"required_evidence":[{"rule_id":"WEB-001","evidence_refs":["synthetic-p6a-rate-100"]}]}
+    },
+    {
+      "scenario_id": "p6a-rate-one-below-threshold",
+      "category": "threshold_boundary",
+      "difficulty": "edge",
+      "description": "A rate indicator one request below the existing threshold is a negative control.",
+      "detector_input": [{"event_id":"syn-p6a-rate-099","occurred_at":"2026-10-22T09:21:00Z","event_type":"request_rate_indicator","asset_ref":"synthetic-web-a","actor_ref":"synthetic-actor-b","source_ref":"synthetic-source-rate","evidence_ref":"synthetic-p6a-rate-099","request_count":99,"window_seconds":60}],
+      "ground_truth": {"expected_input_outcome":"accept","expected_rejection_category":null,"expected_finding_types":[],"expected_no_finding_types":["APP-001","AUTH-001","CONFIG-001","VULN-001","WEB-001"],"required_evidence":[]}
+    },
+    {
+      "scenario_id": "p6a-rate-high-threshold",
+      "category": "suspicious_positive",
+      "difficulty": "introductory",
+      "description": "A synthetic rate indicator meets the existing high-severity threshold.",
+      "detector_input": [{"event_id":"syn-p6a-rate-500","occurred_at":"2026-10-22T09:22:00Z","event_type":"request_rate_indicator","asset_ref":"synthetic-web-b","actor_ref":"synthetic-actor-a","source_ref":"synthetic-source-rate","evidence_ref":"synthetic-p6a-rate-500","request_count":500,"window_seconds":60}],
+      "ground_truth": {"expected_input_outcome":"accept","expected_rejection_category":null,"expected_finding_types":["WEB-001"],"expected_no_finding_types":["APP-001","AUTH-001","CONFIG-001","VULN-001"],"required_evidence":[{"rule_id":"WEB-001","evidence_refs":["synthetic-p6a-rate-500"]}]}
+    },
+    {
+      "scenario_id": "p6a-rate-window-over-limit",
+      "category": "threshold_boundary",
+      "difficulty": "intermediate",
+      "description": "A high count in a 61-second window exceeds the existing supported rate window.",
+      "detector_input": [{"event_id":"syn-p6a-rate-61","occurred_at":"2026-10-22T09:23:00Z","event_type":"request_rate_indicator","asset_ref":"synthetic-web-b","actor_ref":"synthetic-actor-b","source_ref":"synthetic-source-rate","evidence_ref":"synthetic-p6a-rate-61","request_count":500,"window_seconds":61}],
+      "ground_truth": {"expected_input_outcome":"accept","expected_rejection_category":null,"expected_finding_types":[],"expected_no_finding_types":["APP-001","AUTH-001","CONFIG-001","VULN-001","WEB-001"],"required_evidence":[]}
+    },
+    {
+      "scenario_id": "p6a-app-suspicious-code",
+      "category": "suspicious_positive",
+      "difficulty": "introductory",
+      "description": "An allowlisted synthetic administrative-setting change should match the application rule.",
+      "detector_input": [{"event_id":"syn-p6a-app-01","occurred_at":"2026-10-22T09:30:00Z","event_type":"simulated_suspicious_activity","asset_ref":"synthetic-app-a","actor_ref":"synthetic-actor-app","source_ref":"synthetic-source-app","evidence_ref":"synthetic-p6a-app-01","activity_code":"unexpected_admin_setting_change"}],
+      "ground_truth": {"expected_input_outcome":"accept","expected_rejection_category":null,"expected_finding_types":["APP-001"],"expected_no_finding_types":["AUTH-001","CONFIG-001","VULN-001","WEB-001"],"required_evidence":[{"rule_id":"APP-001","evidence_refs":["synthetic-p6a-app-01"]}]}
+    },
+    {
+      "scenario_id": "p6a-app-routine-read-control",
+      "category": "benign_control",
+      "difficulty": "introductory",
+      "description": "An allowlisted routine setting read should not match the application rule.",
+      "detector_input": [{"event_id":"syn-p6a-app-routine","occurred_at":"2026-10-22T09:31:00Z","event_type":"simulated_suspicious_activity","asset_ref":"synthetic-app-a","actor_ref":"synthetic-actor-app","source_ref":"synthetic-source-app","evidence_ref":"synthetic-p6a-app-routine","activity_code":"routine_setting_read"}],
+      "ground_truth": {"expected_input_outcome":"accept","expected_rejection_category":null,"expected_finding_types":[],"expected_no_finding_types":["APP-001","AUTH-001","CONFIG-001","VULN-001","WEB-001"],"required_evidence":[]}
+    },
+    {
+      "scenario_id": "p6a-vulnerability-outdated-check",
+      "category": "suspicious_positive",
+      "difficulty": "introductory",
+      "description": "The existing synthetic outdated-component check should match the vulnerability rule.",
+      "detector_input": [{"event_id":"syn-p6a-vuln-old","occurred_at":"2026-10-22T09:40:00Z","event_type":"synthetic_vulnerability_finding","asset_ref":"synthetic-app-b","actor_ref":"synthetic-checker","source_ref":"synthetic-source-vuln","evidence_ref":"synthetic-p6a-vuln-old","check_code":"test_component_outdated"}],
+      "ground_truth": {"expected_input_outcome":"accept","expected_rejection_category":null,"expected_finding_types":["VULN-001"],"expected_no_finding_types":["APP-001","AUTH-001","CONFIG-001","WEB-001"],"required_evidence":[{"rule_id":"VULN-001","evidence_refs":["synthetic-p6a-vuln-old"]}]}
+    },
+    {
+      "scenario_id": "p6a-vulnerability-current-control",
+      "category": "benign_control",
+      "difficulty": "introductory",
+      "description": "A current synthetic component check should not match the vulnerability rule.",
+      "detector_input": [{"event_id":"syn-p6a-vuln-current","occurred_at":"2026-10-22T09:41:00Z","event_type":"synthetic_vulnerability_finding","asset_ref":"synthetic-app-b","actor_ref":"synthetic-checker","source_ref":"synthetic-source-vuln","evidence_ref":"synthetic-p6a-vuln-current","check_code":"test_component_current"}],
+      "ground_truth": {"expected_input_outcome":"accept","expected_rejection_category":null,"expected_finding_types":[],"expected_no_finding_types":["APP-001","AUTH-001","CONFIG-001","VULN-001","WEB-001"],"required_evidence":[]}
+    },
+    {
+      "scenario_id": "p6a-config-debug-enabled",
+      "category": "suspicious_positive",
+      "difficulty": "introductory",
+      "description": "An enabled synthetic debug-mode check should match the configuration rule.",
+      "detector_input": [{"event_id":"syn-p6a-config-on","occurred_at":"2026-10-22T09:50:00Z","event_type":"synthetic_configuration_finding","asset_ref":"synthetic-app-c","actor_ref":"synthetic-checker","source_ref":"synthetic-source-config","evidence_ref":"synthetic-p6a-config-on","check_code":"debug_mode_enabled"}],
+      "ground_truth": {"expected_input_outcome":"accept","expected_rejection_category":null,"expected_finding_types":["CONFIG-001"],"expected_no_finding_types":["APP-001","AUTH-001","VULN-001","WEB-001"],"required_evidence":[{"rule_id":"CONFIG-001","evidence_refs":["synthetic-p6a-config-on"]}]}
+    },
+    {
+      "scenario_id": "p6a-config-debug-disabled-control",
+      "category": "benign_control",
+      "difficulty": "introductory",
+      "description": "A disabled synthetic debug-mode check should not match the configuration rule.",
+      "detector_input": [{"event_id":"syn-p6a-config-off","occurred_at":"2026-10-22T09:51:00Z","event_type":"synthetic_configuration_finding","asset_ref":"synthetic-app-c","actor_ref":"synthetic-checker","source_ref":"synthetic-source-config","evidence_ref":"synthetic-p6a-config-off","check_code":"debug_mode_disabled"}],
+      "ground_truth": {"expected_input_outcome":"accept","expected_rejection_category":null,"expected_finding_types":[],"expected_no_finding_types":["APP-001","AUTH-001","CONFIG-001","VULN-001","WEB-001"],"required_evidence":[]}
+    },
+    {
+      "scenario_id": "p6a-auth-exact-duplicate-replay",
+      "category": "exact_duplicate",
+      "difficulty": "intermediate",
+      "description": "Three failures plus one exact duplicate record should retain one evidence item per unique event.",
+      "detector_input": [
+        {"event_id":"syn-p6a-dup-01","occurred_at":"2026-10-22T10:00:00Z","event_type":"auth_failure","asset_ref":"synthetic-auth-b","actor_ref":"synthetic-user-c","source_ref":"synthetic-source-auth","evidence_ref":"synthetic-p6a-dup-01"},
+        {"event_id":"syn-p6a-dup-02","occurred_at":"2026-10-22T10:01:00Z","event_type":"auth_failure","asset_ref":"synthetic-auth-b","actor_ref":"synthetic-user-c","source_ref":"synthetic-source-auth","evidence_ref":"synthetic-p6a-dup-02"},
+        {"event_id":"syn-p6a-dup-03","occurred_at":"2026-10-22T10:02:00Z","event_type":"auth_failure","asset_ref":"synthetic-auth-b","actor_ref":"synthetic-user-c","source_ref":"synthetic-source-auth","evidence_ref":"synthetic-p6a-dup-03"},
+        {"event_id":"syn-p6a-dup-02","occurred_at":"2026-10-22T10:01:00Z","event_type":"auth_failure","asset_ref":"synthetic-auth-b","actor_ref":"synthetic-user-c","source_ref":"synthetic-source-auth","evidence_ref":"synthetic-p6a-dup-02"}
+      ],
+      "ground_truth": {"expected_input_outcome":"accept","expected_rejection_category":null,"expected_finding_types":["AUTH-001"],"expected_no_finding_types":["APP-001","CONFIG-001","VULN-001","WEB-001"],"required_evidence":[{"rule_id":"AUTH-001","evidence_refs":["synthetic-p6a-dup-01","synthetic-p6a-dup-02","synthetic-p6a-dup-03"]}]}
+    },
+    {
+      "scenario_id": "p6a-auth-insufficient-evidence",
+      "category": "insufficient_evidence",
+      "difficulty": "introductory",
+      "description": "One isolated authentication failure is insufficient evidence for an authentication finding.",
+      "detector_input": [{"event_id":"syn-p6a-auth-one","occurred_at":"2026-10-22T10:10:00Z","event_type":"auth_failure","asset_ref":"synthetic-auth-c","actor_ref":"synthetic-user-d","source_ref":"synthetic-source-auth","evidence_ref":"synthetic-p6a-auth-one"}],
+      "ground_truth": {"expected_input_outcome":"accept","expected_rejection_category":null,"expected_finding_types":[],"expected_no_finding_types":["APP-001","AUTH-001","CONFIG-001","VULN-001","WEB-001"],"required_evidence":[]}
+    },
+    {
+      "scenario_id": "p6a-independent-app-and-rate",
+      "category": "multi_finding",
+      "difficulty": "intermediate",
+      "description": "Independent synthetic application and rate indicators should support two finding types.",
+      "detector_input": [
+        {"event_id":"syn-p6a-multi-rate","occurred_at":"2026-10-22T10:20:00Z","event_type":"request_rate_indicator","asset_ref":"synthetic-web-c","actor_ref":"synthetic-actor-c","source_ref":"synthetic-source-rate","evidence_ref":"synthetic-p6a-multi-rate","request_count":120,"window_seconds":60},
+        {"event_id":"syn-p6a-multi-app","occurred_at":"2026-10-22T10:21:00Z","event_type":"simulated_suspicious_activity","asset_ref":"synthetic-app-d","actor_ref":"synthetic-actor-d","source_ref":"synthetic-source-app","evidence_ref":"synthetic-p6a-multi-app","activity_code":"unusual_synthetic_file_access"}
+      ],
+      "ground_truth": {"expected_input_outcome":"accept","expected_rejection_category":null,"expected_finding_types":["APP-001","WEB-001"],"expected_no_finding_types":["AUTH-001","CONFIG-001","VULN-001"],"required_evidence":[{"rule_id":"APP-001","evidence_refs":["synthetic-p6a-multi-app"]},{"rule_id":"WEB-001","evidence_refs":["synthetic-p6a-multi-rate"]}]}
+    },
+    {
+      "scenario_id": "p6a-reject-unknown-event-type",
+      "category": "malformed_input",
+      "difficulty": "introductory",
+      "description": "An unsupported event type must be rejected by the existing event schema.",
+      "detector_input": [{"event_id":"syn-p6a-invalid-type","occurred_at":"2026-10-22T10:30:00Z","event_type":"unknown_security_event","asset_ref":"synthetic-invalid-a","actor_ref":"synthetic-actor-a","source_ref":"synthetic-source-a","evidence_ref":"synthetic-p6a-invalid-type"}],
+      "ground_truth": {"expected_input_outcome":"reject","expected_rejection_category":"schema_validation","expected_finding_types":[],"expected_no_finding_types":["APP-001","AUTH-001","CONFIG-001","VULN-001","WEB-001"],"required_evidence":[]}
+    },
+    {
+      "scenario_id": "p6a-reject-incomplete-event",
+      "category": "malformed_input",
+      "difficulty": "introductory",
+      "description": "An event missing its evidence reference must be rejected by schema validation.",
+      "detector_input": [{"event_id":"syn-p6a-invalid-evidence","occurred_at":"2026-10-22T10:31:00Z","event_type":"auth_failure","asset_ref":"synthetic-invalid-a","actor_ref":"synthetic-actor-a","source_ref":"synthetic-source-a"}],
+      "ground_truth": {"expected_input_outcome":"reject","expected_rejection_category":"schema_validation","expected_finding_types":[],"expected_no_finding_types":["APP-001","AUTH-001","CONFIG-001","VULN-001","WEB-001"],"required_evidence":[]}
+    },
+    {
+      "scenario_id": "p6a-reject-conflicting-event-id",
+      "category": "identifier_conflict",
+      "difficulty": "intermediate",
+      "description": "The same event ID with different actor content must be rejected as a conflict.",
+      "detector_input": [
+        {"event_id":"syn-p6a-conflict-event","occurred_at":"2026-10-22T10:32:00Z","event_type":"auth_failure","asset_ref":"synthetic-invalid-a","actor_ref":"synthetic-actor-a","source_ref":"synthetic-source-a","evidence_ref":"synthetic-p6a-conflict-event"},
+        {"event_id":"syn-p6a-conflict-event","occurred_at":"2026-10-22T10:32:00Z","event_type":"auth_failure","asset_ref":"synthetic-invalid-a","actor_ref":"synthetic-actor-b","source_ref":"synthetic-source-a","evidence_ref":"synthetic-p6a-conflict-event"}
+      ],
+      "ground_truth": {"expected_input_outcome":"reject","expected_rejection_category":"event_id_conflict","expected_finding_types":[],"expected_no_finding_types":["APP-001","AUTH-001","CONFIG-001","VULN-001","WEB-001"],"required_evidence":[]}
+    },
+    {
+      "scenario_id": "p6a-reject-conflicting-evidence-ref",
+      "category": "identifier_conflict",
+      "difficulty": "intermediate",
+      "description": "Two distinct event IDs claiming the same evidence reference must be rejected.",
+      "detector_input": [
+        {"event_id":"syn-p6a-conflict-evidence-01","occurred_at":"2026-10-22T10:33:00Z","event_type":"auth_failure","asset_ref":"synthetic-invalid-a","actor_ref":"synthetic-actor-a","source_ref":"synthetic-source-a","evidence_ref":"synthetic-p6a-conflict-evidence"},
+        {"event_id":"syn-p6a-conflict-evidence-02","occurred_at":"2026-10-22T10:34:00Z","event_type":"auth_failure","asset_ref":"synthetic-invalid-a","actor_ref":"synthetic-actor-a","source_ref":"synthetic-source-a","evidence_ref":"synthetic-p6a-conflict-evidence"}
+      ],
+      "ground_truth": {"expected_input_outcome":"reject","expected_rejection_category":"evidence_ref_conflict","expected_finding_types":[],"expected_no_finding_types":["APP-001","AUTH-001","CONFIG-001","VULN-001","WEB-001"],"required_evidence":[]}
+    }
+  ]
+}

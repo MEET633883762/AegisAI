@@ -5,10 +5,32 @@ import { dirname, resolve } from "node:path";
 
 const frontendRoot = dirname(fileURLToPath(import.meta.url));
 
-export default defineConfig({
+function localDashboardUrls(command) {
+  return {
+    name: "aegisai-local-dashboard-urls",
+    configureServer(server) {
+      if (command !== "serve") return;
+
+      server.httpServer?.once("listening", () => {
+        const urls = server.resolvedUrls;
+        if (!urls) return;
+
+        console.log("\n  AegisAI local operations dashboard:");
+        for (const url of urls.local ?? []) {
+          console.log(`  Local:   ${url}local-dashboard.html`);
+        }
+        for (const url of urls.network ?? []) {
+          console.log(`  Network: ${url}local-dashboard.html`);
+        }
+      });
+    },
+  };
+}
+
+export default defineConfig(({ command }) => ({
   root: frontendRoot,
   base: "./",
-  plugins: [react()],
+  plugins: [react(), localDashboardUrls(command)],
   publicDir: false,
   build: {
     outDir: resolve(frontendRoot, ".vite-build"),
@@ -36,4 +58,4 @@ export default defineConfig({
     restoreMocks: true,
     clearMocks: true,
   },
-});
+}));

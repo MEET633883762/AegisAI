@@ -1,4 +1,4 @@
-"""Build the strict, dependency-free static publication allowlist."""
+"""Publish only the strict allowlist from the production frontend build."""
 
 from __future__ import annotations
 
@@ -10,21 +10,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "frontend"
+BUILD = SOURCE / ".vite-build"
 DEFAULT_OUTPUT = ROOT / "dist" / "aegisai-static"
 STATIC_ALLOWLIST = (
     "_headers",
     "index.html",
     "dashboard.html",
     "privacy.html",
-    "landing.css",
-    "styles.css",
-    "website_assessment.css",
-    "website_assessment.js",
-    "research_demo.js",
-    "app.js",
-    "data/public_demo_episode.json",
-    "data/public_demo_assessment_baseline.json",
-    "data/public_demo_assessment_hardened.json",
+    "assets/app.css",
+    "assets/main.js",
+    "assets/public_demo_episode.json",
+    "assets/public_demo_assessment_baseline.json",
+    "assets/public_demo_assessment_hardened.json",
 )
 
 
@@ -34,13 +31,15 @@ def build(output: Path) -> tuple[Path, ...]:
         raise ValueError("Static output must be outside frontend/.")
     if output.exists() and any(output.iterdir()):
         raise FileExistsError(f"Refusing to publish into non-empty output directory: {output}")
+    if not BUILD.is_dir():
+        raise FileNotFoundError("Production frontend build is missing; run npm ci and npm run build in frontend/.")
     output.mkdir(parents=True, exist_ok=True)
 
     copied = []
     for relative in STATIC_ALLOWLIST:
-        source = SOURCE / relative
+        source = SOURCE / "_headers" if relative == "_headers" else BUILD / relative
         if not source.is_file():
-            raise FileNotFoundError(f"Allowlisted static asset is missing: {relative}")
+            raise FileNotFoundError(f"Allowlisted production asset is missing: {relative}")
         destination = output / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(source, destination)

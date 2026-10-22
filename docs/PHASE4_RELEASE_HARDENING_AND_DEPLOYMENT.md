@@ -2,9 +2,9 @@
 
 ## Release boundary
 
-The public V1 is a static, read-only research demo. The deployable file set is the explicit `STATIC_ALLOWLIST` in `scripts/build_static_site.py`. Run `python scripts/build_static_site.py` to copy those files into `dist/aegisai-static/`. The build refuses a non-empty output directory and verifies that its contents exactly match the allowlist. Only that generated directory is a deployment candidate; do not select the repository root, `frontend/` itself, or `results/` as the publish directory.
+The public V1 is a static, read-only research demo. The frontend uses React, TypeScript, and Vite to compile the existing `index.html`, `dashboard.html`, and `privacy.html` page URLs. The deployable file set is the explicit `STATIC_ALLOWLIST` in `scripts/build_static_site.py`. First run `npm ci` and `npm run build` from `frontend/`; then run `python scripts/build_static_site.py --output dist/aegisai-release` from the repository root. The publisher refuses an incomplete Vite build or a non-empty output directory and verifies that the output exactly matches its allowlist. Only that generated directory is a deployment candidate; do not select the repository root, `frontend/` itself, or `results/` as the publish directory.
 
-The allowlist includes the landing page, dashboard, privacy disclosure, local CSS/JavaScript, Cloudflare Pages `_headers`, and three reviewed JSON samples. It excludes Python source, the simulator, Controller, local checker, tests, original assessment artifacts, experiment data, environment files, Git metadata, and documentation.
+The allowlist includes the three HTML pages, compiled same-origin JavaScript/CSS, Cloudflare Pages `_headers`, and three reviewed JSON samples. It excludes Python source, the simulator, Controller, local checker, tests, original assessment artifacts, experiment data, environment files, Git metadata, and documentation. Vite writes to ignored `frontend/.vite-build/`; the publisher copies only its named assets and the reviewed headers file.
 
 `scripts/build_public_assessment_artifacts.py` reads the original baseline/hardened reports and writes sanitized copies under `frontend/data/`. It removes the local `artifact` path and adds publication labels. The source evidence under `results/` must remain untouched. Review any regenerated public copy before release.
 
@@ -19,7 +19,7 @@ The allowlist includes the landing page, dashboard, privacy disclosure, local CS
 
 ## Hosting configuration
 
-Cloudflare Pages is the recommended initial host for this output. Use a static Pages project with no build command and no Pages Functions/Workers. For a source-connected workflow, the build command must run `python scripts/build_static_site.py` and the Pages output directory must be `dist/aegisai-static`; alternatively, upload only this generated directory using the provider's Direct Upload workflow. Never upload the repository root.
+Cloudflare Pages is the recommended initial host for this output. Use a static Pages project with no Pages Functions/Workers. For a source-connected workflow, install the locked frontend dependencies, run the production build, then run the static publisher; configure the Pages output directory as the selected generated directory such as `dist/aegisai-release`. Alternatively, upload only that generated directory using the provider's Direct Upload workflow. Never upload the repository root.
 
 The frontend `_headers` file defines a same-origin CSP and response security headers. Cloudflare Pages parses `_headers` as configuration rather than serving it as a normal asset. Verify the deployed HTML, scripts, stylesheets, JSON responses, and downloads after configuring the host. The local Python preview does not interpret `_headers`, so it cannot verify production response headers.
 
@@ -28,8 +28,8 @@ As checked 2026-10-21, Cloudflare documents free static asset requests on Pages 
 ## Release procedure (not yet performed)
 
 1. Confirm the source repository's visibility and confirm the reviewed public copy contains no local paths or secrets. The origin URL alone does not establish whether a repository is public.
-2. Run the release checks below and inspect `git status --short` and the full diff.
-3. Build the allowlisted output with `python scripts/build_static_site.py`. If the output directory already exists, inspect it and choose a new empty output path; the builder will not overwrite a populated directory.
+2. Run `npm ci`, `npm test` from `frontend/`, `python -m pytest -q`, and `git diff --check`; inspect `git status --short` and the full diff.
+3. Build the frontend with `npm run build` from `frontend/`, then publish the allowlist with `python scripts/build_static_site.py --output dist/aegisai-release`. If the output directory already exists, inspect it and choose a new empty output path; the publisher will not overwrite a populated directory.
 4. Review the exact output tree. Confirm it contains only the allowlisted static files and no source, evidence, credentials, or development configuration.
 5. In a Cloudflare Pages preview deployment, verify navigation, artifact loading, both JSON downloads, sample baseline/hardened comparison, and local-file import behavior. Inspect response headers and browser console/network errors.
 6. Complete the manual accessibility checklist: keyboard-only operation, focus visibility/order, screen-reader status/details, contrast, zoom/reflow, and mobile viewport behavior.
@@ -42,16 +42,19 @@ To roll back, select the last known-good successful production deployment in Pag
 From the repository root in PowerShell:
 
 ```powershell
-node --test tests/frontend/public_shell.test.js tests/frontend/research_demo.test.js tests/frontend/static_release.test.js
-node --check frontend/app.js
-node --check frontend/website_assessment.js
-node --check frontend/research_demo.js
+cd frontend
+npm ci
+npm test
+cd ..
 python -m py_compile scripts/build_public_demo_artifact.py scripts/build_public_assessment_artifacts.py scripts/build_static_site.py
 python -m pytest -q
 git diff --check
 python scripts/build_public_assessment_artifacts.py
-python scripts/build_static_site.py
-Get-ChildItem dist/aegisai-static -Recurse -File | Select-Object -ExpandProperty FullName
+cd frontend
+npm run build
+cd ..
+python scripts/build_static_site.py --output dist/aegisai-release
+Get-ChildItem dist/aegisai-release -Recurse -File | Select-Object -ExpandProperty FullName
 ```
 
 For the local browser smoke check, run `python -m http.server 8765 --bind 127.0.0.1 --directory dist/aegisai-static` and visit `http://127.0.0.1:8765/`. This verifies content behavior only; it does not apply Cloudflare `_headers` or substitute for checking the deployed host.

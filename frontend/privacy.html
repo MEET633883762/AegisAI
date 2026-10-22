@@ -4,41 +4,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="AegisAI public demo privacy and data handling disclosure." />
+    <meta name="theme-color" content="#101b2d" />
     <title>AegisAI — Privacy and data handling</title>
-    <link rel="stylesheet" href="landing.css" />
   </head>
-  <body>
-    <a class="skip-link" href="#privacy-main">Skip to content</a>
-    <header class="site-header">
-      <a class="brand" href="index.html" aria-label="AegisAI home"><span class="brand-mark" aria-hidden="true">A</span><span>Aegis<span class="brand-accent">AI</span></span></a>
-      <nav class="primary-nav" aria-label="Main navigation"><a href="index.html">Home</a><a href="dashboard.html">Research demo</a></nav>
-    </header>
-    <main id="privacy-main">
-      <section class="section page-width" aria-labelledby="privacy-title">
-        <div class="section-intro">
-          <p class="eyebrow">PUBLIC DEMO · PRIVACY</p>
-          <h1 id="privacy-title">Privacy and data handling</h1>
-          <p>This disclosure describes the current static AegisAI research demo.</p>
-        </div>
-        <div class="privacy-content">
-          <h2>No accounts or submitted data</h2>
-          <p>The site has no accounts, database, analytics, contact form, or public simulation service. It serves static pages and reviewed synthetic JSON samples. The site code does not intentionally set analytics cookies or store visitor profiles.</p>
-
-          <h2>Local assessment files</h2>
-          <p>If you select an assessment JSON file, your browser reads it locally to display the report. The file is not uploaded by this site. The public comparison button fetches only the two fixed, published sample files from this site. The local website checker is a separate tool and is not run by this public site.</p>
-
-          <h2>Hosting request data</h2>
-          <p>The static hosting provider processes network requests to deliver the pages and may process connection or request metadata, such as IP address, requested URL, and browser information, for delivery, reliability, and security. The provider controls its own logging and retention under its current terms and privacy documentation. AegisAI does not control that provider-side processing.</p>
-
-          <h2>Sample data and limitations</h2>
-          <p>Published episode and assessment files are reviewed synthetic examples. The assessment comparison checks HTTP status and four configured response headers only. Neither the sample results nor the comparison establish that a real website is secure.</p>
-
-          <h2>Questions</h2>
-          <p>This static site currently provides no contact form or dedicated privacy inbox. The project owner must designate a public contact channel before launch. No visitor account or support submission is available through this site.</p>
-          <p><a href="dashboard.html">Return to the research demo</a></p>
-        </div>
-      </section>
-    </main>
-    <footer class="site-footer"><div class="page-width footer-inner"><a class="brand footer-brand" href="index.html"><span class="brand-mark" aria-hidden="true">A</span><span>Aegis<span class="brand-accent">AI</span></span></a><p>Static research prototype · Synthetic examples · Read-only</p><a href="dashboard.html">Research demo</a></div></footer>
+  <body data-page="privacy">
+    <div id="app-root"></div>
+    <script type="module" src="./src/main.tsx"></script>
   </body>
 </html>

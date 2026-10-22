@@ -4,106 +4,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Read-only AegisAI synthetic research dashboard and local website header assessment comparison." />
+    <meta name="theme-color" content="#101b2d" />
     <title>AegisAI — Research demo dashboard</title>
-    <link rel="stylesheet" href="styles.css" />
-    <link rel="stylesheet" href="website_assessment.css" />
   </head>
-  <body>
-    <a class="skip-link" href="#dashboard-main">Skip to dashboard</a>
-    <nav class="dashboard-nav" aria-label="Main navigation">
-      <a class="dashboard-brand" href="index.html"><span aria-hidden="true">A</span> AegisAI</a>
-      <div><a href="index.html">Home</a><a class="dashboard-nav-current" href="dashboard.html" aria-current="page">Research demo</a><a href="privacy.html">Privacy</a></div>
-    </nav>
-    <main id="dashboard-main">
-      <header class="top">
-        <div>
-          <div class="eyebrow">AEGISAI · RESEARCH PROTOTYPE</div>
-          <h1>Purple-Team Security Dashboard</h1>
-          <p class="muted">Inspect a sample Red/Blue timeline, structured decision traces, and local website header reports.</p>
-        </div>
-        <div class="status"><span class="dot"></span>SAMPLE EPISODE</div>
-      </header>
-      <aside class="sample-notice" aria-label="Sample data notice">
-        <strong>Synthetic, precomputed sample.</strong> This page replays reviewed output from one deterministic scripted simulator episode. It is not representative evidence of real-world security effectiveness. Public pages do not execute actions.
-      </aside>
-      <section class="meta" aria-label="Sample provenance">
-        <span>Public demo <b>Precomputed artifact</b></span>
-        <span>Policy boundary <b>Controller-gated simulator</b></span>
-        <span>Access <b>Read-only</b></span>
-      </section>
-      <section class="card research-demo" id="research-demo" aria-labelledby="research-demo-title">
-        <div class="section-head research-demo-head">
-          <div>
-            <h2 id="research-demo-title">Interactive Red / Blue Episode</h2>
-            <p class="muted">Select a recorded action to inspect its role-scoped evidence, structured action, validation, authorization, and result.</p>
-          </div>
-          <span class="badge">Synthetic · Precomputed · Read-only</span>
-        </div>
-        <p id="research-demo-status" class="muted" role="status" aria-live="polite">Loading the precomputed sample…</p>
-        <section class="research-provenance" aria-label="Sample provenance">
-          <h3>Sample provenance and outcome</h3>
-          <div id="research-demo-provenance"></div>
-        </section>
-        <section class="research-metrics-section" aria-labelledby="research-metrics-title">
-          <div class="section-head"><h3 id="research-metrics-title">Episode metrics</h3><span class="badge">Single synthetic episode</span></div>
-          <div id="research-demo-metrics" class="research-metrics"></div>
-        </section>
-        <div class="research-demo-grid">
-          <section class="research-timeline-panel" aria-labelledby="research-timeline-title">
-            <div class="section-head"><h3 id="research-timeline-title">Recorded action timeline</h3><span class="badge">Select a step</span></div>
-            <ol id="research-demo-timeline" class="research-timeline" aria-label="Precomputed Red and Blue actions"></ol>
-          </section>
-          <section class="research-detail-panel" aria-labelledby="research-detail-title">
-            <h3 id="research-detail-title">Selected action details</h3>
-            <div id="research-demo-details" aria-live="polite"></div>
-          </section>
-        </div>
-        <section class="research-limitations" aria-labelledby="research-limitations-title">
-          <h3 id="research-limitations-title">Sample limitations</h3>
-          <ul id="research-demo-limitations"></ul>
-        </section>
-        <div class="research-download-row">
-          <p class="muted">Download the same reviewed JSON artifact shown here, including schema version, provenance, and limitations.</p>
-          <a class="download-sample" href="data/public_demo_episode.json" download="aegisai-synthetic-episode-v1.json">Download sample report <span aria-hidden="true">↓</span></a>
-        </div>
-      </section>
-      <section class="card" id="assessment">
-        <div class="section-head">
-          <h2>Website Header Assessment</h2>
-          <span class="badge">Local demo · Read-only</span>
-        </div>
-        <p class="muted">Load the sanitized published samples or select local demo reports to compare remediation. This checks HTTP status and four response headers only; it is not a general website security assessment.</p>
-        <button class="assessment-sample-button" id="load-assessment-samples" type="button">Load published baseline and hardened samples</button>
-        <p class="assessment-downloads">Download: <a href="data/public_demo_assessment_baseline.json" download="aegisai-assessment-baseline-sample.json">baseline JSON</a> · <a href="data/public_demo_assessment_hardened.json" download="aegisai-assessment-hardened-sample.json">hardened JSON</a></p>
-        <label for="assessment-file">Assessment JSON files</label>
-        <input id="assessment-file" type="file" accept="application/json,.json" multiple />
-        <p id="assessment-status" class="muted" role="status" aria-live="polite">No website assessment loaded.</p>
-        <div id="assessment-results"></div>
-      </section>
-      <details class="legacy-dashboard card">
-        <summary>Earlier illustrative dashboard example (not verified research results)</summary>
-        <p class="muted">The example below is retained for compatibility with the original static dashboard. Its values are illustrative and are not the reviewed episode artifact above.</p>
-        <section aria-labelledby="metrics-title">
-          <div class="section-head dashboard-section-title"><h2 id="metrics-title">Illustrative metrics</h2><span class="badge">Unverified example values</span></div>
-          <section class="metrics" id="metrics" aria-label="Illustrative metrics"></section>
-        </section>
-        <section class="card" aria-labelledby="timeline-title">
-          <div class="section-head"><h2 id="timeline-title">Illustrative Red / Blue Timeline</h2><span class="badge">Not artifact-backed</span></div>
-          <div id="timeline"></div>
-        </section>
-        <section class="card" aria-labelledby="traces-title">
-          <div class="section-head"><h2 id="traces-title">Illustrative Decision Traces</h2><span class="badge">Structured summary · No hidden CoT</span></div>
-          <div id="traces"></div>
-        </section>
-        <div class="two-col">
-          <section class="card" aria-labelledby="knowledge-title"><h2 id="knowledge-title">Illustrative Adaptive Knowledge</h2><div id="patches"></div></section>
-          <section class="card" aria-labelledby="threat-title"><h2 id="threat-title">Illustrative Threat Intelligence</h2><div id="threats"></div></section>
-        </div>
-      </details>
-      <footer class="footer">Observational sample only. Actions are never executed from this frontend. Synthetic results do not establish security or real-world effectiveness. <a href="privacy.html">Privacy</a></footer>
-    </main>
-    <script src="app.js"></script>
-    <script src="website_assessment.js"></script>
-    <script src="research_demo.js"></script>
+  <body data-page="dashboard">
+    <div id="app-root"></div>
+    <script type="module" src="./src/main.tsx"></script>
   </body>
 </html>

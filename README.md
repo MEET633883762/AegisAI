@@ -31,3 +31,9 @@ Threat-intelligence/RAG foundation added under `threat_intelligence/`. It is det
 ## Local website security demo
 
 Start the loopback-only demo site with `python demo_site/server.py`, then check it in another terminal with `python scripts/check_demo_site.py`. The checker preserves profile-specific JSON reports under `results/`; load one or both in the read-only frontend dashboard. See `demo_site/README.md` for the baseline/hardened workflow and limitations.
+
+## Static frontend
+
+The public landing page and read-only research dashboard are a React + TypeScript application built with Vite. From PowerShell, run `cd C:\AegisAI\frontend`, `npm ci`, then `npm run dev` and open `http://127.0.0.1:5173/`. The dashboard is at `/dashboard.html`. The static release build is produced with `npm run build` from `frontend/`, then `python scripts/build_static_site.py --output dist/aegisai-release` from the repository root. Publish only the strict allowlisted output directory. See [frontend/README.md](frontend/README.md) and [docs/PHASE4_RELEASE_HARDENING_AND_DEPLOYMENT.md](docs/PHASE4_RELEASE_HARDENING_AND_DEPLOYMENT.md) for details.
+
+The frontend remains read-only: it displays reviewed synthetic data, reads selected local assessment files in the browser, and compares fixed published samples. It does not run the simulator, scan visitor-provided URLs, or upload files.

@@ -9,16 +9,16 @@ const test = require('node:test');
 
 const root = path.resolve(__dirname, '..', '..');
 const frontend = path.join(root, 'frontend');
-const read = name => fs.readFileSync(path.join(frontend, name), 'utf8');
+const build = path.join(frontend, '.vite-build');
+const read = (directory, name) => fs.readFileSync(path.join(directory, name), 'utf8');
 const expectedAssets = [
-  '_headers', 'index.html', 'dashboard.html', 'privacy.html', 'landing.css', 'styles.css',
-  'website_assessment.css', 'website_assessment.js', 'research_demo.js', 'app.js',
-  'data/public_demo_episode.json', 'data/public_demo_assessment_baseline.json',
-  'data/public_demo_assessment_hardened.json'
+  '_headers', 'index.html', 'dashboard.html', 'privacy.html', 'assets/app.css', 'assets/main.js',
+  'assets/public_demo_episode.json', 'assets/public_demo_assessment_baseline.json',
+  'assets/public_demo_assessment_hardened.json'
 ].sort();
 
-test('Cloudflare header policy allows only local required resources and blocks embedding', () => {
-  const headers = read('_headers');
+test('CSP permits only built same-origin script, styles and report loading', () => {
+  const headers = read(frontend, '_headers');
   const csp = headers.match(/Content-Security-Policy: (.+)/)?.[1];
   assert.ok(csp);
   for (const directive of [
@@ -30,43 +30,38 @@ test('Cloudflare header policy allows only local required resources and blocks e
   assert.match(headers, /Permissions-Policy:/);
   assert.match(headers, /Strict-Transport-Security: max-age=31536000/);
 
-  const pages = ['index.html', 'dashboard.html', 'privacy.html'].map(read).join('\n');
+  const pages = ['index.html', 'dashboard.html', 'privacy.html'].map((name) => read(build, name)).join('\n');
   assert.doesNotMatch(pages, /<script(?![^>]*\bsrc=)/i);
   assert.doesNotMatch(pages, /<style\b/i);
-  const scripts = [...pages.matchAll(/<script[^>]+src="([^"]+)"/g)].map(match => match[1]);
-  const styles = [...pages.matchAll(/<link[^>]+href="([^"]+)"[^>]*>/g)]
-    .map(match => match[1]).filter(href => href.endsWith('.css'));
-  for (const asset of [...scripts, ...styles]) {
-    assert.ok(!asset.startsWith('http:'), `insecure external asset ${asset}`);
-    assert.ok(fs.existsSync(path.join(frontend, asset)), `missing same-origin asset ${asset}`);
+  for (const asset of ['assets/main.js', 'assets/app.css', ...expectedAssets.filter((name) => name.endsWith('.json'))]) {
+    assert.ok(fs.existsSync(path.join(build, asset)), `missing built same-origin asset ${asset}`);
   }
-  assert.match(read('research_demo.js'), /fetch\('data\/public_demo_episode\.json'/);
-  assert.match(read('dashboard.html'), /data\/public_demo_episode\.json" download=/);
-  assert.match(read('dashboard.html'), /data\/public_demo_assessment_baseline\.json" download=/);
-  assert.match(read('dashboard.html'), /data\/public_demo_assessment_hardened\.json" download=/);
-  assert.match(read('dashboard.html'), /href="privacy\.html"/);
+  assert.match(pages, /assets\/main\.js/);
+  assert.match(pages, /assets\/app\.css/);
+  const outputText = expectedAssets.map((name) => read(name === '_headers' ? frontend : build, name)).join('\n');
+  assert.doesNotMatch(outputText, /C:\\AegisAI|demo_site_assessment_(baseline|hardened)\.json/i);
 });
 
-test('public assessment copies carry labels and contain no local artifact path', () => {
+test('public assessment copies remain sanitized and retain their narrow scope', () => {
   for (const profile of ['baseline', 'hardened']) {
-    const data = JSON.parse(read(`data/public_demo_assessment_${profile}.json`));
+    const data = JSON.parse(read(frontend, `data/public_demo_assessment_${profile}.json`));
     assert.equal(data.profile, profile);
     assert.equal(data.publication.synthetic, true);
     assert.equal(data.publication.precomputed, true);
     assert.equal(data.publication.public_execution, false);
     assert.equal(Object.hasOwn(data, 'artifact'), false);
     assert.equal(data.checked_headers.length, 4);
-    assert.doesNotMatch(JSON.stringify(data), /C:\\AegisAI|Users\\|\/home\//i);
+    assert.doesNotMatch(JSON.stringify(data), /[A-Z]:\\\\|Users\\|\/home\//i);
   }
 });
 
-test('static package contains exactly the allowlist and excludes repository evidence and source', () => {
+test('static publisher emits exactly the allowlist and excludes repository evidence and source', () => {
   const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'aegisai-static-release-'));
   const output = path.join(temporaryRoot, 'site');
   try {
     execFileSync('python', [path.join(root, 'scripts', 'build_static_site.py'), '--output', output], { cwd: root });
     const actualAssets = [];
-    const visit = directory => {
+    const visit = (directory) => {
       for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
         const full = path.join(directory, entry.name);
         if (entry.isDirectory()) visit(full);
@@ -75,9 +70,11 @@ test('static package contains exactly the allowlist and excludes repository evid
     };
     visit(output);
     assert.deepEqual(actualAssets.sort(), expectedAssets);
-    for (const excluded of ['server.py', 'results', '.git', 'requirements.txt', 'README.md', 'tests']) {
+    for (const excluded of ['server.py', 'results', '.git', 'requirements.txt', 'README.md', 'tests', 'original-reports']) {
       assert.equal(fs.existsSync(path.join(output, excluded)), false);
     }
+    const contents = actualAssets.map((asset) => fs.readFileSync(path.join(output, asset), 'utf8')).join('\n');
+    assert.doesNotMatch(contents, /C:\\AegisAI|demo_site_assessment_(baseline|hardened)\.json/i);
   } finally {
     fs.rmSync(temporaryRoot, { recursive: true, force: true });
   }

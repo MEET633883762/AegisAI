@@ -31,6 +31,8 @@ htmlcov/
 
 # Generated static deployment package
 dist/
+node_modules/
+frontend/.vite-build/
 
 # Logs
 *.log

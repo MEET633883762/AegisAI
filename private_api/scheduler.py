@@ -79,7 +79,19 @@ class WorkerTimeout(TimeoutError):
 
 
 class WorkerFailure(RuntimeError):
-    pass
+    _SAFE_ERROR_CODES = {
+        2: "source_invalid",
+        3: "store_error",
+        4: "processing_error",
+        5: "event_conflict",
+        6: "model_validation_error",
+        7: "state_error",
+    }
+    _ALLOWED_ERROR_CODES = frozenset((*_SAFE_ERROR_CODES.values(), "worker_error"))
+
+    def __init__(self, error_code: str = "worker_error") -> None:
+        self.error_code = error_code if error_code in self._ALLOWED_ERROR_CODES else "worker_error"
+        super().__init__(self.error_code)
 
 
 class WorkerStopped(RuntimeError):
@@ -114,7 +126,8 @@ class SubprocessWorkerRunner:
                 self._terminate(process)
                 raise WorkerTimeout("telemetry worker exceeded its time budget") from None
             if exit_code != 0:
-                raise WorkerFailure("telemetry worker returned a failure status")
+                error_code = WorkerFailure._SAFE_ERROR_CODES.get(exit_code, "worker_error")
+                raise WorkerFailure(error_code)
         finally:
             with self._active_lock:
                 if self._active is process:
@@ -237,6 +250,8 @@ class LocalTelemetryScheduler:
                         return False
                     except WorkerTimeout:
                         self.store.fail_telemetry_run(run_id, "timeout")
+                    except WorkerFailure as exc:
+                        self.store.fail_telemetry_run(run_id, "shutdown" if self._stop.is_set() else exc.error_code)
                     except Exception:
                         self.store.fail_telemetry_run(run_id, "shutdown" if self._stop.is_set() else "worker_error")
                     if attempt <= self.max_retries and not self._stop.wait(self.retry_backoff_seconds):

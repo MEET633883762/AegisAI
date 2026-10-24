@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 from typing import Callable, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 from platform_prototype import pipeline as prototype_pipeline
 from platform_prototype.evaluation_dataset import (
@@ -20,9 +21,13 @@ from platform_prototype.replay import RULE_EVENT_TYPES, SUPPORTED_RULE_IDS
 from private_api import telemetry
 from private_api.telemetry import TelemetryFinding, detect_findings
 
-EVALUATION_SCHEMA_VERSION = "1.0"
+EVALUATION_SCHEMA_VERSION = "1.1"
+EVALUATION_RULE_CATALOG_VERSION = "1.0"
+SCENARIO_RULE_MAPPING_VERSION = "1.0"
+ATTACK_MAPPING_CATALOG_VERSION = "1.0"
 MAX_REPORT_BYTES = 1_048_576
-COUNTING_UNIT = "one scenario-by-supported-rule pair; five pairs per accepted scenario"
+COUNTING_UNIT = "one accepted scenario-by-supported-rule pair"
+SMALL_SAMPLE_SCENARIO_LIMIT = 30
 
 
 class EvaluationModel(BaseModel):
@@ -46,13 +51,46 @@ class Metrics(EvaluationModel):
     precision: MetricValue
     recall: MetricValue
     f1: MetricValue
+    specificity: MetricValue
     false_positive_rate: MetricValue
     false_negative_rate: MetricValue
+
+
+class RuleEventMapping(EvaluationModel):
+    rule_id: str
+    event_types: list[str]
+
+
+class ScenarioRuleMapping(EvaluationModel):
+    scenario_id: str
+    expected_rule_ids: list[str]
+    evaluated_rule_ids: list[str]
+    observed_rule_ids: list[str]
+    technique_ids: list[str]
+    status: Literal["pass", "fail", "rejected"]
+
+
+class TechniqueCoverage(EvaluationModel):
+    technique_id: str
+    name: str
+    scenario_ids: list[str]
+    rule_ids: list[str]
+    status: Literal["covered"]
+    scope_note: str
+
+
+class UntestedTechnique(EvaluationModel):
+    technique_id: str
+    name: str
+    status: Literal["not_tested", "candidate_not_mapped"]
+    rationale: str
 
 
 class ScenarioDiagnostic(EvaluationModel):
     scenario_id: str
     category: str
+    technique_ids: list[str] = Field(default_factory=list)
+    evaluated_rule_ids: list[str] = Field(default_factory=list)
     input_validity: Literal["accepted", "rejected"]
     expected_rejection_category: str | None
     observed_rejection_category: str | None
@@ -77,12 +115,16 @@ class PerRuleDiagnostic(EvaluationModel):
 
 
 class EvaluationReport(EvaluationModel):
-    schema_version: Literal["1.0"]
+    schema_version: Literal["1.0", "1.1"]
     report_type: Literal["aegisai_synthetic_detection_evaluation_report"]
     dataset_id: str
     dataset_version: str
     dataset_sha256: str
     detector_config_sha256: str
+    rule_catalog_version: str = "unavailable"
+    detector_rule_version: str = "unavailable"
+    scenario_rule_mapping_version: str = "unavailable"
+    attack_mapping_catalog_version: str = "unavailable"
     data_classification: Literal["synthetic"]
     label: Literal["SYNTHETIC EVALUATION - NOT REAL SECURITY PERFORMANCE"]
     counting_unit: str
@@ -94,7 +136,37 @@ class EvaluationReport(EvaluationModel):
     evidence_summary: dict[str, int]
     scenarios: list[ScenarioDiagnostic]
     rejected_inputs: list[ScenarioDiagnostic]
+    rule_event_mapping: list[RuleEventMapping] = Field(default_factory=list)
+    scenario_rule_mapping: list[ScenarioRuleMapping] = Field(default_factory=list)
+    technique_coverage: list[TechniqueCoverage] = Field(default_factory=list)
+    untested_techniques: list[UntestedTechnique] = Field(default_factory=list)
+    coverage_status: Literal["complete", "partial", "legacy_unavailable"] = "legacy_unavailable"
+    warnings: list[str] = Field(default_factory=list)
     limitations: list[str] = Field(min_length=1)
+
+    @model_validator(mode="before")
+    @classmethod
+    def backfill_specificity_for_legacy_reports(cls, value):
+        """Derive specificity when reading saved 1.0 reports created before the field existed."""
+        if not isinstance(value, dict):
+            return value
+        result = copy.deepcopy(value)
+
+        def add(metrics_value, counts_value):
+            if isinstance(metrics_value, dict) and "specificity" not in metrics_value and isinstance(counts_value, dict):
+                tp = counts_value.get("true_positives", 0)
+                fp = counts_value.get("false_positives", 0)
+                tn = counts_value.get("true_negatives", 0)
+                if all(isinstance(item, int) and not isinstance(item, bool) and item >= 0 for item in (tp, fp, tn)):
+                    denominator = tn + fp
+                    metrics_value["specificity"] = _metric(tn, denominator).model_dump()
+
+        add(result.get("metrics"), result.get("counts"))
+        if isinstance(result.get("per_rule"), list):
+            for row in result["per_rule"]:
+                if isinstance(row, dict):
+                    add(row.get("metrics"), row.get("counts"))
+        return result
 
 
 class EvaluationExecutionError(ValueError):
@@ -115,6 +187,7 @@ def _metrics(counts: ConfusionCounts) -> Metrics:
         precision=_metric(tp, tp + fp),
         recall=_metric(tp, tp + fn),
         f1=_metric(2 * tp, f1_denominator),
+        specificity=_metric(tn, tn + fp),
         false_positive_rate=_metric(fp, fp + tn),
         false_negative_rate=_metric(fn, fn + tp),
     )
@@ -172,6 +245,7 @@ def evaluate_dataset(
     matrix = {rule: [0, 0, 0, 0] for rule in rules}  # TP, FP, TN, FN
     diagnostics: list[ScenarioDiagnostic] = []
     rejected: list[ScenarioDiagnostic] = []
+    scenario_mappings: list[ScenarioRuleMapping] = []
     evidence_totals = {"expected_references": 0, "present_references": 0,
                        "missing_references": 0, "unexpected_references": 0}
 
@@ -186,6 +260,7 @@ def evaluate_dataset(
                       else ["REJECTION_CATEGORY_MISMATCH"])
             rejected.append(ScenarioDiagnostic(
                 scenario_id=scenario.scenario_id, category=scenario.category,
+                technique_ids=[], evaluated_rule_ids=[],
                 input_validity="rejected", expected_rejection_category=ground_truth.expected_rejection_category,
                 observed_rejection_category=observed_rejection,
                 expected_finding_types=[], actual_finding_types=[], missing_expected_types=[], unexpected_types=[],
@@ -193,6 +268,10 @@ def evaluate_dataset(
                 duplicate_event_count=0, duplicate_finding_count=0,
                 status="pass" if observed_rejection == ground_truth.expected_rejection_category else "fail",
                 reason_codes=reason,
+            ))
+            scenario_mappings.append(ScenarioRuleMapping(
+                scenario_id=scenario.scenario_id, expected_rule_ids=[], evaluated_rule_ids=[],
+                observed_rule_ids=[], technique_ids=[], status="rejected",
             ))
             continue
 
@@ -242,6 +321,7 @@ def evaluate_dataset(
             reasons.append("EVIDENCE_NOT_IN_INPUT")
         diagnostics.append(ScenarioDiagnostic(
             scenario_id=scenario.scenario_id, category=scenario.category, input_validity="accepted",
+            technique_ids=[], evaluated_rule_ids=rules,
             expected_rejection_category=None, observed_rejection_category=None,
             expected_finding_types=sorted(expected), actual_finding_types=sorted(actual),
             missing_expected_types=missing_types, unexpected_types=unexpected_types,
@@ -250,6 +330,11 @@ def evaluate_dataset(
             missing_evidence=missing_evidence, unexpected_evidence=unexpected_evidence,
             duplicate_event_count=duplicate_event_count, duplicate_finding_count=duplicate_finding_count,
             status="pass" if not reasons else "fail", reason_codes=reasons,
+        ))
+        scenario_mappings.append(ScenarioRuleMapping(
+            scenario_id=scenario.scenario_id, expected_rule_ids=sorted(expected),
+            evaluated_rule_ids=rules, observed_rule_ids=sorted(actual), technique_ids=[],
+            status="pass" if not reasons else "fail",
         ))
 
     if len(diagnostics) + len(rejected) != len(dataset.scenarios):
@@ -273,16 +358,39 @@ def evaluate_dataset(
         report_type="aegisai_synthetic_detection_evaluation_report",
         dataset_id=dataset.dataset_id, dataset_version=dataset.dataset_version,
         dataset_sha256=dataset_fingerprint(dataset), detector_config_sha256=detector_config_fingerprint(),
+        rule_catalog_version=EVALUATION_RULE_CATALOG_VERSION,
+        detector_rule_version=telemetry.RULE_VERSION,
+        scenario_rule_mapping_version=SCENARIO_RULE_MAPPING_VERSION,
+        attack_mapping_catalog_version=ATTACK_MAPPING_CATALOG_VERSION,
         data_classification="synthetic",
         label="SYNTHETIC EVALUATION - NOT REAL SECURITY PERFORMANCE",
-        counting_unit=COUNTING_UNIT, counts=aggregate, metrics=_metrics(aggregate), per_rule=per_rule,
+        counting_unit=f"{COUNTING_UNIT}; {len(rules)} evaluated rule pairs per accepted scenario",
+        counts=aggregate, metrics=_metrics(aggregate), per_rule=per_rule,
         valid_scenario_count=len(diagnostics), rejected_scenario_count=len(rejected),
         evidence_summary=evidence_totals, scenarios=diagnostics, rejected_inputs=rejected,
+        rule_event_mapping=[RuleEventMapping(rule_id=rule, event_types=sorted(RULE_EVENT_TYPES[rule]))
+                            for rule in rules],
+        scenario_rule_mapping=scenario_mappings,
+        technique_coverage=[],
+        untested_techniques=[UntestedTechnique(
+            technique_id="T1110", name="Brute Force", status="candidate_not_mapped",
+            rationale=("The synthetic authentication cases contain auth_failure events only. They do not establish "
+                       "systematic password guessing, credential use, or hash cracking, so this dataset does not "
+                       "claim coverage of ATT&CK T1110."),
+        )],
+        coverage_status="partial",
+        warnings=(
+            ([f"Small synthetic sample: {len(diagnostics)} accepted scenarios; results are descriptive only."]
+             if len(diagnostics) < SMALL_SAMPLE_SCENARIO_LIMIT else [])
+            + ["All inputs are synthetic; these results are not real-world detection performance.",
+               "No ATT&CK technique is directly mapped; T1110 remains an explicitly untested candidate."]
+        ),
         limitations=[
             "All inputs are authored synthetic examples; results do not establish real-world detection accuracy.",
             "Scenario-by-rule pairs are the counting unit; wrong rule types create a false positive and a false negative.",
             "Rejected inputs are validated separately and are excluded from all confusion-matrix denominators.",
             "The small hand-authored dataset is not a representative statistical sample and must not guide automatic rule tuning.",
+            "No scenario claims ATT&CK technique coverage; synthetic auth failures alone are not proof of brute-force activity.",
         ],
     )
 

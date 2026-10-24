@@ -32,9 +32,15 @@ def test_hand_calculated_confusion_metrics_and_denominators():
     assert metrics.precision.value == 0.8
     assert metrics.precision.denominator == 10
     assert metrics.recall.value == 8 / 12
+    assert metrics.recall.denominator == 12
     assert metrics.f1.value == 16 / 22
+    assert metrics.f1.denominator == 22
+    assert metrics.specificity.value == 10 / 12
+    assert metrics.specificity.denominator == 12
     assert metrics.false_positive_rate.value == 2 / 12
+    assert metrics.false_positive_rate.denominator == 12
     assert metrics.false_negative_rate.value == 4 / 12
+    assert metrics.false_negative_rate.denominator == 12
 
 
 def test_zero_denominators_are_explicitly_undefined():
@@ -43,8 +49,25 @@ def test_zero_denominators_are_explicitly_undefined():
     ))
     assert metrics.precision.value is metrics.recall.value is metrics.f1.value is None
     assert metrics.false_negative_rate.value is None
+    assert metrics.specificity.value == 1
+    assert metrics.specificity.denominator == 3
     assert metrics.false_positive_rate.value == 0
     assert metrics.precision.status == "undefined_zero_denominator"
+
+
+def test_all_metrics_are_explicit_when_each_denominator_is_zero():
+    metrics = _metrics(ConfusionCounts(
+        true_positives=0, false_positives=0, true_negatives=0, false_negatives=0,
+    ))
+    assert all(getattr(metrics, name).value is None for name in (
+        "precision", "recall", "f1", "specificity", "false_positive_rate", "false_negative_rate",
+    ))
+    assert all(getattr(metrics, name).denominator == 0 for name in (
+        "precision", "recall", "f1", "specificity", "false_positive_rate", "false_negative_rate",
+    ))
+    assert all(getattr(metrics, name).status == "undefined_zero_denominator" for name in (
+        "precision", "recall", "f1", "specificity", "false_positive_rate", "false_negative_rate",
+    ))
 
 
 def test_phase6a_dataset_evaluates_with_type_level_multi_rule_counts():
@@ -64,6 +87,15 @@ def test_phase6a_dataset_evaluates_with_type_level_multi_rule_counts():
     assert report.metrics.false_negative_rate.denominator == 9
     assert sum(item.counts.true_positives + item.counts.false_positives +
                item.counts.true_negatives + item.counts.false_negatives for item in report.per_rule) == 75
+    assert report.metrics.specificity.value == 1.0
+    assert report.metrics.specificity.denominator == 66
+    assert all(item.evaluated_rule_ids == sorted({row.rule_id for row in report.per_rule})
+               for item in report.scenarios)
+    assert all(item.technique_ids == [] for item in report.scenario_rule_mapping)
+    assert report.technique_coverage == []
+    assert [(item.technique_id, item.status) for item in report.untested_techniques] == [("T1110", "candidate_not_mapped")]
+    assert report.coverage_status == "partial"
+    assert report.warnings
 
 
 def test_wrong_rule_type_counts_as_false_positive_and_false_negative():
@@ -217,4 +249,17 @@ def test_cli_writes_to_fixed_location_refuses_overwrite_and_supports_stdout(tmp_
 def test_cli_rejects_arbitrary_output_path_argument():
     with pytest.raises(SystemExit):
         cli.main(["--report", "somewhere.json"])
+
+
+def test_cli_history_is_opt_in_and_uses_temporary_store(tmp_path, monkeypatch, capsys):
+    from platform_prototype.evaluation_history import read_evaluation_history
+
+    history_path = tmp_path / "isolated-history.sqlite3"
+    monkeypatch.setattr(cli, "DEFAULT_HISTORY_PATH", history_path)
+    assert cli.main(["--stdout", "--record-history"]) == 0
+    output = json.loads(capsys.readouterr().out)
+    assert output["schema_version"] == "1.1"
+    latest, runs = read_evaluation_history(history_path)
+    assert latest is not None and latest.dataset_sha256 == output["dataset_sha256"]
+    assert len(runs) == 1 and runs[0].total_evaluated_pairs == 75
 

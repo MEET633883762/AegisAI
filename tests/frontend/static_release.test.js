@@ -4,7 +4,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { execFileSync } = require('node:child_process');
+const { execFileSync, spawn } = require('node:child_process');
+const net = require('node:net');
 const test = require('node:test');
 
 const root = path.resolve(__dirname, '..', '..');
@@ -16,6 +17,71 @@ const expectedAssets = [
   'assets/public_demo_episode.json', 'assets/public_demo_assessment_baseline.json',
   'assets/public_demo_assessment_hardened.json'
 ].sort();
+
+async function unusedPort() {
+  const socket = net.createServer();
+  await new Promise((resolve, reject) => {
+    socket.once('error', reject);
+    socket.listen(0, '127.0.0.1', resolve);
+  });
+  const port = socket.address().port;
+  await new Promise((resolve, reject) => socket.close((error) => error ? reject(error) : resolve()));
+  return port;
+}
+
+test('Vite serves the landing page and local dashboard as separate working entries', async () => {
+  const packageJson = JSON.parse(read(frontend, 'package.json'));
+  assert.match(packageJson.scripts['dev:dashboard'], /--open \/local-dashboard\.html/);
+
+  const port = await unusedPort();
+  const origin = `http://127.0.0.1:${port}`;
+  const vite = spawn(process.execPath, [
+    path.join(frontend, 'node_modules', 'vite', 'bin', 'vite.js'),
+    '--host', '127.0.0.1', '--port', String(port), '--strictPort'
+  ], { cwd: frontend, stdio: ['ignore', 'pipe', 'pipe'] });
+  let output = '';
+  vite.stdout.setEncoding('utf8').on('data', (chunk) => { output += chunk; });
+  vite.stderr.setEncoding('utf8').on('data', (chunk) => { output += chunk; });
+
+  try {
+    let ready = false;
+    for (let attempt = 0; attempt < 100; attempt += 1) {
+      if (vite.exitCode !== null) break;
+      try {
+        const response = await fetch(`${origin}/`);
+        if (response.ok) { ready = true; break; }
+      } catch { /* Vite is still starting. */ }
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    assert.ok(ready, `Vite did not become ready. Output:\n${output}`);
+
+    const landing = await fetch(`${origin}/`);
+    const landingHtml = await landing.text();
+    assert.equal(landing.status, 200);
+    assert.match(landingHtml, /id="app-root"/);
+    assert.match(landingHtml, /src="\.\/src\/main\.tsx"/);
+    assert.doesNotMatch(landingHtml, /local-dashboard-root/);
+
+    const dashboard = await fetch(`${origin}/local-dashboard.html`);
+    const dashboardHtml = await dashboard.text();
+    assert.equal(dashboard.status, 200);
+    assert.match(dashboardHtml, /id="local-dashboard-root"/);
+    assert.match(dashboardHtml, /src="\.\/src\/localDashboard\.tsx"/);
+    assert.doesNotMatch(dashboardHtml, /id="app-root"/);
+
+    const refreshedDashboard = await fetch(`${origin}/local-dashboard.html`);
+    assert.equal(refreshedDashboard.status, 200, 'direct URL must continue to work on refresh');
+    assert.match(await refreshedDashboard.text(), /local-dashboard-root/);
+
+    for (const asset of ['/src/main.tsx', '/src/localDashboard.tsx', '/src/localDashboard/localDashboard.css?direct']) {
+      const response = await fetch(`${origin}${asset}`);
+      assert.equal(response.status, 200, `Vite asset did not resolve: ${asset}`);
+    }
+    assert.match(output, /local-dashboard\.html/);
+  } finally {
+    vite.kill();
+  }
+});
 
 test('CSP permits only built same-origin script, styles and report loading', () => {
   const headers = read(frontend, '_headers');

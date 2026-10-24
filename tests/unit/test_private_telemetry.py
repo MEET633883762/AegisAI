@@ -117,7 +117,7 @@ def test_additive_sqlite_migration_preserves_phase2_rows_and_sets_schema_version
     store = SQLiteStore(tmp_path / "private.sqlite3")
     _seed_store(store)
     before = store.list_findings(TENANT)
-    # Simulate an existing version-2 database before the additive source-status migration.
+    # Simulate a version-2 database; all additive migrations must preserve its Phase 2 rows.
     with sqlite3.connect(store.path) as connection:
         connection.execute("DROP TABLE telemetry_source_status")
         connection.execute("PRAGMA user_version = 2")
@@ -125,7 +125,7 @@ def test_additive_sqlite_migration_preserves_phase2_rows_and_sets_schema_version
     after = migrated.list_findings(TENANT)
     assert [item.finding_id for item in before] == [item.finding_id for item in after]
     with sqlite3.connect(store.path) as connection:
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 3
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 6
         assert connection.execute(
             "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'telemetry_source_status'"
         ).fetchone()[0] == "telemetry_source_status"
@@ -136,7 +136,7 @@ def test_additive_sqlite_migration_preserves_phase2_rows_and_sets_schema_version
     SQLiteStore(store.path)
     with sqlite3.connect(store.path) as connection:
         indexes = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='index'")}
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 3
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 6
     assert "telemetry_observations_by_finding" in indexes
 
 

@@ -11,6 +11,7 @@ from platform_prototype.pipeline import build_report, read_batch_file
 from private_api.scheduler import (
     LocalTelemetryScheduler,
     SubprocessWorkerRunner,
+    WorkerFailure,
     WorkerTimeout,
 )
 from private_api.store import SQLiteStore
@@ -128,6 +129,62 @@ def test_worker_process_enforces_timeout_and_terminates_child(tmp_path):
     assert store.latest_telemetry_run(TENANT)["status"] == "failed"
     assert store.latest_telemetry_run(TENANT)["error_code"] == "timeout"
     assert runner._active is None
+
+
+def test_worker_failure_exit_codes_are_mapped_to_safe_categories():
+    expected = {
+        2: "source_invalid", 3: "store_error", 4: "processing_error",
+        5: "event_conflict", 6: "model_validation_error", 7: "state_error",
+        9: "worker_error",
+    }
+    for exit_code, category in expected.items():
+        runner = SubprocessWorkerRunner(command_factory=lambda *_, code=exit_code: [
+            sys.executable, "-c", f"raise SystemExit({code})",
+        ])
+        try:
+            runner.run(Path("unused.sqlite3"), Path("unused.json"), TENANT, "run-id", timeout=2)
+        except WorkerFailure as error:
+            assert error.error_code == category
+        else:
+            raise AssertionError(f"worker exit {exit_code} should fail")
+
+
+def test_invalid_fixture_failure_is_reported_without_exposing_details(tmp_path):
+    store = _store(tmp_path)
+    fixture = tmp_path / "invalid-telemetry.json"
+    fixture.write_text('{"not":"a telemetry batch"}', encoding="utf-8")
+    scheduler = LocalTelemetryScheduler(
+        database=store.path, fixture=fixture, tenant_ids=[TENANT], store=store,
+        max_retries=0,
+    )
+    assert scheduler.run_cycle() is False
+    run = store.latest_telemetry_run(TENANT)
+    assert run["status"] == "failed"
+    assert run["error_code"] == "source_invalid"
+    assert "not a telemetry batch" not in str(run)
+
+
+def test_conflicting_stored_event_is_reported_as_event_conflict(tmp_path):
+    store = _store(tmp_path)
+    batch = read_telemetry_file(TELEMETRY_FIXTURE)
+    changed_event = batch.events[0].model_copy(update={"actor_ref": "synthetic-conflict-test"})
+    store.start_telemetry_run(
+        run_id="trun-0000000000000001", tenant_id=TENANT, source_id=batch.source_id,
+        scheduled_at_utc=datetime.now(timezone.utc).isoformat(), attempt=1,
+    )
+    store.complete_telemetry_cycle(
+        run_id="trun-0000000000000001", tenant_id=TENANT, source_id=batch.source_id,
+        batch=batch.model_copy(update={"events": [changed_event]}),
+    )
+
+    scheduler = LocalTelemetryScheduler(
+        database=store.path, fixture=TELEMETRY_FIXTURE, tenant_ids=[TENANT], store=store,
+        max_retries=0,
+    )
+    assert scheduler.run_cycle() is False
+    run = store.latest_telemetry_run(TENANT)
+    assert run["status"] == "failed"
+    assert run["error_code"] == "event_conflict"
 
 
 def test_start_prevents_duplicate_local_schedulers_and_shutdown_releases_lock(tmp_path):

@@ -20,7 +20,7 @@ npm ci
 npm run dev
 ```
 
-Open `http://localhost:5174/` on the development computer; the dashboard and privacy pages are available at `/dashboard.html` and `/privacy.html`. The dev server listens on all network interfaces so a phone on the same Wi-Fi can open the LAN URL printed by Vite. Port 5174 avoids an existing loopback dev server on 5173. This is for a trusted local network only; Windows Firewall may need to allow Node.js on a private network. The separate Python demo server remains loopback-only and runs independently using `python demo_site/server.py` from the repository root.
+Open `http://localhost:5174/` on the development computer; the public research dashboard and privacy pages are available at `/dashboard.html` and `/privacy.html`. To start Vite and open the separate local operations dashboard directly, run `npm.cmd run dev:dashboard`. Its URL is `http://localhost:5174/local-dashboard.html`; the regular `npm run dev` command also prints this URL while serving the public landing page at `/`. The dev server listens on all network interfaces so a phone on the same Wi-Fi can open public pages using a LAN URL printed by Vite. The private API still binds only to loopback, so live API data is available only to a browser on the same computer. Port 5174 avoids an existing loopback dev server on 5173. This is for a trusted local network only; Windows Firewall may need to allow Node.js on a private network. The separate Python demo server remains loopback-only and runs independently using `python demo_site/server.py` from the repository root.
 
 ## Data and safety checks
 

@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import http.client
 import json
+import socket
 import threading
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import patch
@@ -151,8 +153,11 @@ def test_finding_evidence_summaries_reports_and_health_are_validated(api):
     assert report.payload["report"]["report_type"] == "aegisai_local_synthetic_incident_report"
     health = _call(app, "/health", token=token)
     assert health.payload == {"status": "ok", "mode": "local_synthetic"}
+    readiness = _call(app, "/ready", token=token)
+    assert readiness.status == 200
+    assert readiness.payload == {"status": "ready", "mode": "local_synthetic"}
     operations = [event for event in store.audit_snapshot() if event["event_type"] == "protected_operation"]
-    assert len(operations) == 5
+    assert len(operations) == 6
     assert all(event["outcome"] == "success" for event in operations)
 
 
@@ -170,14 +175,72 @@ def test_database_error_returns_safe_response_and_records_failure(api):
     assert store.audit_snapshot()[-1]["outcome"] == "error"
 
 
+def test_readiness_requires_health_scope_and_fails_safely(api):
+    app, store, _, token = api
+    assert _call(app, "/ready").status == 401
+    reports_only = LocalTokenRegistry()
+    reports_token = reports_only.issue_development_token(ALPHA, scopes=frozenset({"reports:read"}))
+    assert _call(ApiApplication(store, reports_only), "/ready", token=reports_token).status == 403
+    with patch.object(store, "ping", side_effect=RuntimeError("private db detail")):
+        failed = _call(app, "/ready", token=token)
+    assert failed.status == 500
+    assert failed.payload == {"error": "internal_error", "message": "The service could not complete the request."}
+    assert "private" not in json.dumps(failed.payload)
+
+
+def test_development_api_refuses_nonlocal_runtime_mode_before_store_access(monkeypatch, capsys):
+    from scripts import run_private_api
+
+    monkeypatch.setenv("AEGISAI_ENV", "production")
+    with patch.object(run_private_api, "SQLiteStore", side_effect=AssertionError("must not touch database")):
+        assert run_private_api.main([]) == 2
+    assert "unsupported_runtime_mode" in capsys.readouterr().err
+
+
+def test_http_handler_closes_idle_partial_request(monkeypatch, api):
+    app, _, _, _ = api
+    monkeypatch.setattr("private_api.server.REQUEST_SOCKET_TIMEOUT_SECONDS", 0.2)
+    monkeypatch.setattr("private_api.server.MAX_CONCURRENT_REQUESTS", 1)
+    server = create_local_server(app, port=0)
+    thread = threading.Thread(target=server.serve_forever, kwargs={"poll_interval": 0.01}, daemon=True)
+    thread.start()
+    client = None
+    excess_client = None
+    try:
+        host, port = server.server_address
+        client = socket.create_connection((host, port), timeout=1)
+        client.sendall(b"GET /health HTTP/1.1\r\n")
+        time.sleep(0.05)
+        excess_client = socket.create_connection((host, port), timeout=1)
+        assert excess_client.recv(1) == b""
+        time.sleep(0.25)
+        assert client.recv(1) == b""
+    finally:
+        if client is not None:
+            client.close()
+        if excess_client is not None:
+            excess_client.close()
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+
 def test_live_source_status_is_authenticated_read_only_and_tenant_scoped(api):
     app, store, alpha_token, beta_token = api
+    path = "/api/telemetry/sources/live-website/status"
+    unavailable = _call(app, path, token=alpha_token)
+    assert unavailable.status == 200
+    assert unavailable.payload["status"] == "unavailable"
+    assert unavailable.payload["tenant_id"] == ALPHA
+    assert unavailable.payload["input_event_count"] is None
+    assert unavailable.payload["accepted_event_count"] is None
+    assert unavailable.payload["last_attempt_at_utc"] is None
+
     store.start_live_source_attempt(ALPHA)
     store.finish_live_source_attempt(
         ALPHA, status="healthy", input_count=4, accepted_count=2, duplicate_count=2,
         position_sha256="a" * 64, position_bytes=512,
     )
-    path = "/api/telemetry/sources/live-website/status"
     assert _call(app, path).status == 401
     tokens = LocalTokenRegistry()
     reports_only = tokens.issue_development_token(ALPHA, scopes=frozenset({"reports:read"}))
@@ -188,7 +251,12 @@ def test_live_source_status_is_authenticated_read_only_and_tenant_scoped(api):
     assert visible.payload["duplicate_event_count"] == 2
     assert visible.payload["position_bytes"] == 512
     assert "path" not in json.dumps(visible.payload).lower()
-    assert _call(app, path, token=beta_token).status == 404
+    other_tenant = _call(app, path, token=beta_token)
+    assert other_tenant.status == 200
+    assert other_tenant.payload["status"] == "unavailable"
+    assert other_tenant.payload["tenant_id"] == BETA
+    assert other_tenant.payload["input_event_count"] is None
+    assert other_tenant.payload["accepted_event_count"] is None
     assert _call(app, path + "?tenant_id=" + ALPHA, token=alpha_token).status == 400
     assert store.audit_snapshot()[-1]["details_code"] == "query_parameters_not_supported"
 
@@ -234,8 +302,20 @@ def test_local_http_server_allows_only_fixed_loopback_frontend_cors_origins(api)
         preflight.read()
         assert preflight.status == 204
         assert preflight.getheader("Access-Control-Allow-Origin") == origin
-        assert preflight.getheader("Access-Control-Allow-Methods") == "GET, OPTIONS"
+        assert preflight.getheader("Access-Control-Allow-Methods") == "GET, POST, OPTIONS"
         assert preflight.getheader("Access-Control-Allow-Credentials") is None
+        connection.close()
+
+        connection = http.client.HTTPConnection(host, port, timeout=2)
+        connection.request("OPTIONS", "/api/investigations/cases", headers={
+            "Origin": origin,
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "authorization, content-type",
+        })
+        write_preflight = connection.getresponse()
+        write_preflight.read()
+        assert write_preflight.status == 204
+        assert write_preflight.getheader("Access-Control-Allow-Origin") == origin
         connection.close()
 
         connection = http.client.HTTPConnection(host, port, timeout=2)

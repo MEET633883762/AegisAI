@@ -1,4 +1,4 @@
-"""Ephemeral local-development bearer authentication and read-scope policy."""
+"""Ephemeral local-development bearer authentication and scoped API policy."""
 
 from __future__ import annotations
 
@@ -12,8 +12,9 @@ from dataclasses import dataclass
 TENANT_PATTERN = re.compile(r"^synthetic-org-[a-z0-9][a-z0-9-]{0,44}$")
 READ_SCOPES = frozenset({
     "health:read", "findings:read", "evidence:read", "incidents:read", "reports:read",
-    "telemetry:read", "processing:read",
+    "telemetry:read", "processing:read", "investigations:read",
 })
+ALLOWED_SCOPES = READ_SCOPES | {"investigations:write"}
 DEFAULT_READ_SCOPES = READ_SCOPES
 MAX_TOKEN_TTL_SECONDS = 24 * 60 * 60
 
@@ -51,13 +52,14 @@ class LocalTokenRegistry:
     ) -> str:
         if not TENANT_PATTERN.fullmatch(tenant_id):
             raise ValueError("tenant ID must use the synthetic-org-* format")
-        if not scopes or not scopes.issubset(READ_SCOPES):
-            raise ValueError("only non-empty read-only API scopes are supported")
+        if not scopes or not scopes.issubset(ALLOWED_SCOPES):
+            raise ValueError("only recognized local API scopes are supported")
         if not 1 <= ttl_seconds <= MAX_TOKEN_TTL_SECONDS:
             raise ValueError("token lifetime must be between 1 second and 24 hours")
         token = secrets.token_urlsafe(32)
         digest = hashlib.sha256(token.encode("ascii")).digest()
-        principal = Principal(tenant_id, "local_read_only", scopes, self._clock() + ttl_seconds)
+        role = "local_investigator" if "investigations:write" in scopes else "local_read_only"
+        principal = Principal(tenant_id, role, scopes, self._clock() + ttl_seconds)
         self._entries.append((digest, principal))
         return token
 

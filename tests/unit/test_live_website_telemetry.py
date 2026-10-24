@@ -166,6 +166,47 @@ def _access_line(suffix: str) -> bytes:
     }, separators=(",", ":")) + "\n").encode()
 
 
+def test_live_ingestion_cli_database_option_and_replay_are_tenant_scoped(
+    tmp_path, monkeypatch, capsys,
+):
+    log_dir = _temporary_log_paths(monkeypatch, tmp_path)
+    log_dir.mkdir(parents=True)
+    (log_dir / "access.jsonl").write_bytes(_access_line("cli-selected-db"))
+    database = tmp_path / "selected.sqlite3"
+
+    assert live_cli.main(["--database", str(database)]) == 0
+    first = TelemetryReport.model_validate_json(capsys.readouterr().out)
+    assert first.accepted_event_count == 1
+    status = SQLiteStore(database).live_source_status(FIXED_TENANT_ID)
+    assert status is not None and status["status"] == "healthy"
+    assert (status["input_event_count"], status["accepted_event_count"],
+            status["duplicate_event_count"]) == (1, 1, 0)
+
+    assert live_cli.main(["--database", str(database)]) == 0
+    repeated = TelemetryReport.model_validate_json(capsys.readouterr().out)
+    assert (repeated.accepted_event_count, repeated.duplicate_event_count) == (0, 1)
+    status = SQLiteStore(database).live_source_status(FIXED_TENANT_ID)
+    assert status is not None and status["status"] == "healthy"
+    assert (status["input_event_count"], status["accepted_event_count"],
+            status["duplicate_event_count"]) == (1, 0, 1)
+
+
+def test_live_ingestion_cli_without_argument_preserves_default_path(tmp_path, monkeypatch, capsys):
+    assert live_cli.DEFAULT_DATABASE == ROOT / ".aegisai-local" / "private_api.sqlite3"
+    log_dir = _temporary_log_paths(monkeypatch, tmp_path)
+    log_dir.mkdir(parents=True)
+    (log_dir / "access.jsonl").write_bytes(_access_line("cli-default-db"))
+    temporary_default = tmp_path / ".aegisai-local" / "private_api.sqlite3"
+    monkeypatch.setattr(live_cli, "DEFAULT_DATABASE", temporary_default)
+
+    assert live_cli.main([]) == 0
+    report = TelemetryReport.model_validate_json(capsys.readouterr().out)
+    assert report.accepted_event_count == 1
+    assert temporary_default.is_file()
+    status = SQLiteStore(temporary_default).live_source_status(FIXED_TENANT_ID)
+    assert status is not None and status["status"] == "healthy"
+
+
 def test_partial_trailing_line_is_ignored_then_ingested_when_completed(tmp_path, monkeypatch):
     log_dir = _temporary_log_paths(monkeypatch, tmp_path)
     log_dir.mkdir(parents=True)

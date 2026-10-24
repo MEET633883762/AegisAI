@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 5174 --strictPort",
+    "dev:dashboard": "vite --host 0.0.0.0 --port 5174 --strictPort --open /local-dashboard.html",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "build": "vite build",
     "test:unit": "vitest run",

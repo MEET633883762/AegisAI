@@ -17,9 +17,13 @@ from private_api.live_website_ingestion import ingest_live_local_website_logs
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.parse_args(argv)
+    parser.add_argument(
+        "--database", type=Path, default=DEFAULT_DATABASE,
+        help="local SQLite file for synthetic website telemetry",
+    )
+    args = parser.parse_args(argv)
     try:
-        report = ingest_live_local_website_logs(SQLiteStore(DEFAULT_DATABASE))
+        report = ingest_live_local_website_logs(SQLiteStore(args.database))
     except Exception as exc:
         print(f"live local website ingestion failed: {exc.__class__.__name__}", file=sys.stderr)
         return 2

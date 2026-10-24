@@ -27,10 +27,14 @@ The project includes a deterministic Red/Blue simulator and Controller, syntheti
 
 ## Test and release baseline
 
-Results below were recorded during Phase 9 verification before the current documentation-only audit. They were not rerun for this report; subsequent work through Phase 10 was documentation-only. Commands are stated exactly as recorded.
+Phase 11 reran the full suites on 2026-10-24. Earlier Phase 9 results are retained as historical context. The fresh Python run used a unique project-local `--basetemp` path. Commands/results are stated as observed.
 
 | Area | Command | Result |
 |---|---|---|
+| Backend full suite (Phase 11) | `python -m pytest -q -p no:cacheprovider --basetemp <fresh unique project-local directory>` | **442 passed** in **31.41s**, exit code 0. |
+| Frontend aggregate (Phase 11) | From `frontend/`: `npm.cmd test` | Exit code 0. Typecheck/build passed; Vitest **3 files / 48 tests**; static-release checks **4/4 tests**. |
+| Python compile (Phase 11) | `python -m compileall -q private_api platform_prototype scripts tests` | Passed, exit code 0. |
+| Diff whitespace (Phase 11) | `git diff --check` | Passed, exit code 0. |
 | Backend full suite | `python -m pytest -q -p no:cacheprovider` | **442 passed** in 27.58 seconds. The preceding run had 441 passed and one failure in `test_invalid_stored_source_data_fails_safely`; the read-side stored-data validation error mapping was corrected, focused tests passed, and the full suite then passed. |
 | Focused API regression | `python -m pytest -q -p no:cacheprovider tests/unit/test_executive_reports_api.py tests/unit/test_private_api.py` | **31 passed** after that correction. |
 | Frontend aggregate | From `frontend/`: `npm.cmd test` | TypeScript typecheck passed; Vite production build passed; Vitest reported 3 files / 48 tests passed; Node static-release checks passed 4/4. |
@@ -39,7 +43,7 @@ Results below were recorded during Phase 9 verification before the current docum
 | Python dependency consistency | `python -m pip check` | **Failed** in the active environment due to installed-package conflicts: missing Streamlit `altair`; `databases` requires older SQLAlchemy; global FastAPI requires Pydantic <2 while this project specifies Pydantic 2; FastF1 and Pyppeteer require older versions of websocket/pyee/urllib3. This is not evidence that the project requirements install cleanly in an isolated environment. |
 | Static publisher | Existing Node static-release tests and publisher source inspection | Passed: exact nine-file allowlist above; private dashboard, API, database, logs and private reports are excluded. No artifact was published. |
 
-No project lint or security-scan command is configured in the inspected package/configuration files. `bandit`, `pip_audit`, and `semgrep` were unavailable in the checked environment. No test suite was rerun during this audit to avoid duplicating recent results after documentation-only changes.
+No project lint or security-scan command is configured in the inspected package/configuration files. `bandit`, `pip_audit`, and `semgrep` were unavailable in the checked environment. The Phase 11 aggregate verifies tests/build/allowlist; it is not a security scan.
 
 ## Data and migration safety
 

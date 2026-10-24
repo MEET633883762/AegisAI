@@ -61,16 +61,17 @@ Sources and evidence notes: [Phase 0 external capability audit](PHASE0_EXTERNAL_
 
 ## 4. Verification results
 
-The following are the latest recorded results from Phase 9 verification, not commands rerun for this documentation-only phase:
+The earlier Phase 9 results are retained below for history. Phase 11 reran the required checks on 2026-10-24; those results are the current verification baseline. The Python run used a fresh unique project-local `--basetemp` path.
 
 | Command | Recorded result |
 |---|---|
+| `python -m pytest -q -p no:cacheprovider --basetemp <fresh unique project-local directory>` | **442 passed** in **31.41s**, exit code 0. |
+| From `frontend/`: `npm.cmd test` | Exit code 0. TypeScript typecheck passed; Vite build passed; Vitest **3 files / 48 tests passed**; static-release Node tests **4/4 passed**. |
+| `python -m compileall -q private_api platform_prototype scripts tests` | Passed, exit code 0. |
+| `git diff --check` | Passed, exit code 0. |
 | `python -m pytest -q -p no:cacheprovider` | **442 passed** (27.58 seconds), after correcting stored-response validation to return a safe server error instead of a client-input error. |
 | Initial full Python run before that correction | **441 passed, 1 failed** (`test_invalid_stored_source_data_fails_safely`); the issue was investigated, fixed in the existing Phase 9 work, and the full suite then passed. |
 | `python -m pytest -q -p no:cacheprovider tests/unit/test_executive_reports_api.py tests/unit/test_private_api.py` | **31 passed** after the stored-data error mapping fix. |
-| `cd frontend; npm.cmd test` | **Passed:** TypeScript typecheck, Vite production build, Vitest (3 files / 48 tests), Node static-release tests (4/4). |
-| `python -m compileall -q private_api platform_prototype scripts tests` | Passed. |
-| `git diff --check` | Passed; Git emitted line-ending conversion warnings for existing files. |
 | Static publisher verification | Passed: exactly these nine output paths are allowed: `_headers`, `index.html`, `dashboard.html`, `privacy.html`, `assets/app.css`, `assets/main.js`, `assets/public_demo_episode.json`, `assets/public_demo_assessment_baseline.json`, `assets/public_demo_assessment_hardened.json`. |
 | `python -m pip check` | **Failed in the current Python environment** due to installed package conflicts: missing Streamlit `altair`; `databases` requires SQLAlchemy <1.5 but 2.0.41 is installed; global FastAPI 0.68.1 requires Pydantic <2 while this project declares Pydantic 2; FastF1 requires older websocket; Pyppeteer requires older pyee/urllib3. This is an environment-level dependency conflict, not a clean dependency audit. |
 
@@ -173,9 +174,9 @@ From PowerShell, with the frontend dependencies installed from the lockfile:
 
 ```powershell
 cd C:\AegisAI\frontend
-npm ci
-npm test
-npm run build
+npm.cmd ci
+npm.cmd test
+npm.cmd run build
 cd C:\AegisAI
 python scripts/build_static_site.py --output dist/aegisai-release
 ```

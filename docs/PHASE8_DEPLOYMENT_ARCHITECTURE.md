@@ -33,9 +33,9 @@ Package a release into a new empty directory:
 
 ```powershell
 cd C:\AegisAI\frontend
-npm ci
-npm test
-npm run build
+npm.cmd ci
+npm.cmd test
+npm.cmd run build
 cd ..
 python scripts/build_static_site.py --output dist/aegisai-release
 ```

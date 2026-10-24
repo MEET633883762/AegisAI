@@ -16,11 +16,11 @@ Use Node.js 22.12 or later and npm. From PowerShell:
 
 ```powershell
 cd C:\AegisAI\frontend
-npm ci
-npm run dev
+npm.cmd ci
+npm.cmd run dev
 ```
 
-Open `http://localhost:5174/` on the development computer; the public research dashboard and privacy pages are available at `/dashboard.html` and `/privacy.html`. To start Vite and open the separate local operations dashboard directly, run `npm.cmd run dev:dashboard`. Its URL is `http://localhost:5174/local-dashboard.html`; the regular `npm run dev` command also prints this URL while serving the public landing page at `/`. The dev server listens on all network interfaces so a phone on the same Wi-Fi can open public pages using a LAN URL printed by Vite. The private API still binds only to loopback, so live API data is available only to a browser on the same computer. Port 5174 avoids an existing loopback dev server on 5173. This is for a trusted local network only; Windows Firewall may need to allow Node.js on a private network. The separate Python demo server remains loopback-only and runs independently using `python demo_site/server.py` from the repository root.
+Open `http://localhost:5174/` on the development computer; the public research dashboard and privacy pages are available at `/dashboard.html` and `/privacy.html`. To start Vite and open the separate local operations dashboard directly, run `npm.cmd run dev:dashboard`. Its URL is `http://localhost:5174/local-dashboard.html`; the regular `npm.cmd run dev` command also prints this URL while serving the public landing page at `/`. The dev server listens on all network interfaces so a phone on the same Wi-Fi can open public pages using a LAN URL printed by Vite. The private API still binds only to loopback, so live API data is available only to a browser on the same computer. Port 5174 avoids an existing loopback dev server on 5173. This is for a trusted local network only; Windows Firewall may need to allow Node.js on a private network. The separate header-check demo server remains loopback-only and runs independently using `python demo_site/server.py` from the repository root; the telemetry/assessment site is a separate server on port 8767 (`python -m demo_site.telemetry_server`).
 
 ## Data and safety checks
 
@@ -33,10 +33,15 @@ The episode sample is generated locally by `python scripts/build_public_demo_art
 From `frontend/`:
 
 ```powershell
-npm test
+npm.cmd test
 ```
 
-This runs strict TypeScript checking, a production Vite build, React component/security regression tests, and the static release test. Run the full simulator/research suite from the repository root with `python -m pytest -q`.
+This runs strict TypeScript checking, a production Vite build, React component/security regression tests, and the static release test. On Windows, run the full Python suite from the repository root with a fresh unique local temp directory to avoid a restricted user Temp ACL:
+
+```powershell
+$pytestBase = Join-Path (Get-Location) ('.pytest-tmp-' + [guid]::NewGuid().ToString('N'))
+python -m pytest -q -p no:cacheprovider --basetemp $pytestBase
+```
 
 Vite writes its production output to `frontend/.vite-build/`. It targets Chrome/Edge 107+, Firefox 104+, and Safari 16+; this is a build target, not a claim that every browser/device combination has been tested. The target is intended to cover current stable desktop and mobile browsers without a legacy-browser polyfill bundle.
 

@@ -1,6 +1,6 @@
 # AegisAI project handoff
 
-Updated 2026-10-22. Inspect `git status` and current files before relying on this note.
+Updated 2026-10-24. Inspect `git status` and current files before relying on this note.
 
 ## Product and architecture
 
@@ -24,13 +24,13 @@ Run locally in PowerShell:
 
 ```powershell
 cd C:\AegisAI\frontend
-npm ci
-npm run dev
+npm.cmd ci
+npm.cmd run dev
 ```
 
-Open `http://localhost:5174/` on the development computer. Vite also prints a LAN URL for phones on the same Wi-Fi; its development server listens on all interfaces and should be used only on a trusted local network. Port 5174 avoids an existing loopback dev server on 5173. The dashboard is at `/dashboard.html`. For verification, run `npm test` from `frontend/` and `python -m pytest -q` from the repository root.
+Open `http://localhost:5174/` on the development computer. Vite also prints a LAN URL for phones on the same Wi-Fi; its development server listens on all interfaces and should be used only on a trusted local network. Port 5174 avoids an existing loopback dev server on 5173. The dashboard is at `/dashboard.html`. On Windows, run frontend scripts with `npm.cmd`; if Windows Temp causes pytest access errors, use a fresh unique project-local temp base: `$pytestBase = Join-Path (Get-Location) ('.pytest-tmp-' + [guid]::NewGuid().ToString('N')); python -m pytest -q -p no:cacheprovider --basetemp $pytestBase`.
 
-For a static output build, run `npm run build` from `frontend/`, then `python scripts/build_static_site.py --output dist/aegisai-release` from the repository root. Choose a new empty output folder; the publisher refuses populated folders. Publish only that generated allowlisted folder. No public deployment has been performed.
+For a static output build, run `npm.cmd run build` from `frontend/`, then `python scripts/build_static_site.py --output dist/aegisai-release` from the repository root. Choose a new empty output folder; the publisher refuses populated folders. Publish only that generated allowlisted folder. No public deployment has been performed.
 
 See [frontend/README.md](frontend/README.md), [docs/FRONTEND_MIGRATION_AUDIT.md](docs/FRONTEND_MIGRATION_AUDIT.md), and [docs/PHASE4_RELEASE_HARDENING_AND_DEPLOYMENT.md](docs/PHASE4_RELEASE_HARDENING_AND_DEPLOYMENT.md).
 

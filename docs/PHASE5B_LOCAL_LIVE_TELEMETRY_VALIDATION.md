@@ -6,7 +6,7 @@ Phase 5B adds a small harmless Python test website that binds only to `127.0.0.1
 
 The test site itself writes JSONL access and error records under the ignored local directory `.aegisai-local/website-telemetry/`. Records include generated event/evidence IDs, UTC timestamps, allowlisted method and route codes, status codes, and a fixed error category. It never records raw request paths, query strings, headers, IP addresses, bodies, credentials, or exception text. The server suppresses console request logging and handles Ctrl+C/programmatic shutdown cleanly.
 
-The new ingestion CLI accepts no arguments. It reads only `access.jsonl`, `access.jsonl.1`, `errors.jsonl`, and `errors.jsonl.1` from that fixed directory, validates records with the Phase 5A schema, maps them into the existing Phase 3 event batch, and stores them under the fixed `synthetic-org-demo` tenant. The Phase 3 detector, evidence links, duplicate checks, SQLite transaction, audit event, and retention policy are reused. No API route or database migration is added. The Phase 5A authored fixture and its CLI remain available and unchanged in behavior.
+The ingestion CLI accepts an optional `--database` path. It reads only `access.jsonl`, `access.jsonl.1`, `errors.jsonl`, and `errors.jsonl.1` from that fixed directory, validates records with the Phase 5A schema, maps them into the existing Phase 3 event batch, and stores them under the fixed `synthetic-org-demo` tenant. When omitted, it uses `.aegisai-local/private_api.sqlite3`; pass the same explicit database path used by the private API when demonstrating with a separate presentation database. The Phase 3 detector, evidence links, duplicate checks, SQLite transaction, audit event, and retention policy are reused. No API route or database migration is added. The Phase 5A authored fixture and its CLI remain available and unchanged in behavior.
 
 ## Run the local test
 
@@ -31,10 +31,10 @@ Use three PowerShell terminals from `C:\AegisAI`:
 3. Ingest the live logs:
 
    ```powershell
-   python scripts/ingest_live_website_telemetry.py
+   python scripts/ingest_live_website_telemetry.py --database .aegisai-local/presentation.sqlite3
    ```
 
-   The command prints a synthetic telemetry report. It uses the existing local database `.aegisai-local/private_api.sqlite3`. Repeating ingestion rereads the bounded source snapshot; stable event and evidence IDs make stored events and findings idempotent.
+   The command prints a synthetic telemetry report and writes to the selected presentation database. Repeating ingestion rereads the bounded source snapshot; stable event and evidence IDs make stored events and findings idempotent.
 
 Stop the website with Ctrl+C. Its logs remain in `.aegisai-local/website-telemetry/`. Optional local API read-only views remain available through the existing `python scripts/run_private_api.py`; the public static site does not connect to that API.
 

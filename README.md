@@ -1,8 +1,10 @@
-# AegisAI — Phase 8: LLM Red Agent
+# AegisAI - Controlled Security Research
 
-Controlled, simulator-first Red-vs-Blue research platform.
+Controlled Red/Blue simulation with a separate local synthetic security-operations prototype and static research site.
 
-Phase 8 adds an observation-driven LLM Red agent on top of the provider abstraction from Phase 7.
+## Historical simulator milestone: Phase 8 LLM Red Agent
+
+Phase 8 added an observation-driven LLM Red agent on top of the provider abstraction from Phase 7.
 The agent receives only `RedObservation`, requests one structured `RedAction`, and returns it to the
 caller. The Controller remains the sole execution and authorization boundary.
 
@@ -12,7 +14,14 @@ caller. The Controller remains the sole execution and authorization boundary.
 python -m venv .venv
 . .venv/bin/activate
 pip install -r requirements.txt
-pytest
+python -m pytest
+```
+
+On Windows systems where the user Temp directory causes pytest permission errors, use a fresh project-local temporary directory for each run:
+
+```powershell
+$pytestBase = Join-Path (Get-Location) ('.pytest-tmp-' + [guid]::NewGuid().ToString('N'))
+python -m pytest -q -p no:cacheprovider --basetemp $pytestBase
 ```
 
 Phase 8 does not require a real LLM API. Tests use `FakeLLMProvider` so behavior is deterministic and
@@ -34,7 +43,7 @@ Start the loopback-only demo site with `python demo_site/server.py`, then check 
 
 ## Static frontend
 
-The public landing page and read-only research dashboard are a React + TypeScript application built with Vite. From PowerShell, run `cd C:\AegisAI\frontend`, `npm ci`, then `npm run dev` and open `http://localhost:5174/` on your computer. Vite prints a LAN URL for viewing on a phone connected to the same Wi-Fi; this development server is for a trusted local network only and may require a Private-network firewall permission. The dashboard is at `/dashboard.html`. The static release build is produced with `npm run build` from `frontend/`, then `python scripts/build_static_site.py --output dist/aegisai-release` from the repository root. Publish only the strict allowlisted output directory. See [frontend/README.md](frontend/README.md) and [docs/PHASE4_RELEASE_HARDENING_AND_DEPLOYMENT.md](docs/PHASE4_RELEASE_HARDENING_AND_DEPLOYMENT.md) for details.
+The public landing page and read-only research dashboard are a React + TypeScript application built with Vite. From PowerShell, run `cd C:\AegisAI\frontend`, `npm.cmd ci`, then `npm.cmd run dev` and open `http://localhost:5174/` on your computer. Vite prints a LAN URL for viewing on a phone connected to the same Wi-Fi; this development server is for a trusted local network only and may require a Private-network firewall permission. The dashboard is at `/dashboard.html`. The static release build is produced with `npm.cmd run build` from `frontend/`, then `python scripts/build_static_site.py --output dist/aegisai-release` from the repository root. Publish only the strict allowlisted output directory. See [frontend/README.md](frontend/README.md) and [docs/PHASE4_RELEASE_HARDENING_AND_DEPLOYMENT.md](docs/PHASE4_RELEASE_HARDENING_AND_DEPLOYMENT.md) for details.
 
 The frontend remains read-only: it displays reviewed synthetic data, reads selected local assessment files in the browser, and compares fixed published samples. It does not run the simulator, scan visitor-provided URLs, or upload files.
 
@@ -66,7 +75,7 @@ Phase 6B adds `python scripts/run_detection_evaluation.py`, a deterministic loca
 
 Phase 6C audits the Phase 6B counts, adds a versioned synthetic robustness behavior suite, merges evidence across duplicate same-rule findings without inflating counts, and makes evaluator failures fail closed. It does not change the Phase 6A labels or detection rules. See [docs/PHASE6C_DETECTION_ROBUSTNESS_AND_REGRESSION.md](docs/PHASE6C_DETECTION_ROBUSTNESS_AND_REGRESSION.md).
 
-Phase 7A adds a separate local React dashboard at `http://localhost:5174/local-dashboard.html` for authenticated read-only views of the existing synthetic API, including the `reports:read` Detection Lab summary. Phase 3 extends the existing Phase 6 evaluator with specificity, explicit scenario/rule coverage, ATT&CK coverage gaps, and opt-in bounded run history. See [docs/PHASE7A_LOCAL_DASHBOARD.md](docs/PHASE7A_LOCAL_DASHBOARD.md) and [docs/DETECTION_ENGINEERING_AND_EVALUATION.md](docs/DETECTION_ENGINEERING_AND_EVALUATION.md). The API still binds to loopback and allows browser CORS only from the two fixed local Vite origins. The strict public static publisher allowlist remains unchanged and excludes this dashboard and evaluation artifacts.
+Phase 7A adds a separate local React dashboard at `http://localhost:5174/local-dashboard.html` for authenticated read-only views of the existing synthetic API, including the `reports:read` Detection Lab summary. The Detection Lab extends the existing Phase 6 evaluator with specificity, explicit scenario/rule coverage, ATT&CK coverage gaps, and opt-in bounded run history. See [docs/PHASE7A_LOCAL_DASHBOARD.md](docs/PHASE7A_LOCAL_DASHBOARD.md) and [docs/DETECTION_ENGINEERING_AND_EVALUATION.md](docs/DETECTION_ENGINEERING_AND_EVALUATION.md). The API still binds to loopback and allows browser CORS only from the two fixed local Vite origins. The strict public static publisher allowlist remains unchanged and excludes this dashboard and evaluation artifacts.
 
 The investigation case layer adds tenant-scoped cases, verified references to existing telemetry evidence, explicitly labeled inferred relationships and analyst notes, bounded chronological history, and optional assessment/evaluation run context. Case writes require the opt-in local `investigations:write` token scope (`python scripts/run_private_api.py --enable-investigation-writes`); no AI assistant or response action is included. Details and limits: [docs/PHASE4_INVESTIGATION_CASES_AND_MEMORY.md](docs/PHASE4_INVESTIGATION_CASES_AND_MEMORY.md).
 

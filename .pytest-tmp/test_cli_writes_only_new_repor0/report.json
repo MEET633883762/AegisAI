@@ -1,0 +1,421 @@
+{
+  "schema_version": "1.0",
+  "report_type": "aegisai_synthetic_detection_gap_report",
+  "replay_id": "replay-92646de8a60a4b05",
+  "library_id": "aegisai_synthetic_replay_library",
+  "library_version": "1.0",
+  "library_sha256": "acd98c1d6526b25c9e7c2883490fcfdeb89ff39ed1deefe87bfe8b9d3e419065",
+  "data_classification": "synthetic",
+  "label": "SYNTHETIC SIMULATION - NOT REAL ATTACK TRAFFIC",
+  "started_at_utc": "2026-10-24T17:38:24.653697Z",
+  "finished_at_utc": "2026-10-24T17:38:24.654535Z",
+  "scenario_count": 10,
+  "positive_scenario_count": 5,
+  "benign_scenario_count": 5,
+  "rule_ids": [
+    "APP-001",
+    "AUTH-001",
+    "CONFIG-001",
+    "VULN-001",
+    "WEB-001"
+  ],
+  "counts": {
+    "true_positives": 5,
+    "false_positives": 0,
+    "true_negatives": 45,
+    "false_negatives": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+  },
+  "per_rule": [
+    {
+      "true_positives": 1,
+      "false_positives": 0,
+      "true_negatives": 9,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "rule_id": "APP-001"
+    },
+    {
+      "true_positives": 1,
+      "false_positives": 0,
+      "true_negatives": 9,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "rule_id": "AUTH-001"
+    },
+    {
+      "true_positives": 1,
+      "false_positives": 0,
+      "true_negatives": 9,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "rule_id": "CONFIG-001"
+    },
+    {
+      "true_positives": 1,
+      "false_positives": 0,
+      "true_negatives": 9,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "rule_id": "VULN-001"
+    },
+    {
+      "true_positives": 1,
+      "false_positives": 0,
+      "true_negatives": 9,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "rule_id": "WEB-001"
+    }
+  ],
+  "scenario_detection_coverage": 1.0,
+  "covered_positive_scenarios": 5,
+  "expected_positive_scenarios": 5,
+  "evidence_completeness": 1.0,
+  "complete_expected_pairs": 5,
+  "expected_pairs": 5,
+  "scenarios": [
+    {
+      "scenario_id": "scenario-auth-failure-success",
+      "category": "authentication",
+      "scenario_class": "positive",
+      "description": "Three synthetic authentication failures followed by a success.",
+      "rationale": "The existing authentication rule requires at least three failures in its ten-minute correlation window; the following success is within five minutes.",
+      "expected_rule_ids": [
+        "AUTH-001"
+      ],
+      "observed_rule_ids": [
+        "AUTH-001"
+      ],
+      "expected_evidence_refs": [
+        "synthetic-replay-auth-01",
+        "synthetic-replay-auth-02",
+        "synthetic-replay-auth-03",
+        "synthetic-replay-auth-04"
+      ],
+      "observed_evidence_refs": [
+        "synthetic-replay-auth-01",
+        "synthetic-replay-auth-02",
+        "synthetic-replay-auth-03",
+        "synthetic-replay-auth-04"
+      ],
+      "missing_rule_ids": [],
+      "unexpected_rule_ids": [],
+      "evidence_complete": true,
+      "findings": [
+        {
+          "finding_id": "tfinding-f9f846175e9c",
+          "rule_id": "AUTH-001",
+          "rule_version": "1.0",
+          "severity": "high",
+          "confidence": 0.9,
+          "first_seen_utc": "2026-10-22T09:00:00Z",
+          "last_seen_utc": "2026-10-22T09:03:00Z",
+          "asset_ref": "synthetic-auth-service",
+          "evidence_refs": [
+            "synthetic-replay-auth-01",
+            "synthetic-replay-auth-02",
+            "synthetic-replay-auth-03",
+            "synthetic-replay-auth-04"
+          ],
+          "event_ids": [
+            "syn-replay-auth-01",
+            "syn-replay-auth-02",
+            "syn-replay-auth-03",
+            "syn-replay-auth-04"
+          ],
+          "explanation": "Repeated synthetic authentication failures followed by success. 3 distinct failures occurred within 10 minutes; a success for the same synthetic asset, actor, and source followed within five minutes; all evidence is from the labeled synthetic fixture",
+          "confidence_factors": [
+            "3 distinct failures occurred within 10 minutes",
+            "a success for the same synthetic asset, actor, and source followed within five minutes",
+            "all evidence is from the labeled synthetic fixture"
+          ],
+          "status": "open"
+        }
+      ]
+    },
+    {
+      "scenario_id": "scenario-rate-high",
+      "category": "request_rate",
+      "scenario_class": "positive",
+      "description": "A high synthetic request-rate indicator exceeds the demonstration threshold.",
+      "rationale": "The synthetic count exceeds the existing high indicator threshold of 500 requests in a window no longer than 60 seconds.",
+      "expected_rule_ids": [
+        "WEB-001"
+      ],
+      "observed_rule_ids": [
+        "WEB-001"
+      ],
+      "expected_evidence_refs": [
+        "synthetic-replay-rate-01"
+      ],
+      "observed_evidence_refs": [
+        "synthetic-replay-rate-01"
+      ],
+      "missing_rule_ids": [],
+      "unexpected_rule_ids": [],
+      "evidence_complete": true,
+      "findings": [
+        {
+          "finding_id": "tfinding-0bbe61345217",
+          "rule_id": "WEB-001",
+          "rule_version": "1.0",
+          "severity": "high",
+          "confidence": 0.92,
+          "first_seen_utc": "2026-10-22T09:10:00Z",
+          "last_seen_utc": "2026-10-22T09:10:00Z",
+          "asset_ref": "synthetic-web-a",
+          "evidence_refs": [
+            "synthetic-replay-rate-01"
+          ],
+          "event_ids": [
+            "syn-replay-rate-01"
+          ],
+          "explanation": "Synthetic request-rate indicators totaled 800 requests in windows of 60 seconds or less; the highest indicator was 800.",
+          "confidence_factors": [
+            "1 allowlisted request-rate indicator(s) matched",
+            "peak indicator 800 met the high demonstration threshold",
+            "all records are from the labeled synthetic local source"
+          ],
+          "status": "open"
+        }
+      ]
+    },
+    {
+      "scenario_id": "scenario-app-setting-change",
+      "category": "application",
+      "scenario_class": "positive",
+      "description": "An allowlisted synthetic administrative-setting change is recorded.",
+      "rationale": "The existing application rule reports allowlisted simulated suspicious-activity codes.",
+      "expected_rule_ids": [
+        "APP-001"
+      ],
+      "observed_rule_ids": [
+        "APP-001"
+      ],
+      "expected_evidence_refs": [
+        "synthetic-replay-app-01"
+      ],
+      "observed_evidence_refs": [
+        "synthetic-replay-app-01"
+      ],
+      "missing_rule_ids": [],
+      "unexpected_rule_ids": [],
+      "evidence_complete": true,
+      "findings": [
+        {
+          "finding_id": "tfinding-9c9180e1acb8",
+          "rule_id": "APP-001",
+          "rule_version": "1.0",
+          "severity": "high",
+          "confidence": 0.85,
+          "first_seen_utc": "2026-10-22T09:20:00Z",
+          "last_seen_utc": "2026-10-22T09:20:00Z",
+          "asset_ref": "synthetic-app-a",
+          "evidence_refs": [
+            "synthetic-replay-app-01"
+          ],
+          "event_ids": [
+            "syn-replay-app-01"
+          ],
+          "explanation": "The synthetic fixture contains simulated application activity: unexpected_admin_setting_change.",
+          "confidence_factors": [
+            "activity code is explicitly allowlisted in telemetry schema",
+            "finding is based on fixture metadata rather than observed client behavior",
+            "all records are synthetic"
+          ],
+          "status": "open"
+        }
+      ]
+    },
+    {
+      "scenario_id": "scenario-component-outdated",
+      "category": "vulnerability",
+      "scenario_class": "positive",
+      "description": "A synthetic component-version check reports the allowlisted outdated test component.",
+      "rationale": "The existing vulnerability demonstration rule matches the allowlisted test_component_outdated check code.",
+      "expected_rule_ids": [
+        "VULN-001"
+      ],
+      "observed_rule_ids": [
+        "VULN-001"
+      ],
+      "expected_evidence_refs": [
+        "synthetic-replay-vuln-01"
+      ],
+      "observed_evidence_refs": [
+        "synthetic-replay-vuln-01"
+      ],
+      "missing_rule_ids": [],
+      "unexpected_rule_ids": [],
+      "evidence_complete": true,
+      "findings": [
+        {
+          "finding_id": "tfinding-543bbdfedcba",
+          "rule_id": "VULN-001",
+          "rule_version": "1.0",
+          "severity": "medium",
+          "confidence": 0.8,
+          "first_seen_utc": "2026-10-22T09:30:00Z",
+          "last_seen_utc": "2026-10-22T09:30:00Z",
+          "asset_ref": "synthetic-app-b",
+          "evidence_refs": [
+            "synthetic-replay-vuln-01"
+          ],
+          "event_ids": [
+            "syn-replay-vuln-01"
+          ],
+          "explanation": "The synthetic fixture records synthetic component/version check `test_component_outdated` for synthetic-app-b.",
+          "confidence_factors": [
+            "allowlisted synthetic check code: test_component_outdated",
+            "no client asset was inspected",
+            "all records are synthetic"
+          ],
+          "status": "open"
+        }
+      ]
+    },
+    {
+      "scenario_id": "scenario-debug-enabled",
+      "category": "configuration",
+      "scenario_class": "positive",
+      "description": "A synthetic configuration check reports debug mode enabled.",
+      "rationale": "The existing configuration demonstration rule matches the allowlisted debug_mode_enabled check code.",
+      "expected_rule_ids": [
+        "CONFIG-001"
+      ],
+      "observed_rule_ids": [
+        "CONFIG-001"
+      ],
+      "expected_evidence_refs": [
+        "synthetic-replay-config-01"
+      ],
+      "observed_evidence_refs": [
+        "synthetic-replay-config-01"
+      ],
+      "missing_rule_ids": [],
+      "unexpected_rule_ids": [],
+      "evidence_complete": true,
+      "findings": [
+        {
+          "finding_id": "tfinding-cf6d4d95e458",
+          "rule_id": "CONFIG-001",
+          "rule_version": "1.0",
+          "severity": "medium",
+          "confidence": 0.8,
+          "first_seen_utc": "2026-10-22T09:40:00Z",
+          "last_seen_utc": "2026-10-22T09:40:00Z",
+          "asset_ref": "synthetic-app-c",
+          "evidence_refs": [
+            "synthetic-replay-config-01"
+          ],
+          "event_ids": [
+            "syn-replay-config-01"
+          ],
+          "explanation": "The synthetic fixture records synthetic configuration check `debug_mode_enabled` for synthetic-app-c.",
+          "confidence_factors": [
+            "allowlisted synthetic check code: debug_mode_enabled",
+            "no client asset was inspected",
+            "all records are synthetic"
+          ],
+          "status": "open"
+        }
+      ]
+    },
+    {
+      "scenario_id": "scenario-auth-benign-low-count",
+      "category": "authentication",
+      "scenario_class": "benign",
+      "description": "Two synthetic authentication failures remain below the existing correlation threshold.",
+      "rationale": "The Phase 1 authentication rule requires at least three failures; two failures should produce no finding.",
+      "expected_rule_ids": [],
+      "observed_rule_ids": [],
+      "expected_evidence_refs": [],
+      "observed_evidence_refs": [],
+      "missing_rule_ids": [],
+      "unexpected_rule_ids": [],
+      "evidence_complete": null,
+      "findings": []
+    },
+    {
+      "scenario_id": "scenario-rate-benign-low-count",
+      "category": "request_rate",
+      "scenario_class": "benign",
+      "description": "A synthetic request-rate indicator remains below the rule threshold.",
+      "rationale": "The existing request-rate rule starts at 100 requests in a window no longer than 60 seconds.",
+      "expected_rule_ids": [],
+      "observed_rule_ids": [],
+      "expected_evidence_refs": [],
+      "observed_evidence_refs": [],
+      "missing_rule_ids": [],
+      "unexpected_rule_ids": [],
+      "evidence_complete": null,
+      "findings": []
+    },
+    {
+      "scenario_id": "scenario-app-benign-auth-success",
+      "category": "application",
+      "scenario_class": "benign",
+      "description": "A routine synthetic application setting read is a benign control for the application rule.",
+      "rationale": "routine_setting_read is explicitly classified as a benign synthetic control code and must not match APP-001.",
+      "expected_rule_ids": [],
+      "observed_rule_ids": [],
+      "expected_evidence_refs": [],
+      "observed_evidence_refs": [],
+      "missing_rule_ids": [],
+      "unexpected_rule_ids": [],
+      "evidence_complete": null,
+      "findings": []
+    },
+    {
+      "scenario_id": "scenario-vulnerability-benign-control",
+      "category": "vulnerability",
+      "scenario_class": "benign",
+      "description": "A synthetic current-component check is a benign control for the vulnerability rule.",
+      "rationale": "test_component_current is explicitly classified as a benign synthetic check code and must not match VULN-001.",
+      "expected_rule_ids": [],
+      "observed_rule_ids": [],
+      "expected_evidence_refs": [],
+      "observed_evidence_refs": [],
+      "missing_rule_ids": [],
+      "unexpected_rule_ids": [],
+      "evidence_complete": null,
+      "findings": []
+    },
+    {
+      "scenario_id": "scenario-configuration-benign-control",
+      "category": "configuration",
+      "scenario_class": "benign",
+      "description": "A synthetic debug-mode-disabled check is a benign control for the configuration rule.",
+      "rationale": "debug_mode_disabled is explicitly classified as a benign synthetic check code and must not match CONFIG-001.",
+      "expected_rule_ids": [],
+      "observed_rule_ids": [],
+      "expected_evidence_refs": [],
+      "observed_evidence_refs": [],
+      "missing_rule_ids": [],
+      "unexpected_rule_ids": [],
+      "evidence_complete": null,
+      "findings": []
+    }
+  ],
+  "missed_detections": [],
+  "unexpected_alerts": [],
+  "recommendations": [],
+  "limitations": [
+    "All scenarios and evidence are synthetic; the results do not establish real-world detection accuracy.",
+    "Metrics describe only the small, hand-labeled scenario library and are not statistical estimates.",
+    "Replay calls deterministic local rules only; it performs no network activity or defensive actions."
+  ]
+}

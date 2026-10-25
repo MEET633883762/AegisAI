@@ -39,22 +39,29 @@ export default defineConfig(({ command }) => ({
     target: ["chrome107", "edge107", "firefox104", "safari16"],
     rollupOptions: {
       input: {
-        index: resolve(frontendRoot, "index.html"),
+      index: resolve(frontendRoot, "index.html"),
         dashboard: resolve(frontendRoot, "dashboard.html"),
         privacy: resolve(frontendRoot, "privacy.html"),
+        "local-dashboard": resolve(frontendRoot, "local-dashboard.html"),
       },
+
       output: {
         entryFileNames: "assets/[name].js",
         chunkFileNames: "assets/[name].js",
-        assetFileNames: (asset) => asset.name?.endsWith(".css")
-          ? "assets/app.css"
-          : `assets/${asset.name ?? "asset"}`,
+        assetFileNames: (asset) =>
+          asset.name?.endsWith(".css")
+            ? "assets/app.css"
+            : `assets/${asset.name ?? "asset"}`,
       },
     },
   },
   test: {
     environment: "jsdom",
-    include: ["tests/public_shell.test.ts", "tests/research_demo.test.ts", "tests/local_dashboard.test.tsx"],
+    include: [
+      "tests/public_shell.test.ts",
+      "tests/research_demo.test.ts",
+      "tests/local_dashboard.test.tsx",
+    ],
     restoreMocks: true,
     clearMocks: true,
   },

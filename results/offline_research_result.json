@@ -40,9 +40,177 @@
       ]
     ]
   },
-  "baseline": "ExperimentRun(experiment_id='offline_research_001-A', scenario_template_ids=('web_exploit_lateral_exfil',), seeds=(7, 9), episodes=(EpisodeMetrics(scenario_id='web_exploit_lateral_exfil:7', template_id='web_exploit_lateral_exfil', seed=7, steps=30, attack_success=False, detection_rate=0.0, mean_detection_time=None, mitigation_success_rate=0.0, false_positive_rate=0.875, decision_latency_ms=0.12271500114972393, total_alerts=8, malicious_alerts=0, benign_alerts=8, response_required_alerts=0, detected_malicious_alerts=0, mitigated_alerts=0), EpisodeMetrics(scenario_id='web_exploit_lateral_exfil:9', template_id='web_exploit_lateral_exfil', seed=9, steps=30, attack_success=False, detection_rate=1.0, mean_detection_time=0, mitigation_success_rate=1.0, false_positive_rate=1.0, decision_latency_ms=0.06704666690590481, total_alerts=5, malicious_alerts=1, benign_alerts=4, response_required_alerts=1, detected_malicious_alerts=1, mitigated_alerts=1)), aggregate=AggregateMetrics(episodes=2, attack_success_rate=0.0, detection_rate=0.5, mean_detection_time=0, mitigation_success_rate=0.5, false_positive_rate=0.9375, mean_decision_latency_ms=0.09488083402781437))",
-  "no_memory": "ExperimentRun(experiment_id='offline_research_001-B', scenario_template_ids=('web_exploit_lateral_exfil',), seeds=(7, 9), episodes=(EpisodeMetrics(scenario_id='web_exploit_lateral_exfil:7', template_id='web_exploit_lateral_exfil', seed=7, steps=30, attack_success=False, detection_rate=0.0, mean_detection_time=None, mitigation_success_rate=0.0, false_positive_rate=0.875, decision_latency_ms=0.22041333528856435, total_alerts=8, malicious_alerts=0, benign_alerts=8, response_required_alerts=0, detected_malicious_alerts=0, mitigated_alerts=0), EpisodeMetrics(scenario_id='web_exploit_lateral_exfil:9', template_id='web_exploit_lateral_exfil', seed=9, steps=30, attack_success=False, detection_rate=1.0, mean_detection_time=0, mitigation_success_rate=1.0, false_positive_rate=1.0, decision_latency_ms=0.30043667065910995, total_alerts=5, malicious_alerts=1, benign_alerts=4, response_required_alerts=1, detected_malicious_alerts=1, mitigated_alerts=1)), aggregate=AggregateMetrics(episodes=2, attack_success_rate=0.0, detection_rate=0.5, mean_detection_time=0, mitigation_success_rate=0.5, false_positive_rate=0.9375, mean_decision_latency_ms=0.26042500297383714))",
-  "adaptive_memory": "ExperimentRun(experiment_id='offline_research_001-C', scenario_template_ids=('web_exploit_lateral_exfil',), seeds=(7, 9), episodes=(EpisodeMetrics(scenario_id='web_exploit_lateral_exfil:7', template_id='web_exploit_lateral_exfil', seed=7, steps=30, attack_success=False, detection_rate=0.0, mean_detection_time=None, mitigation_success_rate=0.0, false_positive_rate=0.875, decision_latency_ms=0.4057666616669546, total_alerts=8, malicious_alerts=0, benign_alerts=8, response_required_alerts=0, detected_malicious_alerts=0, mitigated_alerts=0), EpisodeMetrics(scenario_id='web_exploit_lateral_exfil:9', template_id='web_exploit_lateral_exfil', seed=9, steps=30, attack_success=False, detection_rate=1.0, mean_detection_time=0, mitigation_success_rate=1.0, false_positive_rate=1.0, decision_latency_ms=0.49894000015531975, total_alerts=5, malicious_alerts=1, benign_alerts=4, response_required_alerts=1, detected_malicious_alerts=1, mitigated_alerts=1)), aggregate=AggregateMetrics(episodes=2, attack_success_rate=0.0, detection_rate=0.5, mean_detection_time=0, mitigation_success_rate=0.5, false_positive_rate=0.9375, mean_decision_latency_ms=0.45235333091113716))",
+  "baseline": {
+    "experiment_id": "offline_research_001-A",
+    "scenario_template_ids": [
+      "web_exploit_lateral_exfil"
+    ],
+    "seeds": [
+      7,
+      9
+    ],
+    "episodes": [
+      {
+        "scenario_id": "web_exploit_lateral_exfil:7",
+        "template_id": "web_exploit_lateral_exfil",
+        "seed": 7,
+        "steps": 30,
+        "attack_success": false,
+        "detection_rate": 0.0,
+        "mean_detection_time": null,
+        "mitigation_success_rate": 0.0,
+        "false_positive_rate": 0.875,
+        "decision_latency_ms": 0.07540166666331061,
+        "total_alerts": 8,
+        "malicious_alerts": 0,
+        "benign_alerts": 8,
+        "response_required_alerts": 0,
+        "detected_malicious_alerts": 0,
+        "mitigated_alerts": 0
+      },
+      {
+        "scenario_id": "web_exploit_lateral_exfil:9",
+        "template_id": "web_exploit_lateral_exfil",
+        "seed": 9,
+        "steps": 30,
+        "attack_success": false,
+        "detection_rate": 1.0,
+        "mean_detection_time": 0,
+        "mitigation_success_rate": 1.0,
+        "false_positive_rate": 1.0,
+        "decision_latency_ms": 0.059760000006766255,
+        "total_alerts": 5,
+        "malicious_alerts": 1,
+        "benign_alerts": 4,
+        "response_required_alerts": 1,
+        "detected_malicious_alerts": 1,
+        "mitigated_alerts": 1
+      }
+    ],
+    "aggregate": {
+      "episodes": 2,
+      "attack_success_rate": 0.0,
+      "detection_rate": 0.5,
+      "mean_detection_time": 0,
+      "mitigation_success_rate": 0.5,
+      "false_positive_rate": 0.9375,
+      "mean_decision_latency_ms": 0.06758083333503843
+    }
+  },
+  "no_memory": {
+    "experiment_id": "offline_research_001-B",
+    "scenario_template_ids": [
+      "web_exploit_lateral_exfil"
+    ],
+    "seeds": [
+      7,
+      9
+    ],
+    "episodes": [
+      {
+        "scenario_id": "web_exploit_lateral_exfil:7",
+        "template_id": "web_exploit_lateral_exfil",
+        "seed": 7,
+        "steps": 30,
+        "attack_success": false,
+        "detection_rate": 0.0,
+        "mean_detection_time": null,
+        "mitigation_success_rate": 0.0,
+        "false_positive_rate": 0.875,
+        "decision_latency_ms": 0.18448166670168575,
+        "total_alerts": 8,
+        "malicious_alerts": 0,
+        "benign_alerts": 8,
+        "response_required_alerts": 0,
+        "detected_malicious_alerts": 0,
+        "mitigated_alerts": 0
+      },
+      {
+        "scenario_id": "web_exploit_lateral_exfil:9",
+        "template_id": "web_exploit_lateral_exfil",
+        "seed": 9,
+        "steps": 30,
+        "attack_success": false,
+        "detection_rate": 1.0,
+        "mean_detection_time": 0,
+        "mitigation_success_rate": 1.0,
+        "false_positive_rate": 1.0,
+        "decision_latency_ms": 0.16308333332138622,
+        "total_alerts": 5,
+        "malicious_alerts": 1,
+        "benign_alerts": 4,
+        "response_required_alerts": 1,
+        "detected_malicious_alerts": 1,
+        "mitigated_alerts": 1
+      }
+    ],
+    "aggregate": {
+      "episodes": 2,
+      "attack_success_rate": 0.0,
+      "detection_rate": 0.5,
+      "mean_detection_time": 0,
+      "mitigation_success_rate": 0.5,
+      "false_positive_rate": 0.9375,
+      "mean_decision_latency_ms": 0.173782500011536
+    }
+  },
+  "adaptive_memory": {
+    "experiment_id": "offline_research_001-C",
+    "scenario_template_ids": [
+      "web_exploit_lateral_exfil"
+    ],
+    "seeds": [
+      7,
+      9
+    ],
+    "episodes": [
+      {
+        "scenario_id": "web_exploit_lateral_exfil:7",
+        "template_id": "web_exploit_lateral_exfil",
+        "seed": 7,
+        "steps": 30,
+        "attack_success": false,
+        "detection_rate": 0.0,
+        "mean_detection_time": null,
+        "mitigation_success_rate": 0.0,
+        "false_positive_rate": 0.875,
+        "decision_latency_ms": 0.1727166666607142,
+        "total_alerts": 8,
+        "malicious_alerts": 0,
+        "benign_alerts": 8,
+        "response_required_alerts": 0,
+        "detected_malicious_alerts": 0,
+        "mitigated_alerts": 0
+      },
+      {
+        "scenario_id": "web_exploit_lateral_exfil:9",
+        "template_id": "web_exploit_lateral_exfil",
+        "seed": 9,
+        "steps": 30,
+        "attack_success": false,
+        "detection_rate": 1.0,
+        "mean_detection_time": 0,
+        "mitigation_success_rate": 1.0,
+        "false_positive_rate": 1.0,
+        "decision_latency_ms": 0.1598950000015975,
+        "total_alerts": 5,
+        "malicious_alerts": 1,
+        "benign_alerts": 4,
+        "response_required_alerts": 1,
+        "detected_malicious_alerts": 1,
+        "mitigated_alerts": 1
+      }
+    ],
+    "aggregate": {
+      "episodes": 2,
+      "attack_success_rate": 0.0,
+      "detection_rate": 0.5,
+      "mean_detection_time": 0,
+      "mitigation_success_rate": 0.5,
+      "false_positive_rate": 0.9375,
+      "mean_decision_latency_ms": 0.16630583333115584
+    }
+  },
   "adaptation_improvement": 0.0,
   "generalization_improvement": 0.0,
   "manifest_fingerprints": [

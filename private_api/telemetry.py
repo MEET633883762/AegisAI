@@ -86,7 +86,8 @@ class SyntheticTelemetryEvent(TelemetryModel):
             if self.activity_code is not None or self.check_code is not None:
                 raise ValueError("request_rate_indicator cannot contain activity/check fields")
         elif self.event_type is TelemetryEventType.SIMULATED_ACTIVITY:
-            if self.activity_code is None or self.check_code is not None or has_rate_fields:
+            if (self.activity_code is None or self.check_code is not None or has_rate_fields
+                    or has_http_fields or self.error_code is not None):
                 raise ValueError("simulated activity requires only an allowlisted activity_code")
         elif self.event_type in {TelemetryEventType.VULNERABILITY, TelemetryEventType.CONFIGURATION}:
             if self.check_code is None or self.activity_code is not None or has_rate_fields or has_http_fields or self.error_code is not None:

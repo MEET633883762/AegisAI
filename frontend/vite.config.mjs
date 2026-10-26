@@ -39,10 +39,9 @@ export default defineConfig(({ command }) => ({
     target: ["chrome107", "edge107", "firefox104", "safari16"],
     rollupOptions: {
       input: {
-      index: resolve(frontendRoot, "index.html"),
+        index: resolve(frontendRoot, "index.html"),
         dashboard: resolve(frontendRoot, "dashboard.html"),
         privacy: resolve(frontendRoot, "privacy.html"),
-        "local-dashboard": resolve(frontendRoot, "local-dashboard.html"),
       },
 
       output: {

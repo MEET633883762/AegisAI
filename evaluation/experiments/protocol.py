@@ -20,6 +20,9 @@ class ScenarioSplit:
     test: tuple[tuple[str, int], ...]
 
     def __post_init__(self) -> None:
+        for partition in (self.train, self.validation, self.test):
+            if len(partition) != len(set(partition)):
+                raise ValueError("scenario splits must not contain duplicate pairs")
         sets = [set(self.train), set(self.validation), set(self.test)]
         if any(not s for s in sets):
             raise ValueError("train, validation, and test splits must be non-empty")
@@ -48,7 +51,10 @@ class ExperimentManifest:
 
 
 def build_default_split(template_ids: Iterable[str], seeds: Iterable[int]) -> ScenarioSplit:
-    rows = [(t, s) for t in template_ids for s in seeds]
+    # Freeze one-shot iterables before the Cartesian product. A seed generator must
+    # cover every template, rather than silently being exhausted by the first one.
+    template_values, seed_values = tuple(template_ids), tuple(seeds)
+    rows = [(t, s) for t in template_values for s in seed_values]
     if len(rows) < 6:
         raise ValueError("default research split requires at least 6 scenario-seed pairs")
     # Deterministic split: template/seed pairs are sorted, then partitioned. No adaptive
@@ -64,6 +70,8 @@ def assert_memory_source_allowed(config: ExperimentConfig, scenario_pairs: Itera
     source = set(scenario_pairs)
     if source & set(split.test):
         raise ValueError("held-out test scenarios cannot generate adaptive memory")
+    if not source <= set(split.train + split.validation):
+        raise ValueError("memory-source scenarios must belong to the declared train or validation split")
     if config is ExperimentConfig.C and not source:
         raise ValueError("adaptive configuration requires explicit memory-source scenarios")
 

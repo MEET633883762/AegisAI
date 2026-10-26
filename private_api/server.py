@@ -661,7 +661,13 @@ class LocalApiRequestHandler(BaseHTTPRequestHandler):
         if not re.fullmatch(r"[0-9]+", raw_length):
             content_length = -1
         else:
-            content_length = int(raw_length)
+            # HTTP headers may contain more digits than Python's integer parser
+            # accepts. Bound before conversion so the handler still returns its
+            # categorical JSON response instead of dropping the connection.
+            normalized_length = raw_length.lstrip("0") or "0"
+            content_length = (MAX_REQUEST_BODY_BYTES + 1
+                              if len(normalized_length) > len(str(MAX_REQUEST_BODY_BYTES))
+                              else int(normalized_length))
         if content_length > MAX_REQUEST_BODY_BYTES:
             response = self.server.app.handle(
                 method=self.command, target=self.path,

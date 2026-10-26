@@ -3,6 +3,7 @@ import { App } from "./App";
 import "../landing.css";
 import "../styles.css";
 import "../website_assessment.css";
+import "./demo.css";
 
 const mount = document.getElementById("app-root");
 if (!mount) throw new Error("The AegisAI application mount point is missing.");

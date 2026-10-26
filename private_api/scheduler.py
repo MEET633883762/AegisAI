@@ -225,6 +225,8 @@ class LocalTelemetryScheduler:
             )
 
     def run_cycle(self) -> bool:
+        if self._stop.is_set():
+            return False
         if not self._cycle_lock.acquire(blocking=False):
             self._record_skipped(self.clock().astimezone(timezone.utc).isoformat())
             return False
@@ -233,6 +235,10 @@ class LocalTelemetryScheduler:
             cycle_succeeded = True
             for tenant_id in self.tenant_ids:
                 for attempt in range(1, self.max_retries + 2):
+                    # A stop requested during another tenant's worker or retry
+                    # must not begin more work after terminate_active() returns.
+                    if self._stop.is_set():
+                        return False
                     run_id = self._new_run_id()
                     self.store.start_telemetry_run(
                         run_id=run_id, tenant_id=tenant_id,
@@ -240,10 +246,14 @@ class LocalTelemetryScheduler:
                         attempt=attempt,
                     )
                     try:
+                        if self._stop.is_set():
+                            raise WorkerStopped("scheduler shutdown requested")
                         self.runner.run(
                             self.database, self.fixture, tenant_id, run_id,
                             self.worker_timeout_seconds,
                         )
+                        if self._stop.is_set():
+                            return False
                         break
                     except WorkerStopped:
                         self.store.fail_telemetry_run(run_id, "shutdown")

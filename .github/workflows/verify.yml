@@ -1,0 +1,70 @@
+name: Verify offline research and static release
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# The workflow validates and packages locally. It cannot publish a site or PR.
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Python 3.11 / Node 24 / ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
+    env:
+      PYTHONUTF8: "1"
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+    steps:
+      - name: Check out source
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version-file: .python-version
+          cache: pip
+          cache-dependency-path: requirements-demo.txt
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install reviewed Python dependencies
+        run: python -m pip install -r requirements-demo.txt
+
+      - name: Check Python dependency consistency
+        run: python -m pip check
+
+      - name: Install locked frontend dependencies
+        run: npm --prefix frontend ci
+
+      - name: Test simulator, APIs, detection and security boundaries
+        run: python -m pytest -q -p no:cacheprovider --basetemp .pytest-ci
+
+      - name: Verify fresh results against the published demo
+        run: python scripts/run_judging_demo.py --check
+
+      - name: Typecheck, build and test the public and local frontends
+        run: npm --prefix frontend test
+
+      - name: Package only allowlisted public files
+        run: python scripts/build_static_site.py --output dist/ci-static

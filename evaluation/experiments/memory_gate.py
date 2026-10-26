@@ -18,24 +18,32 @@ def build_validated_memory_context(
         raise ValueError("max_chars must be positive")
     allowed = set(source_pairs)
     chunks: list[str] = []
+    current_length = 0
     for patch in patches:
         if patch.status.value != "validated":
             continue
         evidence_pairs = set()
+        invalid_source = not patch.evidence_scenario_ids
         for scenario_id in patch.evidence_scenario_ids:
-            if ":" in scenario_id:
-                template, raw_seed = scenario_id.rsplit(":", 1)
-                try:
-                    evidence_pairs.add((template, int(raw_seed)))
-                except ValueError:
-                    continue
-        # A patch without a resolvable source pair is not silently trusted.
-        if evidence_pairs and not evidence_pairs <= allowed:
-            continue
-        if patch.evidence_scenario_ids and not evidence_pairs:
+            template, separator, raw_seed = scenario_id.rpartition(":")
+            # Every reference must resolve, including mixed valid/malformed lists.
+            # Require the same canonical template:integer format as scenario IDs
+            # emitted by the Controller instead of accepting partial provenance.
+            try:
+                seed = int(raw_seed)
+            except ValueError:
+                invalid_source = True
+                break
+            if not separator or not template or str(seed) != raw_seed:
+                invalid_source = True
+                break
+            evidence_pairs.add((template, seed))
+        if invalid_source or not evidence_pairs or not evidence_pairs <= allowed:
             continue
         text = patch.context_text()
-        if sum(map(len, chunks)) + len(text) + 1 > max_chars:
+        next_length = current_length + len(text) + (1 if chunks else 0)
+        if next_length > max_chars:
             break
         chunks.append(text)
+        current_length = next_length
     return "\n".join(chunks)

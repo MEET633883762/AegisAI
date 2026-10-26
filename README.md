@@ -1,6 +1,88 @@
-# AegisAI - Controlled Security Research
+# AegisAI — see the attack, understand the defense
 
-Controlled Red/Blue simulation with a separate local synthetic security-operations prototype and static research site.
+AegisAI is a controlled cybersecurity research lab. It shows how a simulated attacker gets into a fictional network, what a defender notices, and whether the defender stops the attack.
+
+The browser demo tells that story in six key moments, with a network map, plain-language explanations, and the actual recorded outcome. Expand any action to inspect the evidence and permission checks behind it.
+
+**The key insight:** noticing a threat does not always mean stopping it. In the current example, the defender detects 8 of 9 malicious alerts but mitigates 0 of 6 response-required alerts, and the attacker reaches its simulated goal. Showing that failure gives researchers a clear target for improving defensive decisions.
+
+## Improve and measure the defense
+
+The engine now includes `EvidencePrioritizedBlueAgent`, a second defender that responds to investigated urgent threat evidence before taking on more alerts. It confirms containment from the next observation instead of assuming a requested action succeeded. The historical baseline remains available for comparison.
+
+Run a fresh paired comparison from the repository root:
+
+```powershell
+py -3.11 scripts/run_defender_benchmark.py
+```
+
+Across the six checked-in templates and five fixed seeds, the baseline allowed the attacker to reach its objective in **3 of 30** runs; the new policy allowed **0 of 30**. There were **3 improved pairs, 0 regressions, and 27 unchanged pairs**. The candidate isolates the simulated website, so it has an availability cost: mean final isolated hosts increased from **0.83 to 1.00**. These authored development cases share an attack structure; they do not establish independent or real-world effectiveness.
+
+The [comparison report and method](docs/DEFENDER_COMPARISON.md) explain the paired evidence, disruption cost, and limitations. The full Python suite reruns the benchmark and checks it against the reviewed report.
+
+## Try the demo
+
+From the repository root in PowerShell, install the frontend dependencies and start the local server:
+
+```powershell
+npm.cmd --prefix frontend ci
+npm.cmd --prefix frontend run dev -- --host 127.0.0.1
+```
+
+Open **[http://localhost:5174/](http://localhost:5174/)**, then choose the walkthrough. The direct demo URL is **[http://localhost:5174/dashboard.html](http://localhost:5174/dashboard.html)**. Use **Next moment** to follow the story, then compare the baseline and hardened website-header samples.
+
+Choose **Present demo** in the dashboard navigation to focus the exercise and enlarge the text for projection. Choose **Exit presentation** to return to the full dashboard.
+
+This browser demo needs Node.js 22.12 or later. After dependencies are installed, it works without internet access, an API key, or the Python backend. It replays reviewed output from scripted simulator agents; it does not run an AI model in the browser.
+
+## Verify the work behind the demo
+
+The Python engine generates the evidence shown in the browser. From the repository root, create an isolated Python 3.11 environment and run the offline demo checks:
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-demo.txt
+.\.venv\Scripts\python.exe scripts/run_judging_demo.py
+```
+
+The [demo preflight](scripts/run_judging_demo.py) reruns the simulator and fixed synthetic detection evaluation, checks that repeated runs match, and verifies the published episode against the current code. It creates a fresh evidence packet under `.aegisai-local/judging-demo/` without overwriting previous runs. Use `--check` to verify without creating a packet.
+
+For a presentation pitch, suggested walkthrough, likely questions, and rehearsal checklist, see the **[judges' guide](docs/JUDGES_GUIDE.md)**.
+
+For pinned Windows/Linux setup and the automated verification workflow, see [DEVELOPMENT.md](docs/DEVELOPMENT.md). Local validation has been run on Windows; hosted CI results must be checked after the workflow is pushed.
+
+## How it works
+
+| Part | What it does |
+|---|---|
+| Attacker (Red) | Proposes a simulated action using the evidence it can see. |
+| Defender (Blue) | Investigates alerts and proposes defensive actions. |
+| Controller | Checks action structure, role permissions, turn order, and submission limits before execution. |
+| Simulator | Applies permitted actions to a fictional network and records what happened. |
+| Evidence and evaluation | Connect decisions to observations, authorization, and outcomes; make experiments repeatable. |
+| Browser walkthrough | Explains the recorded exercise and lets viewers inspect its supporting evidence. |
+
+The repository also contains structured LLM-agent adapters and experiment tools, plus a separate local synthetic operations prototype with telemetry, findings, investigations, and reports. The public walkthrough uses scripted policies for repeatability. Synthetic demonstrations and test passes do not establish real-world detection accuracy or production readiness.
+
+## Check and build
+
+```powershell
+$pytestBase = Join-Path (Get-Location) ('.pytest-tmp-' + [guid]::NewGuid().ToString('N'))
+.\.venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --basetemp $pytestBase
+npm.cmd --prefix frontend test
+```
+
+To assemble the reviewed static website into a new, empty output directory:
+
+```powershell
+npm.cmd --prefix frontend run build
+.\.venv\Scripts\python.exe scripts/build_static_site.py --output dist/aegisai-release
+```
+
+The static publisher includes only the public pages, compiled assets, and reviewed sample files. The private operations dashboard and API remain local development tools. See [frontend/README.md](frontend/README.md) for page behavior and build boundaries.
+
+<details>
+<summary>Implementation history and detailed subsystem documentation</summary>
 
 ## Historical simulator milestone: Phase 8 LLM Red Agent
 
@@ -8,24 +90,8 @@ Phase 8 added an observation-driven LLM Red agent on top of the provider abstrac
 The agent receives only `RedObservation`, requests one structured `RedAction`, and returns it to the
 caller. The Controller remains the sole execution and authorization boundary.
 
-## Run
-
-```bash
-python -m venv .venv
-. .venv/bin/activate
-pip install -r requirements.txt
-python -m pytest
-```
-
-On Windows systems where the user Temp directory causes pytest permission errors, use a fresh project-local temporary directory for each run:
-
-```powershell
-$pytestBase = Join-Path (Get-Location) ('.pytest-tmp-' + [guid]::NewGuid().ToString('N'))
-python -m pytest -q -p no:cacheprovider --basetemp $pytestBase
-```
-
-Phase 8 does not require a real LLM API. Tests use `FakeLLMProvider` so behavior is deterministic and
-safe. No shell commands, real network targets, or simulator mutations are available to the agent.
+Phase 8 does not require a real LLM API. Tests use `FakeLLMProvider` so behavior is deterministic.
+No shell commands or real network targets are available to the agent; simulator mutations pass through the Controller.
 
 ## Phase 9 — XAI
 
@@ -43,7 +109,7 @@ Start the loopback-only demo site with `python demo_site/server.py`, then check 
 
 ## Static frontend
 
-The public landing page and read-only research dashboard are a React + TypeScript application built with Vite. From PowerShell, run `cd C:\AegisAI\frontend`, `npm.cmd ci`, then `npm.cmd run dev` and open `http://localhost:5174/` on your computer. Vite prints a LAN URL for viewing on a phone connected to the same Wi-Fi; this development server is for a trusted local network only and may require a Private-network firewall permission. The dashboard is at `/dashboard.html`. The static release build is produced with `npm.cmd run build` from `frontend/`, then `python scripts/build_static_site.py --output dist/aegisai-release` from the repository root. Publish only the strict allowlisted output directory. See [frontend/README.md](frontend/README.md) and [docs/PHASE4_RELEASE_HARDENING_AND_DEPLOYMENT.md](docs/PHASE4_RELEASE_HARDENING_AND_DEPLOYMENT.md) for details.
+The public landing page and read-only research dashboard are a React + TypeScript application built with Vite. Use the repository-relative startup and build commands above. The dashboard is at `/dashboard.html`. Publish only the strict allowlisted output directory. See [frontend/README.md](frontend/README.md) and [docs/PHASE4_RELEASE_HARDENING_AND_DEPLOYMENT.md](docs/PHASE4_RELEASE_HARDENING_AND_DEPLOYMENT.md) for details.
 
 The frontend remains read-only: it displays reviewed synthetic data, reads selected local assessment files in the browser, and compares fixed published samples. It does not run the simulator, scan visitor-provided URLs, or upload files.
 
@@ -84,3 +150,5 @@ Phase 5 adds preview-first, explicitly authorized synthetic scenarios for the fi
 Phase 10 records release scope, verification evidence, deployment boundaries, and remaining approval gates in [docs/PHASE10_RELEASE_CANDIDATE.md](docs/PHASE10_RELEASE_CANDIDATE.md). Current release status is **BLOCKED** for production; no deployment or publication was performed.
 
 The current repository and test baseline is documented in [docs/IMPLEMENTATION_BASELINE_AUDIT.md](docs/IMPLEMENTATION_BASELINE_AUDIT.md). It distinguishes recorded checks from unverified deployment and security work.
+
+</details>

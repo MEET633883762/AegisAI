@@ -7,6 +7,8 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+import pytest
+
 from platform_prototype.pipeline import build_report, read_batch_file
 from private_api.scheduler import (
     LocalTelemetryScheduler,
@@ -221,6 +223,55 @@ def test_shutdown_terminates_active_worker_and_joins_scheduler_thread(tmp_path):
     assert scheduler.state == "stopped"
     assert scheduler._thread is None or not scheduler._thread.is_alive()
     assert runner._active is None
+
+
+@pytest.mark.parametrize("worker_succeeds", [True, False])
+def test_shutdown_does_not_start_next_tenant_or_retry(tmp_path, worker_succeeds):
+    store = _store(tmp_path)
+    second_tenant = "synthetic-org-scheduler-second"
+    store.seed_tenant(second_tenant, build_report(read_batch_file(PHASE1_FIXTURE)))
+    entered = threading.Event()
+    release = threading.Event()
+
+    class FinishingRunner:
+        calls: list[str] = []
+
+        def run(self, database, fixture, tenant_id, run_id, timeout):
+            self.calls.append(tenant_id)
+            entered.set()
+            assert release.wait(timeout=3)
+            if not worker_succeeds:
+                raise WorkerFailure("processing_error")
+            batch = read_telemetry_file(fixture)
+            SQLiteStore(database).complete_telemetry_cycle(
+                run_id=run_id, tenant_id=tenant_id, source_id=batch.source_id, batch=batch,
+            )
+
+        def terminate_active(self):
+            release.set()
+
+    runner = FinishingRunner()
+    scheduler = LocalTelemetryScheduler(
+        database=store.path, fixture=TELEMETRY_FIXTURE,
+        tenant_ids=[TENANT, second_tenant], store=store,
+        runner=runner, max_retries=1, retry_backoff_seconds=0,
+    )
+    try:
+        assert scheduler.start() is True
+        assert entered.wait(timeout=2)
+        assert scheduler.stop(timeout=5) is True
+        assert runner.calls == [TENANT]
+        assert store.latest_telemetry_run(second_tenant) is None
+        first = store.latest_telemetry_run(TENANT)
+        assert first["status"] == ("completed" if worker_succeeds else "failed")
+        if not worker_succeeds:
+            assert first["error_code"] == "shutdown"
+        # Manual or overlapping callers cannot enqueue new work after stop.
+        assert scheduler.run_cycle() is False
+        assert runner.calls == [TENANT]
+    finally:
+        release.set()
+        scheduler.stop(timeout=5)
 
 
 def test_scheduler_enforces_fixed_interval_and_tenant_count_bounds(tmp_path):

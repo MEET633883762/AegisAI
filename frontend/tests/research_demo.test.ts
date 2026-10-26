@@ -1,6 +1,6 @@
 import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { App } from "../src/App";
 import { MAX_ARTIFACT_BYTES, parseEpisodeArtifact, readBoundedResponseText, validateEpisodeArtifact } from "../src/researchArtifact";
 import { parseAssessmentReport, validateAssessmentReport } from "../src/assessment";
@@ -49,6 +49,51 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 describe("research artifact validation and timeline", () => {
+  it("keeps the selected record when entering and leaving presentation view", async () => {
+    vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+    render(React.createElement(App, { page: "dashboard" }));
+    await screen.findByText(/Loaded \d+ precomputed action records/);
+    fireEvent.click(screen.getByRole("button", { name: "Next key moment" }));
+    fireEvent.click(screen.getByRole("button", { name: "Present demo" }));
+    expect(document.querySelector(".presentation-view")).toBeTruthy();
+    expect(screen.getByRole("region", { name: "Current moment explained" }).textContent).toContain("Foothold established.");
+    expect(screen.getByRole("button", { name: "Exit presentation" }).getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(screen.getByRole("button", { name: "Exit presentation" }));
+    expect(document.querySelector(".presentation-view")).toBeNull();
+    expect(screen.getByRole("region", { name: "Current moment explained" }).textContent).toContain("Foothold established.");
+  });
+
+  it("walks through actual records with plain-language explanations and bounded controls", async () => {
+    render(React.createElement(App, { page: "dashboard" }));
+    await screen.findByText(/Loaded \d+ precomputed action records/);
+    const moments = within(screen.getByRole("group", { name: "Key moments in the exercise" })).getAllByRole("button");
+    expect(moments).toHaveLength(6);
+    const previous = screen.getByRole("button", { name: "Previous key moment" }) as HTMLButtonElement;
+    const next = screen.getByRole("button", { name: "Next key moment" }) as HTMLButtonElement;
+    expect(previous.disabled).toBe(true);
+    expect(screen.getByRole("region", { name: "Current moment explained" }).textContent).toContain("Record 1 / 39");
+    fireEvent.click(next);
+    expect(screen.getByRole("region", { name: "Current moment explained" }).textContent).toContain("Foothold established.");
+    expect(previous.disabled).toBe(false);
+    fireEvent.click(next);
+    expect(screen.getByRole("region", { name: "Current moment explained" }).textContent).toContain("Defender's move");
+    fireEvent.click(next);
+    expect(screen.getByRole("region", { name: "Current moment explained" }).textContent).toContain("Credential rejected.");
+    // A failed credential attempt was still authorized by the Controller.
+    expect(screen.getByRole("region", { name: "Simplified exercise map" }).textContent).toContain("Allowed");
+    expect(document.querySelector(".node-active")?.textContent).toContain("Workstation");
+    fireEvent.click(moments[5]);
+    expect(screen.getByRole("region", { name: "Current moment explained" }).textContent).toContain("Data exfiltrated.");
+    expect(next.disabled).toBe(true);
+    expect(document.querySelector(".node-active")?.textContent).toContain("Sample database");
+    fireEvent.click(previous);
+    expect(screen.getByRole("region", { name: "Current moment explained" }).textContent).toContain("Asset accessed.");
+    const results = screen.getByRole("region", { name: "Full episode results" });
+    expect(results.textContent).toContain("8 of 9");
+    expect(results.textContent).toContain("0 of 6");
+    expect(results.textContent).toContain("Reached");
+  });
+
   it("accepts the published artifact with provenance and role-scoped evidence", () => {
     const parsed = parseEpisodeArtifact(JSON.stringify(validEpisode));
     expect(parsed.labels.synthetic).toBe(true);

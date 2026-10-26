@@ -2,6 +2,11 @@ import { useEffect, useState, type ChangeEvent } from "react";
 import type { AssessmentReport, EpisodeRecord, PublicEpisode } from "./types";
 import { parseEpisodeArtifact, readBoundedResponseText } from "./researchArtifact";
 import { compareAssessmentReports, readAssessmentFile, readAssessmentResponse } from "./assessment";
+import { EpisodeWalkthrough, EpisodeOutcome } from "./EpisodeWalkthrough";
+import { describeRecord } from "./episodeStory";
+import { Icon } from "./icons";
+import baselineSample from "../data/public_demo_assessment_baseline.json";
+import hardenedSample from "../data/public_demo_assessment_hardened.json";
 import episodeUrl from "../data/public_demo_episode.json?url&no-inline";
 import baselineUrl from "../data/public_demo_assessment_baseline.json?url&no-inline";
 import hardenedUrl from "../data/public_demo_assessment_hardened.json?url&no-inline";
@@ -27,21 +32,21 @@ function LandingPage() {
     <main id="main">
       <section className="hero page-width" aria-labelledby="hero-title">
         <div className="hero-copy"><p className="eyebrow"><span className="live-dot" aria-hidden="true" />Research prototype · Read-only demo</p>
-          <h1 id="hero-title">Make security decisions <span>clear enough to inspect.</span></h1>
-          <p className="hero-lede">AegisAI explores how simulated Red and Blue teams can act within clear authorization boundaries, with evidence and decisions visible at every step.</p>
-          <div className="hero-actions"><a className="button button-primary" href="dashboard.html">Explore the demo <span aria-hidden="true">→</span></a><a className="button button-secondary" href="#research">How it works</a></div>
-          <p className="hero-note"><strong>Sample content is synthetic.</strong> The dashboard includes illustrative simulator values, not verified security benchmarks.</p>
+          <h1 id="hero-title">Practice the attack.<br /><span>Understand the defense.</span></h1>
+          <p className="hero-lede">A flight simulator for cybersecurity decisions. Follow an attacker and a defender through a fictional network—and see the evidence behind every move.</p>
+          <div className="hero-actions"><a className="button button-primary" href="dashboard.html">Explore the demo <Icon name="arrow" /></a><a className="button button-secondary" href="#research">How it works</a></div>
+          <p className="hero-note"><strong>Sample content is synthetic.</strong> A recorded, scripted exercise you can explore without an API key or an internet connection once running locally.</p>
         </div>
         <aside className="hero-panel" aria-label="Demo principles"><div className="panel-top"><span className="panel-icon" aria-hidden="true">◎</span><span>DESIGNED FOR INSPECTION</span></div>
-          <div className="signal-row"><span className="signal signal-red" aria-hidden="true" /><span><b>Red</b><small>Proposes a simulated action</small></span><span className="signal-label">SIMULATED</span></div><div className="flow-line" aria-hidden="true" />
-          <div className="signal-row"><span className="signal signal-gold" aria-hidden="true" /><span><b>Controller</b><small>Checks policy and authorization</small></span><span className="signal-label">GATED</span></div><div className="flow-line" aria-hidden="true" />
-          <div className="signal-row"><span className="signal signal-blue" aria-hidden="true" /><span><b>Blue</b><small>Responds to available evidence</small></span><span className="signal-label">OBSERVABLE</span></div>
+          <div className="signal-row"><span className="signal signal-red" aria-hidden="true" /><span><b>The attacker</b><small>Tries to reach fictional records</small></span><span className="signal-label">RED TEAM</span></div><div className="flow-line" aria-hidden="true" />
+          <div className="signal-row"><span className="signal signal-gold" aria-hidden="true" /><span><b>The safety gate</b><small>Checks every proposed action</small></span><span className="signal-label">CONTROLLER</span></div><div className="flow-line" aria-hidden="true" />
+          <div className="signal-row"><span className="signal signal-blue" aria-hidden="true" /><span><b>The defender</b><small>Investigates the warning signs</small></span><span className="signal-label">BLUE TEAM</span></div>
           <div className="panel-foot"><span aria-hidden="true">↳</span> Precomputed example · no public execution</div>
         </aside>
       </section>
       <section className="proof-strip" aria-label="Project boundaries"><div className="page-width proof-items"><span><i aria-hidden="true">✓</i>Synthetic scenarios</span><span><i aria-hidden="true">✓</i>Controller-gated actions</span><span><i aria-hidden="true">✓</i>Read-only public experience</span></div></section>
-      <section className="section page-width" id="research" aria-labelledby="research-title"><div className="section-intro"><p className="eyebrow">THE RESEARCH DEMO</p><h2 id="research-title">Follow the evidence.<br /><span>Understand the decision.</span></h2><p>AegisAI is a simulator-first research project. Its demo helps people inspect how actions, observations, authorization, and outcomes connect in a controlled exercise.</p></div>
-        <div className="feature-grid"><article className="feature-card"><span className="feature-number">01</span><h3>Trace the exercise</h3><p>Move through a precomputed Red/Blue timeline and inspect each synthetic event in context.</p><span className="feature-tag">SYNTHETIC EPISODE</span></article><article className="feature-card"><span className="feature-number">02</span><h3>Inspect the decision</h3><p>Review structured observations, evidence references, and authorization outcomes where available.</p><span className="feature-tag">STRUCTURED TRACE</span></article><article className="feature-card"><span className="feature-number">03</span><h3>Compare a narrow check</h3><p>See sample baseline and hardened HTTP header reports from the local demo site.</p><span className="feature-tag">HEADERS ONLY</span></article></div>
+      <section className="section page-width" id="research" aria-labelledby="research-title"><div className="section-intro"><p className="eyebrow">WHY THIS EXISTS</p><h2 id="research-title">An alert is only<br /><span>half the story.</span></h2><p>Spotting an attack does not guarantee it gets stopped. AegisAI makes that gap visible, so a security decision can be understood, questioned, and tested again.</p></div>
+        <div className="feature-grid"><article className="feature-card"><span className="feature-number">01</span><h3>Watch the story</h3><p>Six key moments explain how an attacker moves toward fictional customer records.</p><span className="feature-tag">GUIDED WALKTHROUGH</span></article><article className="feature-card"><span className="feature-number">02</span><h3>Check the evidence</h3><p>Open the exact observations, permissions, and outcomes behind every recorded move.</p><span className="feature-tag">AUDITABLE DECISIONS</span></article><article className="feature-card"><span className="feature-number">03</span><h3>See a measurable change</h3><p>Compare four website protection settings before and after local hardening.</p><span className="feature-tag">BEFORE & AFTER</span></article></div>
       </section>
       <section className="boundary-section" id="boundaries" aria-labelledby="boundary-title"><div className="page-width boundary-layout"><div><p className="eyebrow">A SMALL, CONTROLLED SCOPE</p><h2 id="boundary-title">Built to demonstrate.<br /><span>Clear about its limits.</span></h2></div><div className="boundary-content"><p>The public experience serves reviewed sample files. It does not execute simulations or contact websites.</p><ul><li><span aria-hidden="true">—</span>No public simulation runs, uploads, or user-submitted targets.</li><li><span aria-hidden="true">—</span>No public LLM calls, accounts, billing, or customer data store.</li><li><span aria-hidden="true">—</span>The local header check covers selected response headers and status only.</li></ul><p className="boundary-footnote">Synthetic demonstrations do not establish real-world security effectiveness or certify a website as secure.</p></div></div></section>
       <section className="closing-cta page-width" aria-labelledby="cta-title"><div><p className="eyebrow">TAKE A CLOSER LOOK</p><h2 id="cta-title">Explore the read-only demo.</h2><p>Inspect the sample dashboard and its local assessment comparison.</p></div><a className="button button-primary" href="dashboard.html">Open AegisAI demo <span aria-hidden="true">→</span></a></section>
@@ -73,17 +78,22 @@ function ResearchDemo() {
     return () => { active = false; };
   }, []);
 
-  return <section className="card research-demo" id="research-demo" aria-labelledby="research-demo-title">
-    <div className="section-head research-demo-head"><div><h2 id="research-demo-title">Interactive Red / Blue Episode</h2><p className="muted">Select a recorded action to inspect its role-scoped evidence, structured action, validation, authorization, and result.</p></div><span className="badge">Synthetic · Precomputed · Read-only</span></div>
-    <p className="muted" role="status" aria-live="polite">{status}</p>
-    {artifact && <>
-      <section className="research-provenance" aria-label="Sample provenance"><h3>Sample provenance and outcome</h3><p>{artifact.labels.display}</p><p>{artifact.provenance.scenario_id} · seed {artifact.provenance.seed} · {artifact.records.length} recorded actions</p><p>{artifact.provenance.red_policy} vs {artifact.provenance.blue_policy} · {artifact.provenance.research_split}</p><p>Episode objective recorded as {artifact.objective_result.achieved ? "achieved" : "not achieved"} in this one sample.</p></section>
-      <section className="research-metrics-section" aria-labelledby="research-metrics-title"><div className="section-head"><h3 id="research-metrics-title">Episode metrics</h3><span className="badge">Single synthetic episode</span></div><div className="research-metrics">{artifact.metrics.map((metric) => <article className="research-metric" key={metric.id}><h3>{metric.label}</h3><p className="research-metric-value">{metric.numerator} / {metric.denominator} {metric.unit} · {(metric.value * 100).toFixed(1)}%</p><p className="research-metric-definition">{metric.definition}</p></article>)}</div></section>
-      <div className="research-demo-grid"><section className="research-timeline-panel" aria-labelledby="research-timeline-title"><div className="section-head"><h3 id="research-timeline-title">Recorded action timeline</h3><span className="badge">Select a step</span></div><ol className="research-timeline" aria-label="Precomputed Red and Blue actions">{artifact.records.map((record) => <li key={record.id}><button type="button" className="research-timeline-button" aria-pressed={selected?.id === record.id} onClick={() => setSelected(record)}>Step {record.step} · {record.role.toUpperCase()} · {record.action.type} · {record.result.outcome}</button></li>)}</ol></section>
-        <section className="research-detail-panel" aria-labelledby="research-detail-title"><h3 id="research-detail-title">Selected action details</h3><div aria-live="polite" aria-atomic="true">{selected ? <RecordDetails record={selected} /> : <p className="research-muted">Select a recorded action to inspect its details.</p>}</div></section></div>
-      <section className="research-limitations" aria-labelledby="research-limitations-title"><h3 id="research-limitations-title">Sample limitations</h3><ul>{artifact.limitations.map((limitation, index) => <li key={`${index}-${limitation}`}>{limitation}</li>)}</ul></section>
+  return <section className="research-demo" id="research-demo" aria-labelledby="research-demo-title">
+    <div className="section-head research-demo-head"><div><p className="eyebrow">01 / FOLLOW THE EXERCISE</p><h2 id="research-demo-title">One attack. Every decision visible.</h2><p className="muted">Explore six key moments. The map and explanation follow the record you select.</p></div><span className="badge replay-badge"><span className="dot" />Recorded, not live</span></div>
+    <p className="load-status" role="status" aria-live="polite">{status}</p>
+    {artifact && selected && <>
+      <EpisodeWalkthrough artifact={artifact} selected={selected} onSelect={setSelected} />
+      <EpisodeOutcome artifact={artifact} />
+      <div className="takeaway"><span className="takeaway-icon"><Icon name="eye" /></span><p><strong>The lesson: noticing a threat is not the same as stopping it.</strong> In this scripted sample, the defender keeps investigating while the attacker advances. The trace makes that response gap visible.</p></div>
+      <details className="technical-evidence"><summary><Icon name="code" /><span>Look under the hood <small>All {artifact.records.length} actions, original evidence & metric definitions</small></span><span className="expand-label">EXPAND +</span></summary><div className="evidence-content">
+        <section className="research-provenance" aria-label="Sample provenance"><h3>Sample provenance and outcome</h3><p>{artifact.labels.display}</p><p>{artifact.provenance.scenario_id} · seed {artifact.provenance.seed} · {artifact.records.length} recorded actions</p><p>{artifact.provenance.red_policy} vs {artifact.provenance.blue_policy} · {artifact.provenance.research_split}</p><p>Episode objective recorded as {artifact.objective_result.achieved ? "achieved" : "not achieved"} in this one sample.</p></section>
+        <section className="research-metrics-section" aria-labelledby="research-metrics-title"><div className="section-head"><h3 id="research-metrics-title">Episode metrics</h3><span className="badge">Single synthetic episode</span></div><div className="research-metrics">{artifact.metrics.map((metric) => <article className="research-metric" key={metric.id}><h3>{metric.label}</h3><p className="research-metric-value">{metric.numerator} / {metric.denominator} {metric.unit} · {(metric.value * 100).toFixed(1)}%</p><p className="research-metric-definition">{metric.definition}</p></article>)}</div></section>
+        <div className="research-demo-grid"><section className="research-timeline-panel" aria-labelledby="research-timeline-title"><div className="section-head"><h3 id="research-timeline-title">Recorded action timeline</h3><span className="badge">Select a step</span></div><ol className="research-timeline" aria-label="Precomputed Red and Blue actions">{artifact.records.map((record) => <li key={record.id}><button type="button" className="research-timeline-button" aria-pressed={selected.id === record.id} onClick={() => setSelected(record)}><span className={`timeline-role ${record.role}`}>{record.role.toUpperCase()}</span><span>{describeRecord(record).title}<small>Step {record.step} · {record.action.type} · {record.result.outcome}</small></span></button></li>)}</ol></section>
+          <section className="research-detail-panel" aria-labelledby="research-detail-title"><h3 id="research-detail-title">Selected action details</h3><div aria-live="polite" aria-atomic="true"><RecordDetails record={selected} /></div></section></div>
+        <section className="research-limitations" aria-labelledby="research-limitations-title"><h3 id="research-limitations-title">Sample limitations</h3><ul>{artifact.limitations.map((limitation, index) => <li key={`${index}-${limitation}`}>{limitation}</li>)}</ul></section>
+      </div></details>
     </>}
-    <div className="research-download-row"><p className="muted">Download the same reviewed JSON artifact shown here, including schema version, provenance, and limitations.</p><a className="download-sample" href={episodeUrl} download="aegisai-synthetic-episode-v1.json">Download sample report <span aria-hidden="true">↓</span></a></div>
+    <div className="research-download-row"><p className="muted">Synthetic data · Scripted agents · One reproducible episode · No real-world accuracy claim</p><a className="download-sample" href={episodeUrl} download="aegisai-synthetic-episode-v1.json">Download sample report <span aria-hidden="true">↓</span></a></div>
   </section>;
 }
 
@@ -105,7 +115,21 @@ function AssessmentReportView({ report }: { report: AssessmentReport }) {
 function AssessmentComparison({ reports }: { reports: AssessmentReport[] }) {
   const comparison = compareAssessmentReports(reports);
   if (reports.length === 0) return null;
-  return <>{comparison && <div className="comparison"><strong>Before / after:</strong> {comparison.resolved} finding(s) resolved; {comparison.remaining} remain in the hardened report.</div>}{reports.map((report) => <AssessmentReportView report={report} key={report.profile} />)}</>;
+  return <>{comparison && <div className="comparison"><Icon name="check" /><span><strong>Before / after:</strong> {comparison.resolved} finding(s) resolved; {comparison.remaining} remain in the hardened report.</span></div>}{reports.map((report) => <AssessmentReportView report={report} key={report.profile} />)}</>;
+}
+
+const headerExplanations: Record<string, string> = {
+  "Content-Security-Policy": "Control which content can load",
+  "X-Content-Type-Options": "Prevent risky file-type guessing",
+  "Referrer-Policy": "Limit information shared with links",
+  "Permissions-Policy": "Restrict browser feature access",
+};
+
+function HeaderComparisonPreview() {
+  return <section className="header-preview" aria-label="Published website protection comparison"><div className="header-preview-head"><span>WEBSITE PROTECTION SETTING</span><span>BEFORE</span><span>AFTER</span></div>{baselineSample.header_results.map((before) => {
+    const after = hardenedSample.header_results.find((item) => item.header === before.header);
+    return <div className="header-preview-row" key={before.header}><span><Icon name="shield" /><span><strong>{headerExplanations[before.header] ?? before.header}</strong><small>{before.header}</small></span></span><span className={before.present ? "header-set" : "header-missing"}>{before.present ? "✓ Set" : "− Missing"}</span><span className={after?.present ? "header-set" : "header-missing"}>{after?.present ? "✓ Set" : "− Missing"}</span></div>;
+  })}<div className="header-preview-foot"><span className="preview-result"><Icon name="check" />{baselineSample.finding_count - hardenedSample.finding_count} missing settings corrected</span><span>Fixed published examples · Four headers only</span></div></section>;
 }
 
 function WebsiteAssessment() {
@@ -148,50 +172,31 @@ function WebsiteAssessment() {
     }
   }
 
-  return <section className="card" id="assessment" aria-labelledby="assessment-title"><div className="section-head"><h2 id="assessment-title">Website Header Assessment</h2><span className="badge">Local demo · Read-only</span></div>
-    <p className="muted">Load the sanitized published samples or select local demo reports to compare remediation. This checks HTTP status and four response headers only; it is not a general website security assessment.</p>
-    <button className="assessment-sample-button" id="load-assessment-samples" type="button" onClick={() => void loadPublishedSamples()} disabled={loadingSamples}>{loadingSamples ? "Loading samples…" : "Load published baseline and hardened samples"}</button>
-    <p className="assessment-downloads">Download: <a href={baselineUrl} download="aegisai-assessment-baseline-sample.json">baseline JSON</a> · <a href={hardenedUrl} download="aegisai-assessment-hardened-sample.json">hardened JSON</a></p>
-    <label htmlFor="assessment-file">Assessment JSON files</label><input id="assessment-file" type="file" accept="application/json,.json" multiple onChange={(event) => void loadLocalFiles(event)} />
-    <p id="assessment-status" className="muted" role="status" aria-live="polite">{status}</p><div id="assessment-results"><AssessmentComparison reports={reports} /></div>
+  return <section className="assessment-section" id="assessment" aria-labelledby="assessment-title"><div className="section-head research-demo-head"><div><p className="eyebrow">02 / SEE THE IMPROVEMENT</p><h2 id="assessment-title">Small changes. Visible protection.</h2><p className="muted">A separate local website example: compare four browser protection settings before and after hardening.</p></div><span className="badge">Published samples</span></div>
+    <HeaderComparisonPreview />
+    <p className="assessment-limit">These settings help control browser behavior. This checks HTTP status and four response headers only; it is not a general website security assessment.</p>
+    <details className="technical-evidence assessment-evidence"><summary><Icon name="code" /><span>Inspect the header reports <small>Original findings, local file comparison & downloads</small></span><span className="expand-label">EXPAND +</span></summary><div className="evidence-content">
+      <h3>Website Header Assessment</h3><button className="assessment-sample-button" id="load-assessment-samples" type="button" onClick={() => void loadPublishedSamples()} disabled={loadingSamples}>{loadingSamples ? "Loading samples…" : "Load published baseline and hardened samples"}</button>
+      <p className="assessment-downloads">Download: <a href={baselineUrl} download="aegisai-assessment-baseline-sample.json">baseline JSON</a> · <a href={hardenedUrl} download="aegisai-assessment-hardened-sample.json">hardened JSON</a></p>
+      <label htmlFor="assessment-file">Assessment JSON files</label><input id="assessment-file" type="file" accept="application/json,.json" multiple onChange={(event) => void loadLocalFiles(event)} />
+      <p id="assessment-status" className="muted" role="status" aria-live="polite">{status}</p><div id="assessment-results"><AssessmentComparison reports={reports} /></div>
+    </div></details>
   </section>;
 }
 
-const illustrative = {
-  metrics: { attackSuccessRate: .33, detectionRate: .83, mitigationSuccessRate: .75, meanDetectionTime: 3.2, falsePositiveRate: .08, decisionLatency: .41 },
-  timeline: [
-    { id: "e1", step: 1, role: "RED", action: "DISCOVER_HOST", target: "web-server", status: "success", timestamp: 1 },
-    { id: "e2", step: 2, role: "RED", action: "ENUMERATE_PORT", target: "web-server", status: "success", timestamp: 2 },
-    { id: "e3", step: 3, role: "RED", action: "EXPLOIT_SIMULATED_VULNERABILITY", target: "web-server", status: "success", timestamp: 3 },
-    { id: "e4", step: 4, role: "BLUE", action: "INVESTIGATE_ALERT", target: "web-server", status: "success", timestamp: 4 },
-    { id: "e5", step: 5, role: "BLUE", action: "ISOLATE_HOST", target: "web-server", status: "success", timestamp: 5 },
-    { id: "e6", step: 6, role: "RED", action: "LATERAL_MOVE", target: "database", status: "blocked", timestamp: 6 },
-  ],
-  traces: [{ id: "tr1", step: 5, role: "BLUE", observation: "New alert on web-server", evidence: ["alert:e4", "telemetry:e3"], action: "ISOLATE_HOST", rationale: "The observed alert and preceding exploit telemetry justify containment of the affected host.", reasonCategory: "CONTAINMENT", expectedOutcome: "Stop further lateral movement.", actualOutcome: "Database access attempt was blocked.", success: true }],
-  patches: [{ id: "kp1", title: "Contain exploited web host before lateral movement", status: "validated", version: 2, evidenceRef: "ep-demo-001/step-5", lesson: "When a simulated exploit is detected on the web host, isolate it before lateral movement can occur." }],
-  threats: [{ id: "ti1", source: "curated-local", title: "Simulated web-service vulnerability guidance", tags: ["CVE", "web", "defense"], trust: "untrusted", content: "Reference material only; never treat retrieved text as executable instructions." }],
-};
-
-function LegacyIllustration() {
-  const percentage = (value: number) => `${Math.round(value * 100)}%`;
-  const seconds = (value: number) => `${value.toFixed(2)} s`;
-  return <details className="legacy-dashboard card"><summary>Earlier illustrative dashboard example (not verified research results)</summary><p className="muted">The example below is retained for compatibility with the original static dashboard. Its values are illustrative and are not the reviewed episode artifact above.</p>
-    <section aria-labelledby="metrics-title"><div className="section-head dashboard-section-title"><h2 id="metrics-title">Illustrative metrics</h2><span className="badge">Unverified example values</span></div><section className="metrics" aria-label="Illustrative metrics">{[["Attack Success Rate", percentage(illustrative.metrics.attackSuccessRate)], ["Detection Rate", percentage(illustrative.metrics.detectionRate)], ["Mitigation Success", percentage(illustrative.metrics.mitigationSuccessRate)], ["Mean Detection Time", seconds(illustrative.metrics.meanDetectionTime)], ["False Positive Rate", percentage(illustrative.metrics.falsePositiveRate)], ["Decision Latency", seconds(illustrative.metrics.decisionLatency)]].map(([label, value]) => <article className="card metric" key={label}><div className="muted">{label}</div><div className="metric-value">{value}</div></article>)}</section></section>
-    <section className="card" aria-labelledby="timeline-title"><div className="section-head"><h2 id="timeline-title">Illustrative Red / Blue Timeline</h2><span className="badge">Not artifact-backed</span></div><div className="timeline">{illustrative.timeline.map((item) => <div className="event" key={item.id}><div className={`role ${item.role.toLowerCase()}`}>{item.role}</div><div><strong>Step {item.step}: {item.action}</strong><div className="muted">Target: {item.target} · t={item.timestamp}s · {item.status}</div></div></div>)}</div></section>
-    <section className="card" aria-labelledby="traces-title"><div className="section-head"><h2 id="traces-title">Illustrative Decision Traces</h2><span className="badge">Structured summary · No hidden CoT</span></div>{illustrative.traces.map((trace) => <div className="trace" key={trace.id}><div className="trace-top"><strong>{trace.role} · Step {trace.step}</strong><span className="ok">SUCCESS</span></div><p><b>Observation:</b> {trace.observation}</p><p><b>Evidence:</b> {trace.evidence.join(", ")}</p><p><b>Action:</b> {trace.action} · <b>Reason:</b> {trace.reasonCategory}</p><p><b>Rationale:</b> {trace.rationale}</p><p><b>Expected:</b> {trace.expectedOutcome}</p><p><b>Actual:</b> {trace.actualOutcome}</p></div>)}</section>
-    <div className="two-col"><section className="card" aria-labelledby="knowledge-title"><h2 id="knowledge-title">Illustrative Adaptive Knowledge</h2>{illustrative.patches.map((patch) => <div className="item" key={patch.id}><strong>{patch.title}</strong><div className="muted">v{patch.version} · {patch.status} · evidence {patch.evidenceRef}</div><p>{patch.lesson}</p></div>)}</section><section className="card" aria-labelledby="threat-title"><h2 id="threat-title">Illustrative Threat Intelligence</h2>{illustrative.threats.map((threat) => <div className="item" key={threat.id}><strong>{threat.title}</strong><div className="muted">{threat.source} · trust={threat.trust}</div><p>{threat.content}</p></div>)}</section></div>
-  </details>;
-}
-
 function DashboardPage() {
-  return <><a className="skip-link" href="#dashboard-main">Skip to dashboard</a><nav className="dashboard-nav" aria-label="Main navigation"><a className="dashboard-brand" href="index.html"><span aria-hidden="true">A</span> AegisAI</a><div><a href="index.html">Home</a><a className="dashboard-nav-current" href="dashboard.html" aria-current="page">Research demo</a><a href="privacy.html">Privacy</a></div></nav>
-    <main id="dashboard-main"><header className="top"><div><div className="eyebrow">AEGISAI · RESEARCH PROTOTYPE</div><h1>Purple-Team Security Dashboard</h1><p className="muted">Inspect a sample Red/Blue timeline, structured decision traces, and local website header reports.</p></div><div className="status"><span className="dot" />SAMPLE EPISODE</div></header>
-      <aside className="sample-notice" aria-label="Sample data notice"><strong>Synthetic, precomputed sample.</strong> This page replays reviewed output from one deterministic scripted simulator episode. It is not representative evidence of real-world security effectiveness. Public pages do not execute actions.</aside>
-      <section className="meta" aria-label="Sample provenance"><span>Public demo <b>Precomputed artifact</b></span><span>Policy boundary <b>Controller-gated simulator</b></span><span>Access <b>Read-only</b></span></section>
-      <ResearchDemo /><WebsiteAssessment /><LegacyIllustration />
-      <footer className="footer">Observational sample only. Actions are never executed from this frontend. Synthetic results do not establish security or real-world effectiveness. <a href="privacy.html">Privacy</a></footer>
+  const [presenting, setPresenting] = useState(false);
+  return <div className={`demo-page${presenting ? " presentation-view" : ""}`}><a className="skip-link" href="#dashboard-main">Skip to dashboard</a>
+    <nav className="demo-nav" aria-label="Main navigation"><Brand /><div className="demo-nav-links"><a href="index.html">Overview</a><a className="current" href="#research-demo" aria-current="page">The exercise</a><a href="#assessment">Before & after</a></div><button className="presentation-toggle" type="button" aria-pressed={presenting} onClick={() => { setPresenting(!presenting); window.scrollTo?.({ top: 0, behavior: "instant" }); }}><Icon name={presenting ? "monitor" : "play"} />{presenting ? "Exit presentation" : "Present demo"}</button></nav>
+    <main id="dashboard-main">
+      <header className="demo-hero"><div><p className="eyebrow">THE AEGISAI EXPERIENCE</p><h1>A cyberattack,<br /><span>explained.</span></h1><p className="demo-lede">An attacker looks for a way in. A defender follows the clues.<br className="desktop-break" /> See what happens when finding a threat isn't enough to stop it.</p></div><div className="demo-hero-note"><span className="hero-note-icon"><Icon name="play" /></span><strong>A security rehearsal.<br />With the evidence included.</strong><p>A guided replay of a fictional network.<br />No real systems or customer data.</p><a href="#research-demo">Start exploring <Icon name="arrow" /></a></div></header>
+      <section className="actor-cards" aria-label="Meet the three roles"><article className="actor-card actor-card-red"><span className="actor-card-icon"><Icon name="target" /></span><div><p>THE ATTACKER <span>RED TEAM</span></p><h2>Finds a way in.</h2><span>Tries to reach the fictional records.</span></div></article><article className="actor-card actor-card-gate"><span className="actor-card-icon"><Icon name="lock" /></span><div><p>THE SAFETY GATE <span>CONTROLLER</span></p><h2>Checks every move.</h2><span>Enforces the simulation's permissions.</span></div></article><article className="actor-card actor-card-blue"><span className="actor-card-icon"><Icon name="shield" /></span><div><p>THE DEFENDER <span>BLUE TEAM</span></p><h2>Follows the clues.</h2><span>Investigates the warning signs.</span></div></article></section>
+      <aside className="demo-disclosure"><Icon name="eye" /><p><strong>You're watching a recorded, scripted exercise.</strong> All data is synthetic. Selecting a step changes the view; it does not execute an attack or call an AI model.</p><span>READ-ONLY DEMO</span></aside>
+      <ResearchDemo /><WebsiteAssessment />
+      <section className="why-aegis"><span className="eyebrow">WHAT MAKES THIS USEFUL?</span><h2>Don't just count alerts.<br /><span>Understand the decision behind them.</span></h2><div><p><Icon name="eye" /><span><strong>Evidence you can inspect</strong>See what each role actually knew before it acted.</span></p><p><Icon name="lock" /><span><strong>Permissions you can verify</strong>The Controller owns execution and authorization.</span></p><p><Icon name="arrow" /><span><strong>A result you can reproduce</strong>Replay the same seeded scenario and compare outcomes.</span></p></div></section>
+      <footer className="demo-footer"><Brand /><p>Built to question security decisions.<br />Research prototype · Synthetic results · Read-only</p><a href="privacy.html">Privacy & data handling <span aria-hidden="true">↗</span></a></footer>
     </main>
-  </>;
+  </div>;
 }
 
 function PrivacyPage() {

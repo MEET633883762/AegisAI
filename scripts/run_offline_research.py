@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sys
+from dataclasses import asdict
 from pathlib import Path
 from time import monotonic
 
@@ -123,6 +124,8 @@ def main() -> None:
     print("=" * 70)
     print("AEGISAI OFFLINE RESEARCH EXPERIMENT")
     print("=" * 70)
+    print("Provider: deterministic scripted test double; no model API calls.")
+    print("This run validates the harness, not real LLM performance.")
 
     print("\nScenario split")
     print("-" * 70)
@@ -173,11 +176,6 @@ def main() -> None:
         memory_source_pairs=split.train + split.validation,
     )
 
-    def dump_model(model):
-        if hasattr(model, "model_dump"):
-            return model.model_dump(mode="json")
-        return model
-
     output = {
         "experiment_id": result.baseline.experiment_id,
 
@@ -187,19 +185,15 @@ def main() -> None:
             "test": list(split.test),
         },
 
-        "baseline": dump_model(result.baseline),
+        "baseline": asdict(result.baseline),
 
-        "no_memory": dump_model(result.no_memory),
+        "no_memory": asdict(result.no_memory),
 
-        "adaptive_memory": dump_model(result.adaptive),
+        "adaptive_memory": asdict(result.adaptive),
 
-        "adaptation_improvement": dump_model(
-            result.adaptation_improvement
-        ),
+        "adaptation_improvement": result.adaptation_improvement,
 
-        "generalization_improvement": dump_model(
-            result.generalization_improvement
-        ),
+        "generalization_improvement": result.generalization_improvement,
 
         "manifest_fingerprints": list(
             result.manifest_fingerprints
@@ -220,7 +214,6 @@ def main() -> None:
         json.dumps(
             output,
             indent=2,
-            default=str,
         ),
         encoding="utf-8",
     )
@@ -229,13 +222,13 @@ def main() -> None:
     print("EXPERIMENT COMPLETE")
     print("=" * 70)
 
-    print("\nA — Scripted baseline")
+    print("\nA - Scripted baseline")
     print(result.baseline.aggregate)
 
-    print("\nB — LLM without adaptive memory")
+    print("\nB - LLM interface without adaptive memory (offline test double)")
     print(result.no_memory.aggregate)
 
-    print("\nC — LLM with adaptive memory")
+    print("\nC - LLM interface with adaptive memory (offline test double)")
     print(result.adaptive.aggregate)
 
     print("\nAdaptation improvement (C - B)")

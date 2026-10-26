@@ -87,6 +87,22 @@ def test_oversized_telemetry_is_rejected_before_parse():
         load_telemetry_bytes(b" " * (MAX_INPUT_BYTES + 1))
 
 
+@pytest.mark.parametrize("unrelated_fields", [
+    {"http_method": "GET"},
+    {"route_code": "home"},
+    {"status_code": 200},
+    {"http_method": "GET", "route_code": "home", "status_code": 200},
+    {"error_code": "HANDLER_TIMEOUT"},
+])
+def test_simulated_activity_rejects_http_and_application_error_fields(unrelated_fields):
+    payload = json.loads(_batch_bytes())
+    activity = next(event for event in payload["events"]
+                    if event["event_type"] == "simulated_suspicious_activity")
+    activity.update(unrelated_fields)
+    with pytest.raises(TelemetryInputError, match="schema validation failed"):
+        load_telemetry_bytes(json.dumps(payload).encode())
+
+
 def test_conflicting_event_ids_and_ambiguous_evidence_are_rejected():
     payload = json.loads(_batch_bytes())
     payload["events"][-1]["asset_ref"] = "synthetic-altered-asset"

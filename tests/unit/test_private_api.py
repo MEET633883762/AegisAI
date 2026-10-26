@@ -284,6 +284,33 @@ def test_local_http_server_binds_loopback_and_sets_safe_response_headers(api):
         thread.join(timeout=2)
 
 
+@pytest.mark.parametrize("content_length, expected_status", [
+    ("9" * 5000, 413),
+    ("0" * 5000, 200),
+])
+def test_http_content_length_is_bounded_before_integer_conversion(api, content_length, expected_status):
+    app, _, _, token = api
+    server = create_local_server(app, port=0)
+    thread = threading.Thread(target=server.serve_forever, kwargs={"poll_interval": 0.01}, daemon=True)
+    thread.start()
+    try:
+        host, port = server.server_address
+        connection = http.client.HTTPConnection(host, port, timeout=2)
+        connection.request("GET", "/health", headers={
+            "Authorization": f"Bearer {token}", "Content-Length": content_length,
+        })
+        response = connection.getresponse()
+        payload = json.loads(response.read())
+        assert response.status == expected_status
+        assert response.getheader("Content-Type") == "application/json; charset=utf-8"
+        assert payload.get("error") == ("request_too_large" if expected_status == 413 else None)
+        connection.close()
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+
 def test_local_http_server_allows_only_fixed_loopback_frontend_cors_origins(api):
     app, _, _, token = api
     server = create_local_server(app, port=0)

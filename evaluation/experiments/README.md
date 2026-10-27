@@ -1,35 +1,31 @@
-# Phase 13 — Experiments
+# Research experiment protocol
 
-Phase 13 provides the research experiment protocol for AegisAI.
+The A/B/C protocol evaluates three configurations on the same held-out scenario/seed pairs:
 
-## Configurations
+| Configuration | Agents |
+|---|---|
+| A | Scripted Red and scripted Blue baseline. |
+| B | Provider-backed Red and Blue without adaptive memory. |
+| C | Provider-backed Red and Blue with validated adaptive-memory context. |
 
-- **A:** Scripted Red + Scripted Blue baseline.
-- **B:** LLM Red + LLM Blue without adaptive memory.
-- **C:** LLM Red + LLM Blue with validated adaptive memory.
+A provider-backed interface can be backed by an offline test double. Such a run verifies wiring and isolation; it is not evidence of real LLM performance. The public browser demo and the paired defender benchmark both use scripted policies.
 
-All three configurations use the same held-out scenario/seed set for the comparison.
+## Leakage control and reproducibility
 
-## Leakage control
+[`protocol.py`](protocol.py) rejects duplicate or overlapping train/validation/test pairs. Held-out test pairs cannot be adaptive-memory sources; declared source pairs must belong to training or validation. [`memory_gate.py`](memory_gate.py) renders only validated patches with complete, permitted scenario provenance into a bounded character budget.
 
-Scenario/seed pairs are partitioned into train, validation, and held-out test sets. Test pairs are
-never permitted as adaptive-memory sources. Memory is rendered only from validated patches whose
-evidence can be traced to permitted non-test source pairs.
+The default split partitions scenario/seed pairs. `build_template_holdout_split()` instead holds out whole authored templates; this tests variation beyond seeds but still does not establish performance on independent real-world attack families. Each manifest records configuration, split, provider, model, temperature, seed, and whether memory is enabled; its SHA-256 fingerprint identifies that complete manifest.
 
-## Reproducibility
+The comparison exports adaptation and generalization improvement using a bounded defensive score derived from detection, mitigation, and attack-success rates. In the current implementation, both improvement fields represent the same held-out C-minus-B score difference; they are not independent experimental measurements.
 
-Each experiment manifest records experiment ID, configuration, split, provider, model, temperature,
-and seed. A SHA-256 fingerprint identifies the complete manifest.
+## Offline harness check
 
-## Metrics
+Use the Python 3.11 environment in the [development guide](../../docs/DEVELOPMENT.md). From the repository root on Windows:
 
-The existing metrics runner supplies attack success rate, detection rate, mean detection time,
-mitigation success rate, false-positive rate, and decision latency. Phase 13 adds comparison-level
-adaptation/generalization improvement based on a bounded defensive score.
+```powershell
+py -3.11 scripts/run_offline_research.py
+```
 
-## Important limitation
+This script uses a deterministic test-double provider and writes `results/offline_research_result.json`. It overwrites that fixed file if it already exists, so preserve an earlier report first when needed. It makes no live provider call. Scientific B/C comparisons require a separately defined real-provider protocol, recorded limits, and repeatable evidence; the [single live validation](../../docs/PHASE19_LIVE_INTEGRATION_VALIDATION.md) is an integration check, not such a comparison.
 
-The repository's offline test-double is **not** a real LLM and must not be presented as experimental
-LLM evidence. Scientific B/C runs require a real provider adapter implementing the existing
-provider-neutral interface. The test-double only proves that LLM-agent wiring, experiment isolation,
-and leakage controls work without network access.
+The separate [`defender_benchmark.py`](defender_benchmark.py) compares two scripted defender policies and preserves paired outcomes and disruption evidence. See the [comparison guide](../../docs/DEFENDER_COMPARISON.md) and [current verification](../../docs/CURRENT_STATUS.md).

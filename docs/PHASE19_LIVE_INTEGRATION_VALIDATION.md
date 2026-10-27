@@ -1,5 +1,7 @@
 # Phase 19 — First Real LLM Integration Validation
 
+Implementation record for this milestone. Historical verification totals below are preserved; use the [development guide](DEVELOPMENT.md) for Python 3.11 setup and [current status](CURRENT_STATUS.md) for fresh project checks. The public browser walkthrough uses scripted agents and is separate from opt-in provider experiments.
+
 Phase 19 provides a fail-closed command for **one** tightly bounded live LLM episode.
 
 ## Purpose
@@ -28,19 +30,23 @@ The API key is never printed or written to the result artifact.
 
 ## Recommended first run
 
-Set the environment variables in the shell/session, then run:
+Prepare the Python 3.11 environment in [DEVELOPMENT.md](DEVELOPMENT.md), configure `OPENAI_MODEL` and `OPENAI_API_KEY` in the process environment, then run from the repository root in PowerShell. This command makes a real provider call only with explicit `--live`:
 
-```text
-python scripts/validate_live_integration.py --live --model <model-name> --template web_exploit_lateral_exfil --seed 1
+```powershell
+py -3.11 scripts/validate_live_integration.py --live --model "$env:OPENAI_MODEL" --template web_exploit_lateral_exfil --seed 1
 ```
 
-The Phase 19 defaults intentionally use only **4 provider calls, 2,000 total tokens, and 2 episode steps**. Increase them only after the first integration check succeeds.
+The Phase 19 defaults are **4 AegisAI provider invocations, 2,000 reported aggregate tokens, 2 episode steps, a 30-second request timeout, and a 120-second wall-clock budget**. The token threshold is checked after each returned response; the deadline does not interrupt an in-flight SDK request, and SDK transport retries are separate. These are not strict HTTP-attempt or spend caps; see [limits and accounting](PHASE17_LIVE_EXPERIMENT_HARNESS.md#limits-and-accounting).
+
+Use `.\.venv\Scripts\python.exe` instead of `py -3.11` for the prepared Windows virtual environment. On Linux, use `.venv/bin/python` and `"$OPENAI_MODEL"`.
 
 To save a redacted result artifact:
 
-```text
-python scripts/validate_live_integration.py --live --model <model-name> --template web_exploit_lateral_exfil --seed 1 --output results/live_validation.json
+```powershell
+py -3.11 scripts/validate_live_integration.py --live --model "$env:OPENAI_MODEL" --template web_exploit_lateral_exfil --seed 1 --output .aegisai-local/live-validation/first-run.json
 ```
+
+The CLI creates the parent directory and overwrites the chosen output file if it exists. Choose a new path when preserving earlier results. The JSON excludes the API-key configuration and is labeled as integration evidence, not a research comparison.
 
 ## Interpreting the result
 
@@ -56,4 +62,4 @@ The output explicitly marks:
 
 ## Provider boundary
 
-The OpenAI Python SDK currently supports `client.responses.parse(..., text_format=YourPydanticModel)` for Responses API structured outputs. The application still performs its own Pydantic validation after parsing. See the official SDK examples and parser implementation for the current contract.
+The checked-in adapter uses `client.responses.parse(..., text_format=YourPydanticModel)` with the reviewed SDK dependency. The application performs its own Pydantic validation after parsing. The wrapper adds no retry loop, but the constructor does not override the underlying SDK retry configuration. See [the local adapter](../llm/openai_provider.py) and [provider guide](../llm/README.md) for the implemented boundary.

@@ -6,6 +6,10 @@ The browser demo tells that story in six key moments, with a network map, plain-
 
 **The key insight:** noticing a threat does not always mean stopping it. In the current example, the defender detects 8 of 9 malicious alerts but mitigates 0 of 6 response-required alerts, and the attacker reaches its simulated goal. Showing that failure gives researchers a clear target for improving defensive decisions.
 
+**Current setup and verification:** [the 2026-10-27 implementation snapshot](docs/CURRENT_STATUS.md) records the supported runtime, all three browser routes, and fresh test results. Use Python 3.11 for the backend; an unqualified `python` may still select an older installation.
+
+**Presenting to judges?** Start with the [judges' guide](docs/JUDGES_GUIDE.md), open the [public demo](http://localhost:5174/), and follow the recorded exercise. The [documentation index](docs/README.md) points to the architecture, evidence, setup, and local operations prototype.
+
 ## Improve and measure the defense
 
 The engine now includes `EvidencePrioritizedBlueAgent`, a second defender that responds to investigated urgent threat evidence before taking on more alerts. It confirms containment from the next observation instead of assuming a requested action succeeded. The historical baseline remains available for comparison.
@@ -31,9 +35,19 @@ npm.cmd --prefix frontend run dev -- --host 127.0.0.1
 
 Open **[http://localhost:5174/](http://localhost:5174/)**, then choose the walkthrough. The direct demo URL is **[http://localhost:5174/dashboard.html](http://localhost:5174/dashboard.html)**. Use **Next moment** to follow the story, then compare the baseline and hardened website-header samples.
 
-Choose **Present demo** in the dashboard navigation to focus the exercise and enlarge the text for projection. Choose **Exit presentation** to return to the full dashboard.
+Choose **Present demo** in the dashboard navigation to focus the exercise and enlarge the text for projection. Choose **Exit presentation** or **Esc** to return to the full dashboard. Focus the player to use Left/Right and Home/End. The evidence panel supports role filters and search; the landing page includes a research FAQ.
 
 This browser demo needs Node.js 22.12 or later. After dependencies are installed, it works without internet access, an API key, or the Python backend. It replays reviewed output from scripted simulator agents; it does not run an AI model in the browser.
+
+## Open the local operations dashboard
+
+This is a separate synthetic prototype with findings, Detection Lab, scenarios, assessments, executive reports, cases, and system health. After the Python setup below, start its API in another terminal:
+
+```powershell
+.\.venv\Scripts\python.exe scripts/run_private_api.py
+```
+
+With the Vite server running, open [http://localhost:5174/local-dashboard.html](http://localhost:5174/local-dashboard.html) and enter the API's current startup bearer token. If the dependencies are already installed directly in Python 3.11, `py -3.11 scripts/run_private_api.py` is an explicit Windows alternative. The token stays in page memory; the private API and dashboard are excluded from the public static package. See [the local dashboard guide](docs/PHASE7A_LOCAL_DASHBOARD.md) and the [Python version-mismatch fix](docs/DEVELOPMENT.md#python-version-mismatch-strenum).
 
 ## Verify the work behind the demo
 
@@ -67,8 +81,8 @@ The repository also contains structured LLM-agent adapters and experiment tools,
 ## Check and build
 
 ```powershell
-$pytestBase = Join-Path (Get-Location) ('.pytest-tmp-' + [guid]::NewGuid().ToString('N'))
-.\.venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --basetemp $pytestBase
+$pytestBase = Join-Path (Get-Location) ('.aegisai-local/test-artifacts/run-' + [guid]::NewGuid().ToString('N'))
+.\.venv\Scripts\python.exe -m pytest -q --basetemp $pytestBase
 npm.cmd --prefix frontend test
 ```
 
@@ -80,6 +94,22 @@ npm.cmd --prefix frontend run build
 ```
 
 The static publisher includes only the public pages, compiled assets, and reviewed sample files. The private operations dashboard and API remain local development tools. See [frontend/README.md](frontend/README.md) for page behavior and build boundaries.
+
+## Find your way around
+
+| Location | Purpose |
+|---|---|
+| `frontend/` | Public landing page, recorded walkthrough, and the separate local operations UI. |
+| `agents/`, `controller/`, `environment/` | Agent policies, permission checks, and the synthetic network simulator. |
+| `evaluation/`, `telemetry/`, `xai/` | Reproducible experiments, observations, and decision evidence. |
+| `platform_prototype/`, `private_api/` | Separate local synthetic operations backend and authenticated API. |
+| `demo_site/`, `local_assessment/`, `purple_team/` | Fixed local website demonstrations and validation tools. |
+| `llm/`, `memory/`, `threat_intelligence/`, `security/` | Provider adapters, validated memory, offline retrieval, and policy checks. |
+| `scripts/`, `tests/` | Runnable workflows and regression checks. |
+| `docs/`, `results/` | Presentation guides, architecture, and preserved research evidence. |
+| `.aegisai-local/`, `dist/` | Ignored local runs, databases, test artifacts, and generated release packages. |
+
+Python packages retain their existing import paths. Historical handoff notes and decisions are in [docs/history/](docs/history/README.md); the [documentation index](docs/README.md) is the current entry point. Generated test folders belong under `.aegisai-local/test-artifacts/`, keeping the project root focused on source and configuration.
 
 <details>
 <summary>Implementation history and detailed subsystem documentation</summary>
@@ -105,7 +135,7 @@ Threat-intelligence/RAG foundation added under `threat_intelligence/`. It is det
 
 ## Local website security demo
 
-Start the loopback-only demo site with `python demo_site/server.py`, then check it in another terminal with `python scripts/check_demo_site.py`. The checker preserves profile-specific JSON reports under `results/`; load one or both in the read-only frontend dashboard. See `demo_site/README.md` for the baseline/hardened workflow and limitations.
+Start the loopback-only demo site with `py -3.11 demo_site/server.py`, then check it in another terminal with `py -3.11 scripts/check_demo_site.py`. The checker preserves profile-specific JSON reports under `results/`; load one or both in the read-only frontend dashboard. See `demo_site/README.md` for the baseline/hardened workflow and limitations.
 
 ## Static frontend
 
@@ -117,9 +147,9 @@ The proposed future private-platform architecture, capability inventory, threat 
 
 ## Local synthetic operations prototype
 
-The separate Phase 1 CLI analyzes only schema-validated synthetic event fixtures and produces a labeled JSON incident report. It does not process client telemetry, run real detections, or execute response actions. Run `python scripts/run_platform_prototype.py` from the repository root. Scope, schema, policy, and cleanup details are in [docs/PHASE1_LOCAL_SYNTHETIC_SECURITY_OPS_PROTOTYPE.md](docs/PHASE1_LOCAL_SYNTHETIC_SECURITY_OPS_PROTOTYPE.md). The CLI and fixtures are excluded from the public static publisher allowlist.
+The separate Phase 1 CLI analyzes only schema-validated synthetic event fixtures and produces a labeled JSON incident report. It does not process client telemetry, run real detections, or execute response actions. Run `py -3.11 scripts/run_platform_prototype.py` from the repository root. Scope, schema, policy, and cleanup details are in [docs/PHASE1_LOCAL_SYNTHETIC_SECURITY_OPS_PROTOTYPE.md](docs/PHASE1_LOCAL_SYNTHETIC_SECURITY_OPS_PROTOTYPE.md). The CLI and fixtures are excluded from the public static publisher allowlist.
 
-The separate Phase 2 local API serves only persisted, validated synthetic reports over loopback with ephemeral development bearer tokens. Start it with `python scripts/run_private_api.py`; routes, token handling, tenant isolation, SQLite storage, audit behavior, and limitations are documented in [docs/PHASE2_PRIVATE_BACKEND_FOUNDATION.md](docs/PHASE2_PRIVATE_BACKEND_FOUNDATION.md). It is not connected to the public website, simulator Controller, or any client system.
+The separate Phase 2 local API serves only persisted, validated synthetic reports over loopback with ephemeral development bearer tokens. Start it with `py -3.11 scripts/run_private_api.py`; routes, token handling, tenant isolation, SQLite storage, audit behavior, and limitations are documented in [docs/PHASE2_PRIVATE_BACKEND_FOUNDATION.md](docs/PHASE2_PRIVATE_BACKEND_FOUNDATION.md). It is not connected to the public website, simulator Controller, or any client system.
 
 The local API is development-only: it refuses non-local `AEGISAI_ENV` modes, keeps its bearer token in process memory, and binds only to loopback. Its authenticated liveness/readiness checks, request bounds, and token rotation guidance are documented in [docs/PHASE7A_LOCAL_DASHBOARD.md](docs/PHASE7A_LOCAL_DASHBOARD.md). It is not a production deployment configuration.
 
@@ -129,7 +159,7 @@ Phase 3 adds a bounded local scheduler for the fixed synthetic telemetry fixture
 
 Phase 4 adds an on-demand local replay CLI for the fixed hand-labeled synthetic scenario library. It reuses the Phase 3 detector, reports per-rule TP/FP/TN/FN, nullable precision/recall/F1, evidence completeness, and scenario coverage, and never writes to the scheduler database or runs from the website. See [docs/PHASE4_ISOLATED_REPLAY_AND_DETECTION_GAP_ANALYSIS.md](docs/PHASE4_ISOLATED_REPLAY_AND_DETECTION_GAP_ANALYSIS.md). The Phase 3 telemetry run/report and finding-observation history is now bounded by the documented local retention policy; audit rows and original assessment artifacts are not pruned.
 
-Phase 5A adds a separate local-only CLI for one fixed, checked-in synthetic website access/error-log fixture: `python scripts/ingest_local_website_telemetry.py`. It reuses Phase 3 validation, detection, tenant-scoped SQLite persistence, deduplication, and audit records. It does not read live website logs or expose an ingestion API. See [docs/PHASE5A_LOCAL_WEBSITE_TELEMETRY_INTEGRATION.md](docs/PHASE5A_LOCAL_WEBSITE_TELEMETRY_INTEGRATION.md).
+Phase 5A adds a separate local-only CLI for one fixed, checked-in synthetic website access/error-log fixture: `py -3.11 scripts/ingest_local_website_telemetry.py`. It reuses Phase 3 validation, detection, tenant-scoped SQLite persistence, deduplication, and audit records. It does not read live website logs or expose an ingestion API. See [docs/PHASE5A_LOCAL_WEBSITE_TELEMETRY_INTEGRATION.md](docs/PHASE5A_LOCAL_WEBSITE_TELEMETRY_INTEGRATION.md).
 
 Phase 5B adds a separate loopback-only telemetry test website at `127.0.0.1:8767`, a fixed harmless traffic generator, and a bounded live-log ingestion CLI. It reads only its generated JSONL logs under the ignored `.aegisai-local/website-telemetry/` directory and reuses Phase 3's synthetic detector/store. See [docs/PHASE5B_LOCAL_LIVE_TELEMETRY_VALIDATION.md](docs/PHASE5B_LOCAL_LIVE_TELEMETRY_VALIDATION.md).
 
@@ -137,13 +167,13 @@ Phase 5C documents bounded replay recovery for live synthetic logs, a fixed thre
 
 Phase 6A adds a separate versioned, synthetic evaluation dataset with explicit ground truth for the existing five detection rules. It covers positive, benign, boundary, duplicate, insufficient-evidence, malformed, and conflicting-input cases; it does not produce aggregate detection-accuracy metrics. See [docs/PHASE6A_EVALUATION_DATASET_AND_GROUND_TRUTH.md](docs/PHASE6A_EVALUATION_DATASET_AND_GROUND_TRUTH.md).
 
-Phase 6B adds `python scripts/run_detection_evaluation.py`, a deterministic local evaluator for the fixed Phase 6A synthetic dataset. It reports scenario-by-rule confusion counts, nullable metrics, evidence diagnostics, and invalid-input outcomes separately; it does not alter rules or use the application database. The default JSON report is created under `results/evaluation/` without overwriting existing files. See [docs/PHASE6B_DETECTION_METRICS_AND_EVALUATION.md](docs/PHASE6B_DETECTION_METRICS_AND_EVALUATION.md); the synthetic metrics do not establish real-world accuracy.
+Phase 6B adds `py -3.11 scripts/run_detection_evaluation.py`, a deterministic local evaluator for the fixed Phase 6A synthetic dataset. It reports scenario-by-rule confusion counts, nullable metrics, evidence diagnostics, and invalid-input outcomes separately; it does not alter rules or use the application database. The default JSON report is created under `results/evaluation/` without overwriting existing files. See [docs/PHASE6B_DETECTION_METRICS_AND_EVALUATION.md](docs/PHASE6B_DETECTION_METRICS_AND_EVALUATION.md); the synthetic metrics do not establish real-world accuracy.
 
 Phase 6C audits the Phase 6B counts, adds a versioned synthetic robustness behavior suite, merges evidence across duplicate same-rule findings without inflating counts, and makes evaluator failures fail closed. It does not change the Phase 6A labels or detection rules. See [docs/PHASE6C_DETECTION_ROBUSTNESS_AND_REGRESSION.md](docs/PHASE6C_DETECTION_ROBUSTNESS_AND_REGRESSION.md).
 
 Phase 7A adds a separate local React dashboard at `http://localhost:5174/local-dashboard.html` for authenticated read-only views of the existing synthetic API, including the `reports:read` Detection Lab summary. The Detection Lab extends the existing Phase 6 evaluator with specificity, explicit scenario/rule coverage, ATT&CK coverage gaps, and opt-in bounded run history. See [docs/PHASE7A_LOCAL_DASHBOARD.md](docs/PHASE7A_LOCAL_DASHBOARD.md) and [docs/DETECTION_ENGINEERING_AND_EVALUATION.md](docs/DETECTION_ENGINEERING_AND_EVALUATION.md). The API still binds to loopback and allows browser CORS only from the two fixed local Vite origins. The strict public static publisher allowlist remains unchanged and excludes this dashboard and evaluation artifacts.
 
-The investigation case layer adds tenant-scoped cases, verified references to existing telemetry evidence, explicitly labeled inferred relationships and analyst notes, bounded chronological history, and optional assessment/evaluation run context. Case writes require the opt-in local `investigations:write` token scope (`python scripts/run_private_api.py --enable-investigation-writes`); no AI assistant or response action is included. Details and limits: [docs/PHASE4_INVESTIGATION_CASES_AND_MEMORY.md](docs/PHASE4_INVESTIGATION_CASES_AND_MEMORY.md).
+The investigation case layer adds tenant-scoped cases, verified references to existing telemetry evidence, explicitly labeled inferred relationships and analyst notes, bounded chronological history, and optional assessment/evaluation run context. Case writes require the opt-in local `investigations:write` token scope (`py -3.11 scripts/run_private_api.py --enable-investigation-writes`); no AI assistant or response action is included. Details and limits: [docs/PHASE4_INVESTIGATION_CASES_AND_MEMORY.md](docs/PHASE4_INVESTIGATION_CASES_AND_MEMORY.md).
 
 Phase 5 adds preview-first, explicitly authorized synthetic scenarios for the fixed loopback website. The catalog contains a health baseline and three empty-body requests to the site's harmless rejection route. Scenario reports link observed telemetry evidence, detection rules, applicable assessment check IDs, and telemetry reports; bounded schema-v6 history compares runs. See [docs/PHASE5_SAFE_PURPLE_TEAM_VALIDATION.md](docs/PHASE5_SAFE_PURPLE_TEAM_VALIDATION.md). Results do not establish real-world control effectiveness.
 

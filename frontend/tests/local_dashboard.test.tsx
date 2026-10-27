@@ -83,6 +83,7 @@ const basePayloads: Record<string, unknown> = {
 };
 
 beforeEach(() => {
+  window.history.replaceState(null, "", window.location.pathname);
   basePayloads["/api/telemetry/findings"] = { data_classification: "synthetic", label: "SYNTHETIC - NOT REAL CLIENT DATA", tenant_id: "synthetic-org-demo", findings: [finding()] };
   basePayloads["/api/evaluation/reports/latest"] = evaluationPayload;
   vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -102,6 +103,76 @@ async function connect() {
 }
 
 describe("local synthetic dashboard", () => {
+  it("returns to Overview when browser Back restores the unfragmented URL", async () => {
+    render(<LocalDashboard />);
+    fireEvent.click(screen.getByRole("button", { name: "Cases" }));
+    expect(window.location.hash).toBe("#investigations");
+    window.history.back();
+    await screen.findByRole("heading", { name: "Security command center", level: 1 });
+    expect(window.location.hash).toBe("");
+  });
+
+  it("opens a linked section and follows browser history without persisting a session", async () => {
+    window.history.replaceState(null, "", "#detection");
+    const page = render(<LocalDashboard />);
+    expect(screen.getByRole("heading", { name: "Detection Lab", level: 1 })).toBeTruthy();
+    expect(fetch).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Assessment" }));
+    expect(window.location.hash).toBe("#assessment");
+    expect(document.activeElement).toBe(screen.getByRole("heading", { name: "Assessment", level: 1 }));
+    window.history.back();
+    await screen.findByRole("heading", { name: "Detection Lab", level: 1 });
+    page.unmount();
+    render(<LocalDashboard />);
+    expect(screen.getByRole("heading", { name: "Detection Lab", level: 1 })).toBeTruthy();
+    expect(screen.getByLabelText("Startup bearer token")).toBeTruthy();
+    expect(fetch).not.toHaveBeenCalled();
+    expect(window.location.hash).not.toContain("token");
+  });
+
+  it("opens a recent finding in the queue and clears filters that would hide it", async () => {
+    render(<LocalDashboard />);
+    await connect();
+    fireEvent.click(screen.getByRole("button", { name: "Findings" }));
+    fireEvent.change(screen.getByLabelText("Severity"), { target: { value: "low" } });
+    fireEvent.click(screen.getByRole("button", { name: "Overview" }));
+    fireEvent.click(screen.getByRole("button", { name: /AUTH-001/ }));
+    expect(window.location.hash).toBe("#findings");
+    expect(screen.getByRole("heading", { name: "Investigation detail" })).toBeTruthy();
+    expect(await screen.findByText("synthetic-evidence-1")).toBeTruthy();
+    expect((screen.getByLabelText("Severity") as HTMLSelectElement).value).toBe("all");
+    expect(screen.getByRole("button", { name: /AUTH-001/ }).getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("clears all finding filters in one step and restores the full queue", async () => {
+    render(<LocalDashboard />);
+    await connect();
+    fireEvent.click(screen.getByRole("button", { name: "Findings" }));
+    fireEvent.change(screen.getByLabelText("Search findings"), { target: { value: "unmatched" } });
+    fireEvent.change(screen.getByLabelText("Severity"), { target: { value: "low" } });
+    fireEvent.change(screen.getByLabelText("Type"), { target: { value: "AUTH-001" } });
+    fireEvent.change(screen.getByLabelText("Status"), { target: { value: "closed" } });
+    expect(screen.getByText("Showing 0 of 1 findings")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
+    expect(screen.getByText("Showing 1 of 1 findings")).toBeTruthy();
+    expect((screen.getByLabelText("Search findings") as HTMLInputElement).value).toBe("");
+    for (const label of ["Severity", "Type", "Status"]) expect((screen.getByLabelText(label) as HTMLSelectElement).value).toBe("all");
+    expect(screen.getByRole("button", { name: /AUTH-001/ })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Clear filters" })).toBeNull();
+  });
+
+  it("distinguishes a valid empty finding queue from filters that hide findings", async () => {
+    basePayloads["/api/telemetry/findings"] = { data_classification: "synthetic", label: "SYNTHETIC - NOT REAL CLIENT DATA", tenant_id: "synthetic-org-demo", findings: [] };
+    render(<LocalDashboard />);
+    fireEvent.change(screen.getByLabelText("Startup bearer token"), { target: { value: "demo-token" } });
+    fireEvent.click(screen.getByRole("button", { name: "Connect" }));
+    await screen.findByText("No synthetic findings are currently returned for this tenant.");
+    fireEvent.click(screen.getByRole("button", { name: "Findings" }));
+    expect(screen.getByRole("heading", { name: "No findings yet" })).toBeTruthy();
+    expect(screen.queryByText("No matching findings")).toBeNull();
+    expect(screen.getByText("Showing 0 of 0 findings")).toBeTruthy();
+  });
+
   it("shows disclosure and no findings until a local token is supplied", () => {
     render(<LocalDashboard />);
     expect(screen.getByText(/Synthetic local prototype/)).toBeTruthy();

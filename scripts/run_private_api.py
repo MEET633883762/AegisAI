@@ -7,6 +7,17 @@ import os
 import sys
 from pathlib import Path
 
+if sys.version_info < (3, 11):
+    print(
+        "AegisAI's local API requires Python 3.11 or newer "
+        f"(running {sys.version_info[0]}.{sys.version_info[1]}).\n"
+        "On Windows, run: py -3.11 scripts/run_private_api.py\n"
+        "Or use the Python executable in your Python 3.11 project virtual environment.\n"
+        "See docs/DEVELOPMENT.md for setup instructions.",
+        file=sys.stderr,
+    )
+    raise SystemExit(2)
+
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))

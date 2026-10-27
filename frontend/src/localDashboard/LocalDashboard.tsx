@@ -1,16 +1,23 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { getLocalApi, postLocalApi, LocalApiError, type ApiRoute } from "./api";
 import { downloadExecutiveReport } from "./executiveReportExport";
+import { Icon, type IconName } from "../icons";
 import type { AssessmentResponse, DetectionEvaluationResponse, EvidenceResponse, ExecutiveReportResponse, FindingsResponse, HealthResponse, InvestigationCaseResponse, InvestigationCasesResponse, ProcessingResponse, PurpleScenarioRunsResponse, SourceResponse, TelemetryFinding } from "./types";
 
 type View = "overview" | "findings" | "detection" | "scenarios" | "assessment" | "executive" | "investigations" | "health";
-const NAV: { id: View; label: string }[] = [
-  { id: "overview", label: "Overview" }, { id: "findings", label: "Findings" },
-  { id: "detection", label: "Detection Lab" }, { id: "scenarios", label: "Scenario Validation" }, { id: "assessment", label: "Assessment" },
-  { id: "executive", label: "Executive Reports" }, { id: "investigations", label: "Cases" }, { id: "health", label: "System Health" },
+const NAV: { id: View; label: string; icon: IconName; description: string }[] = [
+  { id: "overview", label: "Overview", icon: "monitor", description: "Your local evidence, findings, and processing activity in one place." },
+  { id: "findings", label: "Findings", icon: "eye", description: "Follow each rule output back to the evidence that produced it." },
+  { id: "detection", label: "Detection Lab", icon: "target", description: "Measure the detector against labeled synthetic scenarios and inspect its gaps." },
+  { id: "scenarios", label: "Scenario Validation", icon: "play", description: "Review recorded, authorized exercises against the fixed local test site." },
+  { id: "assessment", label: "Assessment", icon: "shield", description: "Inspect observed website controls, inferred risks, and changes between runs." },
+  { id: "executive", label: "Executive Reports", icon: "code", description: "Turn linked observations into a clear, downloadable incident review." },
+  { id: "investigations", label: "Cases", icon: "database", description: "Connect findings, verified evidence, and clearly attributed analyst notes." },
+  { id: "health", label: "System Health", icon: "server", description: "Check the local service, processing runs, and source availability." },
 ];
 const SEVERITIES = ["critical", "high", "medium", "low"] as const;
 const dateText = (value?: string | null) => value ? new Date(value).toLocaleString() : "Not recorded";
+const viewFromHash = (): View | undefined => window.location.hash === "" ? "overview" : NAV.find((item) => `#${item.id}` === window.location.hash)?.id;
 
 type Snapshot = {
   health: HealthResponse | null;
@@ -30,7 +37,7 @@ type Snapshot = {
 const emptySnapshot = (): Snapshot => ({ health: null, findings: null, processing: null, source: null, assessment: null, evaluation: null, executive: null, investigations: null, scenarios: null, assessmentMissing: false, errors: {}, loadedAt: 0 });
 
 export function LocalDashboard() {
-  const [view, setView] = useState<View>("overview");
+  const [view, setView] = useState<View>(() => viewFromHash() ?? "overview");
   const [tokenInput, setTokenInput] = useState("");
   const [token, setToken] = useState("");
   const [snapshot, setSnapshot] = useState<Snapshot>(emptySnapshot);
@@ -53,6 +60,32 @@ export function LocalDashboard() {
   const [caseError, setCaseError] = useState("");
   const [caseBusy, setCaseBusy] = useState(false);
   const refreshGeneration = useRef(0);
+  const navigationFocus = useRef(false);
+
+  const navigate = useCallback((next: View) => {
+    if (window.location.hash !== `#${next}`) window.history.pushState(null, "", `#${next}`);
+    navigationFocus.current = true;
+    setView(next);
+  }, []);
+
+  useEffect(() => {
+    const syncView = () => {
+      const next = viewFromHash();
+      if (next) { navigationFocus.current = true; setView(next); }
+    };
+    window.addEventListener("popstate", syncView);
+    window.addEventListener("hashchange", syncView);
+    return () => {
+      window.removeEventListener("popstate", syncView);
+      window.removeEventListener("hashchange", syncView);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!navigationFocus.current) return;
+    document.getElementById("ops-view-title")?.focus({ preventScroll: true });
+    navigationFocus.current = false;
+  }, [view]);
 
   const refresh = useCallback(async (activeToken: string) => {
     const generation = ++refreshGeneration.current;
@@ -166,6 +199,7 @@ export function LocalDashboard() {
   function disconnect() {
     refreshGeneration.current += 1;
     setLoading(false);
+    setRefreshError(""); setEvidenceError(""); setCaseError("");
     setToken(""); setTokenInput(""); setSnapshot(emptySnapshot()); setSelectedId(""); setEvidence(null);
     setSelectedCaseId(""); setCaseDetail(null); setCaseNote(""); setCaseTitle("");
   }
@@ -180,6 +214,17 @@ export function LocalDashboard() {
   }), [findings, search, severity, status, typeFilter]);
   const selected = findings.find((finding) => finding.finding_id === selectedId) ?? null;
   const totals = useMemo(() => SEVERITIES.map((key) => ({ key, count: findings.filter((item) => item.severity === key).length })), [findings]);
+  const currentView = NAV.find((item) => item.id === view)!;
+
+  function clearFilters() {
+    setSearch(""); setSeverity("all"); setTypeFilter("all"); setStatus("all");
+  }
+
+  function openFinding(id: string) {
+    clearFilters();
+    setSelectedId(id);
+    navigate("findings");
+  }
 
   function connect(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -194,21 +239,23 @@ export function LocalDashboard() {
 
   return <div className="local-ops">
     <a className="ops-skip" href="#ops-main">Skip to dashboard content</a>
-    <header className="ops-topbar"><a className="ops-brand" href="index.html" aria-label="AegisAI public site"><span className="ops-logo">A</span><span>Aegis<span>AI</span><small>LOCAL OPERATIONS</small></span></a>
-      <div className="ops-top-actions"><span className="ops-loopback"><i /> LOOPBACK ONLY</span>{token ? <button type="button" className="ops-quiet-button" onClick={disconnect}>Disconnect</button> : <span className="ops-lock">Local token required</span>}</div>
+    <header className="ops-topbar"><a className="ops-brand" href="index.html" aria-label="AegisAI public site"><span className="ops-logo"><Icon name="shield" /></span><span>Aegis<span>AI</span><small>LOCAL OPERATIONS</small></span></a>
+      <span className="ops-top-context">Research workspace <span>/</span> Operations</span>
+      <div className="ops-top-actions"><span className="ops-loopback"><Icon name="lock" /> LOOPBACK ONLY</span>{token ? <button type="button" className="ops-quiet-button" onClick={disconnect}>Disconnect</button> : <span className="ops-lock">Session disconnected</span>}</div>
     </header>
     <div className="ops-layout">
-      <aside className="ops-sidebar"><div className="ops-side-label">WORKSPACE</div><nav aria-label="Dashboard sections">{NAV.map((item) => <button key={item.id} type="button" className={view === item.id ? "ops-nav-active" : ""} aria-current={view === item.id ? "page" : undefined} onClick={() => setView(item.id)}><span className={`ops-nav-glyph glyph-${item.id}`} aria-hidden="true" />{item.label}{item.id === "findings" && snapshot.findings && <b>{findings.length}</b>}</button>)}</nav>
-        <section className="ops-connection"><div className="ops-side-label">LOCAL API</div><p>Connect to the synthetic service running on this computer.</p>{token ? <div className="ops-connected"><i /> Token held in memory</div> : <form onSubmit={connect}><label htmlFor="ops-token">Startup bearer token</label><input id="ops-token" type="password" autoComplete="off" value={tokenInput} onChange={(event) => setTokenInput(event.currentTarget.value)} placeholder="Paste current token"/><button className="ops-connect-button" type="submit" disabled={!tokenInput.trim()}>Connect</button><small>Held only in page memory. Never saved.</small></form>}</section>
-        <div className="ops-side-foot"><span className="ops-mini-logo">A</span><span>Synthetic prototype<br/><b>Local data · Case history</b></span></div>
+      <aside className="ops-sidebar"><div className="ops-side-label">RESEARCH WORKSPACE</div><nav aria-label="Dashboard sections">{NAV.map((item) => <button key={item.id} type="button" className={view === item.id ? "ops-nav-active" : ""} aria-current={view === item.id ? "page" : undefined} onClick={() => navigate(item.id)}><Icon name={item.icon} />{item.label}{item.id === "findings" && snapshot.findings && <b aria-hidden="true">{findings.length}</b>}</button>)}</nav>
+        <section className="ops-connection"><div className="ops-side-label">SESSION</div>{token ? <><div className="ops-connected"><i /> Local token loaded</div><p>Held only in page memory. Use Refresh to request the latest available snapshot.</p></> : <><div className="ops-disconnected"><Icon name="lock" /> Awaiting connection</div><p>Use the connection panel to open this computer's synthetic research data.</p></>}</section>
+        <a className="ops-public-link" href="dashboard.html"><Icon name="play" /><span>Present the public demo<small>No local API required</small></span><span aria-hidden="true">↗</span></a>
+        <div className="ops-side-foot"><span className="ops-mini-logo"><Icon name="shield" /></span><span>Synthetic research lab<br/><b>Evidence before conclusions</b></span></div>
       </aside>
       <main id="ops-main" className="ops-main">
-        <div className="ops-page-heading"><div><div className="ops-eyebrow">AEGISAI / LOCAL WORKSPACE</div><h1>{NAV.find((item) => item.id === view)?.label}</h1><p>Inspect synthetic telemetry and rule outputs from your local prototype.</p></div><div className="ops-heading-controls">{snapshot.loadedAt > 0 && <span className="ops-updated">Updated {dateText(new Date(snapshot.loadedAt).toISOString())}</span>}<button type="button" className="ops-refresh" disabled={!token || loading} onClick={() => token && void refresh(token)}><span aria-hidden="true">↻</span> {loading ? "Refreshing…" : "Refresh"}</button></div></div>
+        <div className="ops-page-heading"><div><div className="ops-eyebrow">LOCAL OPERATIONS <span>/ {currentView.label}</span></div><h1 id="ops-view-title" tabIndex={-1}>{view === "overview" ? "Security command center" : currentView.label}</h1><p>{currentView.description}</p></div><div className="ops-heading-controls">{snapshot.loadedAt > 0 && <span className="ops-updated">Updated {dateText(new Date(snapshot.loadedAt).toISOString())}</span>}<button type="button" className="ops-refresh" disabled={!token || loading} onClick={() => token && void refresh(token)}><span aria-hidden="true">↻</span> {loading ? "Refreshing…" : "Refresh"}</button></div></div>
         <div className="ops-disclosure" role="note"><span className="ops-disclosure-icon" aria-hidden="true">i</span><p><strong>Synthetic local prototype.</strong> Findings and activity shown here come from synthetic fixtures or the harmless local demo site. This is not a production SOC or evidence of real-world attack detection. Telemetry views are read only; optional case notes and associations require an explicitly scoped local analyst token.</p></div>
-        {!token && <div className="ops-callout" role="status"><strong>Connect to view local data</strong><span>Start the private API in another terminal, then paste its one-time startup token in the sidebar.</span><code>python scripts/run_private_api.py</code></div>}
+        {!token && <section className="ops-welcome" aria-labelledby="ops-connect-title"><div className="ops-welcome-copy"><span className="ops-welcome-icon"><Icon name="lock" /></span><span className="ops-eyebrow">YOUR PRIVATE RESEARCH SESSION</span><h2 id="ops-connect-title">Connect to view local data</h2><p>Open the synthetic service on this computer to inspect findings, trace evidence, and review detector performance.</p><div className="ops-start-command"><span>01 / Start with Python 3.11 (Windows)</span><code>py -3.11 scripts/run_private_api.py</code></div><a href="dashboard.html">Just presenting? Open the guided public demo <span aria-hidden="true">↗</span></a></div><form className="ops-connect-form" onSubmit={connect}><span className="ops-eyebrow">02 / OPEN YOUR SESSION</span><h3>A local connection.<br/>Your evidence stays here.</h3><label htmlFor="ops-token">Startup bearer token</label><input id="ops-token" type="password" autoComplete="off" spellCheck={false} value={tokenInput} onChange={(event) => setTokenInput(event.currentTarget.value)} placeholder="Paste token from API startup"/><button className="ops-connect-button" type="submit" disabled={!tokenInput.trim()}>Connect <Icon name="arrow" /></button><small><Icon name="lock" /> Held only in page memory. Never saved.</small></form></section>}
         {refreshError && <p className="ops-error-banner" role="alert">{refreshError}</p>}
-        {view === "overview" && <Overview findings={findings} totals={totals} snapshot={snapshot} connected={Boolean(token)} onOpenFindings={() => setView("findings")} onSelect={setSelectedId} />}
-        {view === "findings" && <FindingsView findings={filtered} available={snapshot.findings !== null} unavailableMessage={snapshot.errors.findings ?? "Findings are not available."} types={Array.from(new Set(findings.map((item) => item.rule_id))).sort()} total={findings.length} selected={selected} evidence={evidence} evidenceError={evidenceError} connected={Boolean(token)} search={search} setSearch={setSearch} severity={severity} setSeverity={setSeverity} typeFilter={typeFilter} setTypeFilter={setTypeFilter} status={status} setStatus={setStatus} onSelect={setSelectedId} />}
+        {view === "overview" && <Overview findings={findings} totals={totals} snapshot={snapshot} connected={Boolean(token)} onOpenFindings={() => navigate("findings")} onSelect={openFinding} />}
+        {view === "findings" && <FindingsView findings={filtered} available={snapshot.findings !== null} unavailableMessage={snapshot.errors.findings ?? "Findings are not available."} types={Array.from(new Set(findings.map((item) => item.rule_id))).sort()} total={findings.length} selected={selected} evidence={evidence} evidenceError={evidenceError} connected={Boolean(token)} search={search} setSearch={setSearch} severity={severity} setSeverity={setSeverity} typeFilter={typeFilter} setTypeFilter={setTypeFilter} status={status} setStatus={setStatus} onSelect={setSelectedId} onClearFilters={clearFilters} />}
         {view === "detection" && <DetectionView snapshot={snapshot} connected={Boolean(token)} loading={loading} />}
         {view === "scenarios" && <ScenarioValidationView response={snapshot.scenarios} connected={Boolean(token)} loading={loading} unavailable={snapshot.errors.scenarios} />}
         {view === "assessment" && <AssessmentView snapshot={snapshot} connected={Boolean(token)} loading={loading} />}
@@ -272,14 +319,16 @@ function Overview({ findings, totals, snapshot, connected, onOpenFindings, onSel
   </>;
 }
 
-function FindingsView({ findings, available, unavailableMessage, types, total, selected, evidence, evidenceError, connected, search, setSearch, severity, setSeverity, typeFilter, setTypeFilter, status, setStatus, onSelect }: {
-  findings: TelemetryFinding[]; available: boolean; unavailableMessage: string; types: string[]; total: number; selected: TelemetryFinding | null; evidence: EvidenceResponse | null; evidenceError: string; connected: boolean; search: string; setSearch: (v: string) => void; severity: string; setSeverity: (v: string) => void; typeFilter: string; setTypeFilter: (v: string) => void; status: string; setStatus: (v: string) => void; onSelect: (id: string) => void;
+function FindingsView({ findings, available, unavailableMessage, types, total, selected, evidence, evidenceError, connected, search, setSearch, severity, setSeverity, typeFilter, setTypeFilter, status, setStatus, onSelect, onClearFilters }: {
+  findings: TelemetryFinding[]; available: boolean; unavailableMessage: string; types: string[]; total: number; selected: TelemetryFinding | null; evidence: EvidenceResponse | null; evidenceError: string; connected: boolean; search: string; setSearch: (v: string) => void; severity: string; setSeverity: (v: string) => void; typeFilter: string; setTypeFilter: (v: string) => void; status: string; setStatus: (v: string) => void; onSelect: (id: string) => void; onClearFilters: () => void;
 }) {
-  return <div className="ops-investigation"><Panel title="Finding queue" kicker="SYNTHETIC TELEMETRY" action={<span className="ops-panel-count">{connected ? `${findings.length} of ${total}` : "Not connected"}</span>}>
+  const filtered = Boolean(search.trim() || severity !== "all" || typeFilter !== "all" || status !== "all");
+  return <div className="ops-investigation"><Panel title="Finding queue" kicker="SYNTHETIC TELEMETRY" action={<span className="ops-panel-count">{!connected ? "Not connected" : !available ? "Unavailable" : `${findings.length} of ${total}`}</span>}>
     <div className="ops-filters"><label className="ops-search">Search findings<input type="search" value={search} onChange={(e) => setSearch(e.currentTarget.value)} placeholder="ID, rule, asset, text"/></label><label>Severity<select value={severity} onChange={(e) => setSeverity(e.currentTarget.value)}><option value="all">All severities</option>{SEVERITIES.map((value) => <option key={value}>{value}</option>)}</select></label><label>Type<select value={typeFilter} onChange={(e) => setTypeFilter(e.currentTarget.value)}><option value="all">All rule types</option>{types.map((value) => <option key={value}>{value}</option>)}</select></label><label>Status<select value={status} onChange={(e) => setStatus(e.currentTarget.value)}><option value="all">All statuses</option><option value="open">open</option><option value="acknowledged">acknowledged</option><option value="closed">closed</option></select></label></div>
-    {!connected ? <EmptyState title="Connect to investigate" text="The list is populated from the authenticated local telemetry findings endpoint."/> : !available ? <Unavailable text={unavailableMessage}/> : findings.length === 0 ? <EmptyState title="No matching findings" text="Adjust the search and filters, or wait for the next synthetic processing run."/> : <div className="ops-table-wrap"><table className="ops-findings-table"><thead><tr><th>Finding</th><th>Severity</th><th>Confidence</th><th>Last seen</th><th>Status</th></tr></thead><tbody>{findings.map((item) => <tr key={item.finding_id} className={selected?.finding_id === item.finding_id ? "selected-row" : ""}><td><button type="button" className="finding-select" onClick={() => onSelect(item.finding_id)}><b>{item.rule_id}</b><small>{item.finding_id} · {item.asset_ref}</small></button></td><td><span className={`ops-severity-pill severity-pill-${item.severity}`}>{item.severity}</span></td><td>{Math.round(item.confidence * 100)}%</td><td>{dateText(item.last_seen_utc)}</td><td>{item.status}</td></tr>)}</tbody></table></div>}
+    {connected && available && <div className="ops-filter-summary"><span role="status" aria-live="polite">Showing {findings.length} of {total} findings</span>{filtered && <button type="button" onClick={onClearFilters}>Clear filters <span aria-hidden="true">×</span></button>}</div>}
+    {!connected ? <EmptyState title="Connect to investigate" text="The list is populated from the authenticated local telemetry findings endpoint."/> : !available ? <Unavailable text={unavailableMessage}/> : findings.length === 0 ? <EmptyState title={total === 0 ? "No findings yet" : "No matching findings"} text={total === 0 ? "The local API returned no synthetic findings for this tenant. Refresh after a processing run to check for new results." : "No findings match the current search and filters. Clear filters to return to the full queue."}/> : <div className="ops-table-wrap"><table className="ops-findings-table"><thead><tr><th>Finding</th><th>Severity</th><th>Confidence</th><th>Last seen</th><th>Status</th></tr></thead><tbody>{findings.map((item) => <tr key={item.finding_id} className={selected?.finding_id === item.finding_id ? "selected-row" : ""}><td><button type="button" className="finding-select" aria-pressed={selected?.finding_id === item.finding_id} onClick={() => onSelect(item.finding_id)}><b>{item.rule_id}</b><small>{item.finding_id} · {item.asset_ref}</small></button></td><td><span className={`ops-severity-pill severity-pill-${item.severity}`}>{item.severity}</span></td><td>{Math.round(item.confidence * 100)}%</td><td>{dateText(item.last_seen_utc)}</td><td>{item.status}</td></tr>)}</tbody></table></div>}
     </Panel>
-    {selected && <Panel title="Investigation detail" kicker={selected.finding_id}><div className="ops-detail-summary"><span className={`ops-severity-pill severity-pill-${selected.severity}`}>{selected.severity}</span><span>Confidence {Math.round(selected.confidence * 100)}%</span><span>Rule {selected.rule_id} v{selected.rule_version}</span></div><p className="ops-explanation">{selected.explanation}</p><dl className="ops-detail-grid"><dt>Asset</dt><dd>{selected.asset_ref}</dd><dt>First seen</dt><dd>{dateText(selected.first_seen_utc)}</dd><dt>Last seen</dt><dd>{dateText(selected.last_seen_utc)}</dd><dt>Finding status</dt><dd>{selected.status}</dd><dt>Event IDs</dt><dd>{selected.event_ids.join(", ")}</dd></dl><h3 className="ops-subheading">Evidence references</h3>
+    {selected && <Panel title="Investigation detail" kicker={selected.finding_id}>{!findings.some((item) => item.finding_id === selected.finding_id) && <p className="ops-selected-filter-note">This selected finding is outside the current filters. <button type="button" onClick={onClearFilters}>Show selected finding</button></p>}<div className="ops-detail-summary"><span className={`ops-severity-pill severity-pill-${selected.severity}`}>{selected.severity}</span><span>Confidence {Math.round(selected.confidence * 100)}%</span><span>Rule {selected.rule_id} v{selected.rule_version}</span></div><p className="ops-explanation">{selected.explanation}</p><dl className="ops-detail-grid"><dt>Asset</dt><dd>{selected.asset_ref}</dd><dt>First seen</dt><dd>{dateText(selected.first_seen_utc)}</dd><dt>Last seen</dt><dd>{dateText(selected.last_seen_utc)}</dd><dt>Finding status</dt><dd>{selected.status}</dd><dt>Event IDs</dt><dd>{selected.event_ids.join(", ")}</dd></dl><h3 className="ops-subheading">Evidence references</h3>
       {evidenceError ? <Unavailable text={evidenceError}/> : !evidence ? <p className="ops-muted">Loading evidence from the tenant-scoped API…</p> : evidence.evidence.length === 0 ? <p className="ops-muted">No evidence records were returned.</p> : <ul className="ops-evidence-list">{evidence.evidence.map((item) => <li key={item.evidence_ref}><b>{item.evidence_ref}</b><span>{item.event_type} · {dateText(item.occurred_at_utc)}</span><small>Actor {item.actor_ref} · Source {item.source_ref} · Asset {item.asset_ref}</small></li>)}</ul>}
       <h3 className="ops-subheading">Confidence factors</h3><ul className="ops-factor-list">{selected.confidence_factors.map((factor) => <li key={factor}>{factor}</li>)}</ul><p className="ops-panel-footnote">Investigation is observational only. This dashboard has no acknowledge, close, or response controls.</p></Panel>}
   </div>;

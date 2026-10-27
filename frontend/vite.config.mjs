@@ -59,6 +59,7 @@ export default defineConfig(({ command }) => ({
     include: [
       "tests/public_shell.test.ts",
       "tests/research_demo.test.ts",
+      "tests/assessment_loading.test.tsx",
       "tests/local_dashboard.test.tsx",
     ],
     restoreMocks: true,

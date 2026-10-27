@@ -1,33 +1,21 @@
-# AegisAI XAI — Phase 9
+# Controller-owned decision evidence
 
-Phase 9 adds structured, evidence-grounded explainability traces.
+`DecisionTrace` records structured explanations grounded in role-visible observations. An agent-generated rationale is distinct from Controller authorization and factual simulator outcomes; hidden chain-of-thought is not recorded.
 
-## Design
+## Trace contents
 
-Every controller decision produces a `DecisionTrace` containing:
+A trace includes episode/scenario/step identity, role-visible observation, extracted evidence, the structured proposed action, rationale when supplied, deterministic reason/intent fields, authorization and actual outcome, state-change/event references, and optional provider/model/latency metadata. A post-hoc lesson field supports later evidence-based analysis; it does not itself validate adaptive memory.
 
-- episode/scenario/step identity
-- agent role
-- role-visible observation snapshot
-- concise evidence extracted from that observation
-- structured selected action
-- agent-generated rationale, when present
-- deterministic reason category
-- deterministic expected action intent
-- factual environment outcome and success/failure
-- state-change/event references
-- optional provider/model/latency metadata
-- optional post-hoc lesson field for later adaptive-memory work
+Agents do not receive the logger, simulator, or Controller internals. [`logger.py`](logger.py) rejects duplicate trace IDs and stores copied traces in memory; its explicit `clear()` resets the store. This is not durable append-only storage or a production audit service.
 
-The trace deliberately does **not** store hidden chain-of-thought. Explanations are treated as
-agent-generated rationale and are kept separate from controller/environment facts.
+## Public evidence versus internal traces
 
-## Security boundary
+The public walkthrough exports a reviewed synthetic subset with role-scoped evidence and no internal state-change/event-reference fields. Its searchable timeline, action detail panel, provenance, metrics, and JSON download help viewers inspect recorded decisions; selecting a step does not execute an action. The internal `DecisionTrace` schema remains more detailed than that public artifact.
 
-XAI is controller-owned. Agents do not receive the XAI logger, simulator, or controller internals.
-Evidence is derived only from the same role-specific observation supplied to the agent.
+Use the Python 3.11 [development environment](../docs/DEVELOPMENT.md). From the repository root on Windows, with dependencies installed:
 
-## Later phases
+```powershell
+py -3.11 -m pytest -q tests/unit/test_xai.py
+```
 
-Phase 10 may populate `post_hoc_lesson` only after explicit evidence-based failure analysis and
-validation. Phase 9 itself does not create adaptive memory or modify model weights.
+See [adaptive memory](../memory/README.md) for the separate validation lifecycle and [current status](../docs/CURRENT_STATUS.md) for fresh project checks. Phase 9 identifies this trace layer's implementation history.

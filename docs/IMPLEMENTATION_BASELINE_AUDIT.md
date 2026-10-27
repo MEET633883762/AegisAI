@@ -1,4 +1,7 @@
-# AegisAI Current Implementation Baseline Audit
+# AegisAI implementation baseline audit — 2026-10-24
+
+> Historical audit. The observations, commands, dependency conflicts, and test counts below describe 2026-10-24. For the refreshed frontend, Python 3.11 startup, and 2026-10-27 verification (503 Python tests, 65 frontend tests, four release checks), use [CURRENT_STATUS.md](CURRENT_STATUS.md) and [DEVELOPMENT.md](DEVELOPMENT.md). The newer Python 3.11 dependency check passed; that does not rewrite this audit's earlier environment result.
+
 
 **Audit date:** 2026-10-24
 **Scope:** Repository structure, current worktree, architecture/configuration, test and release commands, schema initialization, and public publisher boundary. This is a documentation and source inspection report. It is not a security certification, penetration test, or live end-to-end validation.

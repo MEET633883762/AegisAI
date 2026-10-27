@@ -1,8 +1,10 @@
 # Phase 15 — Scenario Library and Unseen-Template Evaluation
 
+Implementation record for this milestone. Historical verification totals below are preserved; use the [development guide](DEVELOPMENT.md) for Python 3.11 setup and [current status](CURRENT_STATUS.md) for fresh project checks. The public browser walkthrough uses scripted agents and is separate from opt-in provider experiments.
+
 ## Goal
 
-Expand the deterministic cyber environment so experiments can distinguish seed variation from genuine scenario variation, while keeping the Red/Blue observation boundary unchanged.
+Expand the deterministic cyber environment so experiments can distinguish seed variation from variation across authored scenario templates, while keeping the Red/Blue observation boundary unchanged.
 
 ## Scenario templates
 
@@ -35,7 +37,7 @@ Phase 13's `build_default_split()` remains available for backward compatibility 
 
 Phase 15 adds `build_template_holdout_split()`. It requires disjoint train/validation/test template groups and therefore supports a stronger generalization test: the held-out test set contains scenario templates that are not present in training.
 
-This is the preferred split when evaluating the research question about adaptation to previously unseen attack scenarios.
+This is the preferred split when evaluating adaptation to held-out authored templates. The six templates share a general web-entry/credential-pivot structure; holding one out does not establish generalization to independent attack families or real networks. The [current paired defender comparison](DEFENDER_COMPARISON.md) uses all six templates and five seeds as development-regression evidence rather than held-out efficacy evidence.
 
 ## Security properties
 
@@ -46,7 +48,7 @@ This is the preferred split when evaluating the research question about adaptati
 - Unknown scenario templates fail closed with `KeyError`.
 - Deterministic construction is preserved.
 
-## Verification
+## Historical Phase 15 verification
 
 Phase 15 tests:
 

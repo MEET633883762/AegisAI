@@ -1,5 +1,7 @@
 # Phase 5 — Safe Purple-Team Validation
 
+> Current setup: use Python 3.11 from the [development guide](DEVELOPMENT.md). PowerShell examples run from the repository root with `.\.venv\Scripts\python.exe`; on Linux use `.venv/bin/python`. Phase-specific verification counts are historical; see [current status](CURRENT_STATUS.md) for fresh checks.
+
 ## Scope
 
 This increment adds a small, fixed catalog of synthetic scenarios against the existing loopback-only demo website at `http://127.0.0.1:8767`. It does not emulate an external adversary or test client infrastructure. Catalog version is `aegisai-purple-scenarios-v1`; scenario IDs are stable and each definition is versioned.
@@ -16,15 +18,15 @@ Prerequisite for both scenarios: the existing synthetic website is running on lo
 From the repository root, preview without starting a database or sending requests:
 
 ```powershell
-python scripts/run_purple_team_scenario.py
-python scripts/run_purple_team_scenario.py --scenario synthetic-auth-rejection
+.\.venv\Scripts\python.exe scripts/run_purple_team_scenario.py
+.\.venv\Scripts\python.exe scripts/run_purple_team_scenario.py --scenario synthetic-auth-rejection
 ```
 
-After starting `python demo_site/telemetry_server.py`, explicitly authorize a synthetic run:
+After starting `.\.venv\Scripts\python.exe demo_site/telemetry_server.py`, explicitly authorize a synthetic run:
 
 ```powershell
-python scripts/run_purple_team_scenario.py --scenario local-health-baseline --execute-synthetic --authorize-synthetic-execution --database .aegisai-local/presentation.sqlite3
-python scripts/run_purple_team_scenario.py --scenario synthetic-auth-rejection --execute-synthetic --authorize-synthetic-execution --database .aegisai-local/presentation.sqlite3
+.\.venv\Scripts\python.exe scripts/run_purple_team_scenario.py --scenario local-health-baseline --execute-synthetic --authorize-synthetic-execution --database .aegisai-local/presentation.sqlite3
+.\.venv\Scripts\python.exe scripts/run_purple_team_scenario.py --scenario synthetic-auth-rejection --execute-synthetic --authorize-synthetic-execution --database .aegisai-local/presentation.sqlite3
 ```
 
 `--execute-synthetic` without the separate authorization flag records `NOT_RUN` and sends zero requests. The origin and endpoints cannot be changed. The explicit flag is an operator authorization gate for the current synthetic-only functionality; it does not authorize any non-synthetic target, which has no catalog entry or implementation.
@@ -47,5 +49,5 @@ SQLite schema version 6 adds `purple_team_scenario_runs` and a tenant-scoped exe
 ## Focused tests
 
 ```powershell
-python -m pytest -q -p no:cacheprovider tests/unit/test_purple_team_scenarios.py tests/unit/test_investigations.py tests/unit/test_local_assessment.py tests/unit/test_live_website_telemetry.py
+.\.venv\Scripts\python.exe -m pytest -q tests/unit/test_purple_team_scenarios.py tests/unit/test_investigations.py tests/unit/test_local_assessment.py tests/unit/test_live_website_telemetry.py
 ```

@@ -1,5 +1,7 @@
 # Phase 8 — Deployment architecture and release boundary
 
+For current runtime setup and fresh verification, use [DEVELOPMENT.md](DEVELOPMENT.md) and [CURRENT_STATUS.md](CURRENT_STATUS.md). Runnable packaging examples below were refreshed on 2026-10-27. This architecture's production boundaries and unmet deployment gates remain unchanged.
+
 **Status:** architecture decision only. Nothing was deployed or published. The public static site can be packaged for a static host. The private API, dashboard, assessment runner, telemetry pipeline, and SQLite store remain local synthetic development components and are not production-ready.
 
 ## Repository findings
@@ -29,16 +31,15 @@ assets/public_demo_assessment_hardened.json
 
 The private local dashboard is not in this list. Neither are Python modules, source maps, SQLite files, `.aegisai-local/`, credentials, private reports, evaluation datasets, or development configuration. Do not add serverless functions or API proxy routes to the public site. Retain HTTPS, the existing CSP and security headers, and configure equivalent headers if the chosen host does not consume `_headers` directly. Review the actual hosted response headers before public release.
 
-Package a release into a new empty directory:
+Package a release into a new empty directory, from the repository root after creating the Python 3.11 environment:
 
 ```powershell
-cd C:\AegisAI\frontend
-npm.cmd ci
-npm.cmd test
-npm.cmd run build
-cd ..
-python scripts/build_static_site.py --output dist/aegisai-release
+npm.cmd --prefix frontend ci
+npm.cmd --prefix frontend test
+.\.venv\Scripts\python.exe scripts/build_static_site.py --output dist/aegisai-release
 ```
+
+`npm.cmd --prefix frontend test` includes the production build. On Linux, use `npm` and `.venv/bin/python` in the same commands. If reviewed dependencies are installed directly into Python 3.11 on Windows, `py -3.11 scripts/build_static_site.py --output dist/aegisai-release` is another explicit interpreter choice. `.python-version` does not switch an existing `python` command on `PATH`.
 
 Review the output tree and confirm it contains only the nine paths above before selecting it as the static host's publish directory. The commands prepare a package; they do not publish it.
 
@@ -57,6 +58,8 @@ Schema initialization happens when `SQLiteStore` opens a database. There are no 
 ### D. Development and demonstration
 
 Keep the harmless website on `127.0.0.1:8767`, the private API on `127.0.0.1:8766`, and use only synthetic fixtures, fixed local checks, and the ignored local data directory. Use an explicitly selected presentation database when needed. Never place production credentials or real customer telemetry in this environment. The public static site remains read-only and independent from these services.
+
+The public demo runs at `http://localhost:5174/dashboard.html` with Vite and needs no Python service. The separate operations UI is `http://localhost:5174/local-dashboard.html`; start its API with `.\.venv\Scripts\python.exe scripts/run_private_api.py` and use the ephemeral startup token. See [the local dashboard guide](PHASE7A_LOCAL_DASHBOARD.md). The older, separate four-header website demonstration uses port 8765; do not confuse it with the telemetry website on 8767.
 
 ## Production release gates
 

@@ -49,6 +49,98 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 describe("research artifact validation and timeline", () => {
+  it("filters the evidence timeline while preserving the selected action", async () => {
+    render(React.createElement(App, { page: "dashboard" }));
+    await screen.findByText(/Loaded \d+ precomputed action records/);
+    fireEvent.click(screen.getByRole("button", { name: "Defender only" }));
+    const timeline = screen.getByRole("list", { name: "Precomputed Red and Blue actions" });
+    const blueActions = within(timeline).getAllByRole("button");
+    expect(blueActions).toHaveLength(validEpisode.records.filter((record) => record.role === "blue").length);
+    expect(blueActions.every((button) => button.textContent?.startsWith("BLUE"))).toBe(true);
+    expect(screen.getByRole("region", { name: "Current moment explained" }).textContent).toContain("Record 1 / 39");
+    expect(screen.getByRole("button", { name: "Show selected action" })).toBeTruthy();
+    fireEvent.click(blueActions[0]);
+    expect(screen.getByText(/BLUE OBSERVATION/)).toBeTruthy();
+    const search = screen.getByRole("searchbox", { name: "Search recorded actions" });
+    fireEvent.change(search, { target: { value: "nothing-matches-this-search" } });
+    expect(screen.getByText("No actions match these filters.")).toBeTruthy();
+    expect(screen.getByText(/BLUE OBSERVATION/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Show all actions" }));
+    expect(within(screen.getByRole("list", { name: "Precomputed Red and Blue actions" })).getAllByRole("button")).toHaveLength(39);
+    expect((search as HTMLInputElement).value).toBe("");
+  });
+
+  it("navigates the focused player by keyboard without changing text-field behavior", async () => {
+    render(React.createElement(App, { page: "dashboard" }));
+    await screen.findByText(/Loaded \d+ precomputed action records/);
+    const player = screen.getByRole("region", { name: "Recorded exercise player" });
+    fireEvent.keyDown(player, { key: "ArrowRight" });
+    expect(screen.getByRole("region", { name: "Current moment explained" }).textContent).toContain("Foothold established.");
+    fireEvent.keyDown(player, { key: "ArrowRight", ctrlKey: true });
+    expect(screen.getByRole("region", { name: "Current moment explained" }).textContent).toContain("Foothold established.");
+    fireEvent.keyDown(player, { key: "End" });
+    expect(screen.getByRole("region", { name: "Current moment explained" }).textContent).toContain("Data exfiltrated.");
+    fireEvent.click(screen.getByRole("button", { name: /Restart walkthrough/ }));
+    expect(document.activeElement).toBe(within(screen.getByRole("group", { name: "Key moments in the exercise" })).getAllByRole("button")[0]);
+    fireEvent.keyDown(screen.getByRole("searchbox", { name: "Search recorded actions" }), { key: "ArrowRight" });
+    expect(screen.getByRole("region", { name: "Current moment explained" }).textContent).toContain("Record 1 / 39");
+  });
+
+  it("follows same-page section links and reopens the evidence disclosure", async () => {
+    const previousUrl = window.location.href;
+    try {
+      render(React.createElement(App, { page: "dashboard" }));
+      await screen.findByText(/Loaded \d+ precomputed action records/);
+      window.history.replaceState({}, "", "#assessment");
+      fireEvent(window, new HashChangeEvent("hashchange"));
+      await waitFor(() => expect(screen.getByRole("link", { name: "Before & after" }).getAttribute("aria-current")).toBe("location"));
+      const evidence = document.getElementById("episode-evidence");
+      evidence?.removeAttribute("open");
+      window.history.replaceState({}, "", "#episode-evidence");
+      fireEvent(window, new HashChangeEvent("hashchange"));
+      await waitFor(() => expect(evidence?.hasAttribute("open")).toBe(true));
+    } finally {
+      window.history.replaceState({}, "", previousUrl);
+    }
+  });
+
+  it("opens the evidence section after loading a direct evidence link", async () => {
+    const previousUrl = window.location.href;
+    window.history.replaceState({}, "", "#episode-evidence");
+    try {
+      render(React.createElement(App, { page: "dashboard" }));
+      await screen.findByText(/Loaded \d+ precomputed action records/);
+      await waitFor(() => expect(document.getElementById("episode-evidence")?.hasAttribute("open")).toBe(true));
+    } finally {
+      window.history.replaceState({}, "", previousUrl);
+    }
+  });
+
+  it("recovers from a temporary sample load failure when retried", async () => {
+    vi.mocked(fetch).mockRejectedValueOnce(new Error("Connection interrupted"));
+    render(React.createElement(App, { page: "dashboard" }));
+    await screen.findByText(/Could not load the sample: Connection interrupted/);
+    fireEvent.click(screen.getByRole("button", { name: "Retry sample" }));
+    await screen.findByText(/Loaded \d+ precomputed action records/);
+    expect(screen.queryByRole("button", { name: "Retry sample" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Next key moment" })).toBeTruthy();
+  });
+
+  it("restarts the completed walkthrough and exits presentation with Escape", async () => {
+    vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+    render(React.createElement(App, { page: "dashboard" }));
+    await screen.findByText(/Loaded \d+ precomputed action records/);
+    const moments = within(screen.getByRole("group", { name: "Key moments in the exercise" })).getAllByRole("button");
+    fireEvent.click(moments[5]);
+    fireEvent.click(screen.getByRole("button", { name: /Restart walkthrough/ }));
+    expect(screen.getByRole("region", { name: "Current moment explained" }).textContent).toContain("Record 1 / 39");
+    expect((screen.getByRole("button", { name: "Previous key moment" }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Present demo" }));
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(document.querySelector(".presentation-view")).toBeNull();
+    expect(screen.getByRole("region", { name: "Current moment explained" }).textContent).toContain("Record 1 / 39");
+  });
+
   it("keeps the selected record when entering and leaving presentation view", async () => {
     vi.spyOn(window, "scrollTo").mockImplementation(() => {});
     render(React.createElement(App, { page: "dashboard" }));

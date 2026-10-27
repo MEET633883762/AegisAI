@@ -1,17 +1,20 @@
-# Phase 11 — Threat Intelligence + RAG
+# Offline threat intelligence and retrieval
 
-Phase 11 adds a deterministic, provider-independent retrieval foundation.
+This subsystem provides deterministic, provider-independent retrieval over supplied records:
 
-Flow:
+`source record → normalization → typed record → in-memory store → lexical retrieval → bounded context`
 
-`source record -> normalization -> typed data -> store -> lexical retrieval -> bounded context`
+The current implementation has no live CTI download or network dependency. Retrieved documents are untrusted data, not instructions. They have no direct simulator/Controller access and cannot execute tools. MITRE/CVE fields hold supplied metadata; their presence does not independently verify a mapping. Embeddings and vector databases remain outside this implementation.
 
-Security rules:
-- No internet/network dependency.
-- Retrieved documents are untrusted DATA, never executable instructions.
-- No direct simulator/controller access.
-- No arbitrary tool execution.
-- MITRE/CVE fields are metadata supplied by a curation/verification process; this phase does not guess mappings.
-- Embeddings/vector databases are deferred until justified by experiments.
+## Run the local example
 
-The retriever is intentionally lexical and deterministic so evaluation remains reproducible. A future vector retriever can implement the same conceptual boundary without changing the agent/controller safety model.
+Prepare the Python 3.11 environment from [DEVELOPMENT.md](../docs/DEVELOPMENT.md). From the repository root on Windows:
+
+```powershell
+py -3.11 -m threat_intelligence
+py -3.11 -m pytest -q tests/unit/test_threat_intelligence.py tests/security/test_security_boundaries.py
+```
+
+The example creates one in-memory curated demonstration record and performs a lexical search. It does not fetch threat feeds or save a production knowledge base. On Linux, use `.venv/bin/python` after the documented environment setup. An unqualified Windows `python` may select an older interpreter despite `.python-version`.
+
+The lexical retriever supports repeatable evaluation; a future retriever must preserve the same untrusted-data and authorization boundaries. These examples are separate from the browser's scripted replay. See [current verification](../docs/CURRENT_STATUS.md) and the [research protocol](../evaluation/experiments/README.md).

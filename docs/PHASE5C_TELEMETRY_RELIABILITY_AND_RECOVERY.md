@@ -1,6 +1,8 @@
 # Phase 5C — Telemetry Reliability and Recovery
 
-Updated 2026-10-22. This is a local synthetic reliability prototype, not a production telemetry service.
+> Current setup: use Python 3.11 from the [development guide](DEVELOPMENT.md). PowerShell examples run from the repository root with `.\.venv\Scripts\python.exe`; on Linux use `.venv/bin/python`. Phase-specific verification counts are historical; see [current status](CURRENT_STATUS.md) for fresh checks.
+
+Phase 5C implementation recorded 2026-10-22. This is a local synthetic reliability prototype, not a production telemetry service.
 
 ## Existing behavior and gaps
 
@@ -10,7 +12,7 @@ Ingestion rereads the retained bounded snapshot from the beginning on every run.
 
 ## Phase 5C behavior
 
-- The source reader now has a fixed, ordered window of active, `.1`, `.2`, and `.3` files for each of access and error logs. The combined byte and record limits still apply. The source reader accepts no path arguments and resolves each file within the fixed local log directory; symlinks and outside paths are rejected.
+- The source reader now has a fixed, ordered window of active, `.1`, `.2`, and `.3` files for each of access and error logs. The 1 MiB per-file byte limit and 500-record combined snapshot limit still apply. The source reader accepts no path arguments and resolves each file within the fixed local log directory; symlinks and outside paths are rejected.
 - Every run rereads complete records in the retained window. Partial trailing lines are ignored and reconsidered on the next run. SQLite's unique `(tenant_id, event_id)` and `(tenant_id, evidence_ref)` constraints plus content hashes reject conflicting replays rather than silently merging them.
 - `telemetry_source_status` is created by an additive schema version 2 → 3 migration. It is keyed by tenant and one fixed live-demo source key. It stores last attempt/success, current status, bounded counts, total observed bytes, a SHA-256 fingerprint of the current retained snapshot, and a categorical error code. It stores no log lines or filesystem paths. Source status is returned only through the existing authenticated private API boundary at `GET /api/telemetry/sources/live-website/status`, using the authenticated principal's tenant and `telemetry:read` scope.
 - A successful source status update shares the transaction that commits events, findings, report, and the run. An interrupted transaction therefore does not publish a success status. Failed attempts record only `source_invalid`, `processing_error`, or `store_error`; raw records and stack traces are not returned by the status route.
@@ -26,20 +28,18 @@ The source fingerprint is an operator observation, not a checkpoint and not proo
 
 ## Schema, tests, and operation
 
-Schema version 3 adds only the `telemetry_source_status` table. Migration tests use temporary databases and verify existing rows survive an upgrade from version 2. No change to Phase 1/2 event schemas, the public static frontend, the simulator, or the Controller is intended.
+The Phase 5C migration to schema version 3 added only the `telemetry_source_status` table. The current store is version 6 after later assessment, investigation, and scenario-history additions. Migration tests use temporary databases and verify existing rows survive an upgrade from version 2. No change to Phase 1/2 event schemas, the public static frontend, the simulator, or the Controller is intended.
 
 Run the local synthetic site, traffic generator, and ingestion workflow as documented in [Phase 5B](PHASE5B_LOCAL_LIVE_TELEMETRY_VALIDATION.md). The authenticated source status route is read-only. Use only temporary test directories/databases for reliability tests.
 
 Verification commands:
 
 ```powershell
-python -m pytest -q
-python -m compileall -q private_api scripts tests
-cd frontend
-npm test
-npm run build
-cd ..
-python scripts/build_static_site.py --output <new-empty-output-directory>
+.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m compileall -q private_api scripts tests
+npm.cmd --prefix frontend test
+npm.cmd --prefix frontend run build
+.\.venv\Scripts\python.exe scripts/build_static_site.py --output <new-empty-output-directory>
 git diff --check
 ```
 

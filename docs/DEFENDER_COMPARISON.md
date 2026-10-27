@@ -1,5 +1,7 @@
 # A measurable defensive-policy improvement
 
+Current setup and dated regression results: [DEVELOPMENT.md](DEVELOPMENT.md) and [CURRENT_STATUS.md](CURRENT_STATUS.md). Commands below use the Windows Python 3.11 launcher with dependencies installed; a project virtual environment is preferred for a fresh setup.
+
 The original scripted defender can spend every turn investigating new alerts. With enough incoming alerts, it never reaches its containment logic. `EvidencePrioritizedBlueAgent` adds a separate policy that responds to urgent, investigated evidence before accepting more investigation work. The original policy and public episode remain unchanged, so before/after results remain reviewable.
 
 This is a deterministic policy improvement, not learned adaptation or a measurement of an AI model.

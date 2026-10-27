@@ -1,9 +1,12 @@
 # AegisAI Phase 10 — Release Candidate Record
 
+> Historical release review dated 2026-10-24. Recorded test counts, worktree inventory, and dependency conflicts below remain evidence from that review. [CURRENT_STATUS.md](CURRENT_STATUS.md) records the 2026-10-27 implementation and fresh checks; [DEVELOPMENT.md](DEVELOPMENT.md) is the current setup guide. Runnable examples in sections 8–9 use the explicit project interpreter. No private production deployment or hosted verification has been added.
+
+
 **Review date:** 2026-10-24
 **Status:** **BLOCKED** for an AegisAI system release or production review. The reviewed static-only artifact can be prepared for staging after owner approval, but no hosting target or hosted preview was verified. Nothing was deployed or published.
 
-This record describes the current worktree and previously observed verification evidence. It does not assert that every feature received an end-to-end test. Phase 10 itself changes only this document and the concise links in `README.md` and `PROJECT_HANDOFF.md`; all other worktree changes listed below were already present and were preserved.
+This record describes the worktree reviewed on 2026-10-24 and previously observed verification evidence. It does not assert that every feature received an end-to-end test. Phase 10 itself changes only this document and the concise links in `README.md` and `docs/history/PROJECT_HANDOFF.md`; all other worktree changes listed below were already present and were preserved.
 
 ## 1. Implemented features and evidence level
 
@@ -44,7 +47,7 @@ Other unchanged tracked files (including simulator, public-site source, fixtures
 |---|---|
 | `docs/PHASE10_RELEASE_CANDIDATE.md` | Release status, feature inventory, research comparison, verification evidence, security risks, operational instructions and approval gates. |
 | `README.md` | Concise link to this release record. Existing README content preserved. |
-| `PROJECT_HANDOFF.md` | Concise link and factual release status. Existing handoff content preserved. |
+| `docs/history/PROJECT_HANDOFF.md` | Concise link and factual release status. Existing handoff content preserved. |
 
 ## 3. Comparison to public research references
 
@@ -116,17 +119,16 @@ These are source and test observations, not a penetration test or independent se
 | `OPENAI_API_KEY` | Only for deliberately selected research/LLM harness commands. | Not needed for local dashboard, synthetic telemetry, fixed assessment, executive reports or tests. Never put it in frontend files, fixtures or reports. |
 | `OPENAI_MODEL` | Optional model selection for those research harnesses. | Not needed for the local product demo. |
 
-Normal local demo startup requires no added environment variables. API/database selection is through CLI arguments. Never reuse the printed development bearer token; it is ephemeral and must be treated as a secret.
+Normal local demo startup requires no added environment variables. API/database selection is through CLI arguments. Do not reuse a development bearer token from a previous API process; it is ephemeral and must be treated as a secret.
 
 ## 8. Local development and presentation startup
 
-Use three PowerShell terminals from the repository `C:\AegisAI`:
+After [Python 3.11 setup](DEVELOPMENT.md), use three PowerShell terminals, each opened at the repository root:
 
 1. **Fixed demo website** (only if demonstrating website telemetry or assessment):
 
    ```powershell
-   cd C:\AegisAI
-   python -m demo_site.telemetry_server
+   .\.venv\Scripts\python.exe -m demo_site.telemetry_server
    ```
 
    It serves the harmless telemetry/assessment test site on `127.0.0.1:8767` and writes bounded synthetic JSONL logs under `.aegisai-local/website-telemetry/`. Do not substitute `demo_site/server.py`, which is a separate site on port 8765.
@@ -134,8 +136,7 @@ Use three PowerShell terminals from the repository `C:\AegisAI`:
 2. **Private API** (select the separate presentation DB explicitly):
 
    ```powershell
-   cd C:\AegisAI
-   python scripts/run_private_api.py --database .aegisai-local/presentation.sqlite3
+   .\.venv\Scripts\python.exe scripts/run_private_api.py --database .aegisai-local/presentation.sqlite3
    ```
 
    Keep the terminal open. Copy the newly printed development bearer token into the local dashboard. Do not share or paste it elsewhere.
@@ -143,8 +144,7 @@ Use three PowerShell terminals from the repository `C:\AegisAI`:
 3. **Dashboard**:
 
    ```powershell
-   cd C:\AegisAI\frontend
-   npm.cmd run dev:dashboard
+   npm.cmd --prefix frontend run dev:dashboard -- --host 127.0.0.1
    ```
 
    Open `http://localhost:5174/local-dashboard.html` on the same computer. Connect using the current API startup token. The private dashboard is intentionally not included in the public static artifact.
@@ -152,9 +152,8 @@ Use three PowerShell terminals from the repository `C:\AegisAI`:
 Optional synthetic telemetry flow, only when you intentionally want new state in the presentation database:
 
 ```powershell
-cd C:\AegisAI
-python scripts/generate_local_website_traffic.py
-python scripts/ingest_live_website_telemetry.py --database .aegisai-local/presentation.sqlite3
+.\.venv\Scripts\python.exe scripts/generate_local_website_traffic.py
+.\.venv\Scripts\python.exe scripts/ingest_live_website_telemetry.py --database .aegisai-local/presentation.sqlite3
 ```
 
 These commands write telemetry data/source status to the selected presentation database and fixed local log source. They were not run for this release review. The normal API startup can also start its bounded synthetic telemetry scheduler. Avoid repeatedly generating traffic unless new events are needed.
@@ -162,8 +161,7 @@ These commands write telemetry data/source status to the selected presentation d
 The fixed assessment CLI is an explicit operator action, not part of startup. For an intentional presentation run, select the same presentation database explicitly:
 
 ```powershell
-cd C:\AegisAI
-python scripts/run_local_assessment.py --database .aegisai-local/presentation.sqlite3
+.\.venv\Scripts\python.exe scripts/run_local_assessment.py --database .aegisai-local/presentation.sqlite3
 ```
 
 It accepts only its fixed local policy/catalog and persists the report to the selected database. Confirm the site is running on the fixed loopback origin before running it. Do not omit `--database` for this presentation flow: omission selects the default `.aegisai-local/private_api.sqlite3`. The API does not expose an arbitrary target or scan trigger.
@@ -173,12 +171,10 @@ It accepts only its fixed local policy/catalog and persists the report to the se
 From PowerShell, with the frontend dependencies installed from the lockfile:
 
 ```powershell
-cd C:\AegisAI\frontend
-npm.cmd ci
-npm.cmd test
-npm.cmd run build
-cd C:\AegisAI
-python scripts/build_static_site.py --output dist/aegisai-release
+npm.cmd --prefix frontend ci
+npm.cmd --prefix frontend test
+npm.cmd --prefix frontend run build
+.\.venv\Scripts\python.exe scripts/build_static_site.py --output dist/aegisai-release
 ```
 
 The output directory must be new and empty. Inspect it and confirm it contains only the nine paths in §4. Publish only that generated directory, never the repository root, `frontend/`, `.aegisai-local/`, `results/`, or `.vite-build/`. The commands build/package only; they do not deploy.

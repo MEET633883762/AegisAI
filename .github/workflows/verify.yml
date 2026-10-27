@@ -58,7 +58,7 @@ jobs:
         run: npm --prefix frontend ci
 
       - name: Test simulator, APIs, detection and security boundaries
-        run: python -m pytest -q -p no:cacheprovider --basetemp .pytest-ci
+        run: python -m pytest -q -p no:cacheprovider --basetemp .aegisai-local/test-artifacts/ci
 
       - name: Verify fresh results against the published demo
         run: python scripts/run_judging_demo.py --check

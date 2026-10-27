@@ -1,5 +1,9 @@
 # AegisAI V1: Phase 1 Product Boundary and Threat Model
 
+> Historical V1 planning record. The proposed scope, observations, and review decisions below describe Phase 1. Use [CURRENT_STATUS.md](CURRENT_STATUS.md), [the frontend guide](../frontend/README.md), and [development setup](DEVELOPMENT.md) for the current implementation and runnable commands.
+
+**Current public experience:** the landing page explains the research and its limits; `/dashboard.html` replays a reviewed 39-action synthetic episode through six key moments, with presentation/keyboard controls, searchable role-filtered evidence, real sample metrics, and the four-header comparison. The earlier illustrative legacy metrics have been removed. Local file selection reads reports in the browser and does not upload them. `/local-dashboard.html` is a separate local operations prototype, excluded from the public build.
+
 **Status:** approved direction; Phase 1 planning and documentation only
 **Release model:** public research/demo website with reviewed, precomputed synthetic results
 **Not a hosted SaaS product.** This proposal does not authorize Phase 2 implementation.
@@ -160,7 +164,7 @@ These are proposed acceptance tests for the relevant existing components and fut
 - `README.md`: add a concise public-demo boundary and link to the approved product/threat-model document; clarify which dashboard values are illustrative versus evidence-backed.
 - `frontend/README.md` (or equivalent dashboard guide): describe the accepted static report schema, safe import/comparison behavior, synthetic labels, download format, and import limitations.
 - `demo_site/README.md`: retain its developer-only, loopback/fixed-target status; explain baseline/hardened sample provenance and reiterate it is not a public scanner.
-- `PROJECT_HANDOFF.md`: record the approved release model and current phase gate so future work does not drift into SaaS or public execution.
+- `docs/history/PROJECT_HANDOFF.md`: record the approved release model and current phase gate so future work does not drift into SaaS or public execution.
 - A release checklist/privacy notice: document selected host, domain, provider log behavior/retention, contact/reporting route, artifact review sign-off, and rollback. Draft only after host and jurisdiction are selected.
 
 No README, source artifact, application code, or dependency manifest is changed by this proposal. Phase 2 implementation and publication await your review.

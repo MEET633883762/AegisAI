@@ -1,5 +1,7 @@
 # Phase 16 Changelog — OpenAI Responses Provider
 
+Implementation record for this milestone. Historical verification totals below are preserved; use the [development guide](DEVELOPMENT.md) for Python 3.11 setup and [current status](CURRENT_STATUS.md) for fresh project checks. The public browser walkthrough uses scripted agents and is separate from opt-in provider experiments.
+
 ## Added
 
 - `llm/openai_provider.py`
@@ -11,7 +13,7 @@
   - Provider errors mapped to AegisAI `LLMProviderError`.
   - Missing parsed output mapped to `StructuredOutputError`.
   - Token usage extraction.
-  - No provider-side retries.
+  - No adapter-level retry loop; underlying SDK retry settings remain separate.
 
 - `tests/unit/test_llm_openai_provider.py`
   - Offline fake Responses client.

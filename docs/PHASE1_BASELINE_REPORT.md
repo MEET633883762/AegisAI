@@ -1,5 +1,9 @@
 # AegisAI Phase 1 Baseline Report
 
+> Historical verification record from 2026-10-24. Keep the commands, counts, failures, and timings below as observations of that baseline. They are not the current test totals or setup instructions. See [CURRENT_STATUS.md](CURRENT_STATUS.md) for fresh checks and [DEVELOPMENT.md](DEVELOPMENT.md) for the explicit Python 3.11 environment.
+
+Later source adds project-level `pytest.ini`, a schema-v6 local store, and additional frontend flows/tests. The old schema/configuration findings below are retained to explain the baseline, not to describe the present checkout.
+
 Run on 2026-10-24 before the Phase 2 security validation engine changes.
 
 ## Worktree preservation

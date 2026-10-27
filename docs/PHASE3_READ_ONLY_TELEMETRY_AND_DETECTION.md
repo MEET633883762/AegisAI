@@ -1,5 +1,7 @@
 # Phase 3 — Read-Only Synthetic Telemetry and Continuous Detection
 
+> Current setup: use Python 3.11 from the [development guide](DEVELOPMENT.md). PowerShell examples run from the repository root with `.\.venv\Scripts\python.exe`; on Linux use `.venv/bin/python`. Phase-specific verification counts are historical; see [current status](CURRENT_STATUS.md) for fresh checks.
+
 **Status:** Local prototype only. All input is synthetic fixture data. This does not establish real-world detection accuracy or provide a production security monitoring service.
 
 ## Scope and data flow
@@ -41,7 +43,7 @@ Findings include deterministic tenant-scoped IDs, rule ID/version, severity, con
 
 ## Storage and retention
 
-SQLite schema migrations are additive. Phase 3 advanced `PRAGMA user_version` to `1`; Phase 4 adds a retention index and advances it to `2`. Existing Phase 2 tables and rows are retained. New tables use tenant-scoped keys for events, findings, evidence links, finding observations, reports, and processing runs. A processing cycle writes within a transaction; event conflicts roll back the cycle. Stored events are capped at 10,000 per tenant and each detection pass considers at most the most recent 500 events.
+SQLite schema migrations are additive. Phase 3 advanced `PRAGMA user_version` to `1`; Phase 4 added a retention index and advanced it to `2`. Later additions bring the current store to schema version `6`; those migrations retain these telemetry tables. Existing Phase 2 tables and rows are retained. New tables use tenant-scoped keys for events, findings, evidence links, finding observations, reports, and processing runs. A processing cycle writes within a transaction; event conflicts roll back the cycle. Stored events are capped at 10,000 per tenant and each detection pass considers at most the most recent 500 events.
 
 Phase 3 originally had no automated retention. Phase 4 now retains at most the latest 100 telemetry runs and their reports per tenant and 100 observations per finding; see [Phase 4 replay and retention details](PHASE4_ISOLATED_REPLAY_AND_DETECTION_GAP_ANALYSIS.md). Telemetry events remain bounded at 10,000 per tenant. Audit rows are not pruned. The ignored local database under `.aegisai-local/` contains synthetic records only. Stop the local API before an operator removes that database to clear all prototype records. Do not store real client data in it.
 
@@ -62,20 +64,20 @@ The API continues to bind to `127.0.0.1` and uses the Phase 2 development bearer
 | `/api/telemetry/reports/latest` | `reports:read` | Latest completed synthetic report for that tenant. |
 | `/api/processing` | `processing:read` | Scheduler state and latest tenant run summary. |
 
-No telemetry write/ingestion, job execution, scan, or Controller route is exposed. Query strings remain unsupported. Do not expose this development API to a LAN or the internet.
+No telemetry write/ingestion, job execution, scan, or Controller route is exposed. These telemetry/processing routes accept no query strings; only the later investigation-list endpoint supports bounded search/status filters. Do not expose this development API to a LAN or the internet.
 
 ## Run and verify
 
 From the repository root:
 
 ```powershell
-python scripts/run_private_api.py
+.\.venv\Scripts\python.exe scripts/run_private_api.py
 ```
 
 The process prints a new local development token at startup. Keep it private and out of source files, screenshots, and commits. The API seeds Phase 1 sample data and starts the synthetic fixture scheduler. The worker module is an internal child process and expects a run already recorded as `started`; use the API scheduler rather than invoking it directly. Focused tests:
 
 ```powershell
-python -m pytest tests/unit/test_private_telemetry.py tests/unit/test_scheduler.py tests/unit/test_private_api.py tests/unit/test_platform_prototype.py -q
+.\.venv\Scripts\python.exe -m pytest tests/unit/test_private_telemetry.py tests/unit/test_scheduler.py tests/unit/test_private_api.py tests/unit/test_platform_prototype.py -q
 ```
 
 ## Limitations

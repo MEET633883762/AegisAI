@@ -1,5 +1,7 @@
 # Presenting AegisAI to judges
 
+Current runtime, feature inventory, and dated verification results: [CURRENT_STATUS.md](CURRENT_STATUS.md).
+
 AegisAI is a controlled cybersecurity research lab that shows how a simulated attacker gets in, what a defender notices, and whether the defender stops the attack. Every action passes through a permission check and leaves a record of its evidence and outcome. The public dashboard replays a reviewed example without running attacks or depending on a live AI service.
 
 ## The pitch
@@ -47,8 +49,8 @@ Open `http://localhost:5174/dashboard.html`. Choose **Present demo** in the top 
 For a final rehearsal, run the existing checks before the event:
 
 ```powershell
-$pytestBase = Join-Path (Get-Location) ('.pytest-tmp-' + [guid]::NewGuid().ToString('N'))
-py -3.11 -m pytest -q -p no:cacheprovider --basetemp $pytestBase
+$pytestBase = Join-Path (Get-Location) ('.aegisai-local/test-artifacts/run-' + [guid]::NewGuid().ToString('N'))
+py -3.11 -m pytest -q --basetemp $pytestBase
 npm.cmd --prefix frontend test
 ```
 
@@ -87,6 +89,8 @@ For a three-minute slot, omit the header comparison and terminal demonstration. 
 
 Describe the public showcase and local operations prototype as separate parts of the repository. The public dashboard does not call the private API or start simulator runs.
 
+When presenting, focus the replay and use Left/Right to advance or revisit a key moment; Home/End jumps to the beginning or final moment. The same controls remain available as buttons. Open **Look under the hood** to filter attacker/defender actions or search the recorded evidence. The selected action stays visible in its detail panel while you filter. **Clear action filters** returns to all 39 actions. The landing page's **Questions** section covers execution, AI's role, reproducibility, and the containment tradeoff.
+
 ## Evidence to explain carefully
 
 The fixed detection dataset currently contains 15 accepted scenarios, evaluated against five supported rules, plus four rejected-input cases. The checked-in report records 9 true positives, 66 true negatives, zero false positives, and zero false negatives across 75 scenario-by-rule pairs. Rejected-input checks are counted separately. These are hand-authored regression examples, so their perfect scores show agreement with those examples and labels; they do not establish real-world detection accuracy.
@@ -120,6 +124,8 @@ Keep these quantities distinct:
 **What would you improve next?** Prioritize stronger defender actions, independent held-out scenario families, and comparisons that include containment and false positives. Then evaluate selected real models under bounded budgets. Each step should preserve the same provenance, authorization checks, and evidence trail.
 
 ## If something fails during the presentation
+
+If Python reports a `StrEnum` import error, the selected interpreter is too old. Use `.\.venv\Scripts\python.exe scripts/run_private_api.py` after setup, or `py -3.11 scripts/run_private_api.py` when its dependencies are already installed. The public walkthrough needs no API process; this startup applies only to the separate local operations dashboard. `.python-version` does not change Windows `PATH`.
 
 If the browser is blank, confirm Vite is running and open the exact localhost URL. Do not use `file://` to open the HTML. If port 5174 is occupied, stop a known previous AegisAI development server or resolve the conflict before the session; the configured server intentionally refuses to silently pick another port.
 

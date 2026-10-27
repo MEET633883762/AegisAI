@@ -1,5 +1,7 @@
 # Phase 5A — Local Website Telemetry Integration
 
+> Current setup: use Python 3.11 from the [development guide](DEVELOPMENT.md). PowerShell examples run from the repository root with `.\.venv\Scripts\python.exe`; on Linux use `.venv/bin/python`. Phase-specific verification counts are historical; see [current status](CURRENT_STATUS.md) for fresh checks.
+
 ## Scope and boundaries
 
 Phase 5A adds a local-only adapter for one checked-in, deterministic synthetic access/error-log sample. It does not read logs emitted by the demo web server, modify that website, accept uploads, accept caller-selected paths or URLs, or add an HTTP ingestion route. All records are marked synthetic and use fixed synthetic asset, actor, source, and tenant identifiers. A suspicious indicator is a rule match over authored fixture data, not a confirmed attack.
@@ -37,12 +39,12 @@ Raw URL strings, IP addresses, user names, credentials, arbitrary text, free-for
 From the repository root in PowerShell:
 
 ```powershell
-python scripts/ingest_local_website_telemetry.py
+.\.venv\Scripts\python.exe scripts/ingest_local_website_telemetry.py
 ```
 
 The command prints the structured synthetic telemetry report. It stores records in `.aegisai-local/private_api.sqlite3`, uses the existing local retention policy, and appends a categorical `website_telemetry.ingest` audit row. It does not print the source path or raw log records. Repeated runs produce a new run/report record but event rows deduplicate; detections are recomputed idempotently from the bounded tenant history.
 
-The API can continue to be run separately with `python scripts/run_private_api.py`; its authenticated read-only routes can display persisted data for the same fixed synthetic tenant after startup. The public static site does not call this API. Do not pass client telemetry to this prototype.
+The API can continue to be run separately with `.\.venv\Scripts\python.exe scripts/run_private_api.py`; its authenticated read-only routes can display persisted data for the same fixed synthetic tenant after startup. The public static site does not call this API. Do not pass client telemetry to this prototype.
 
 ## Verification and limitations
 

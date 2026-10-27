@@ -1,5 +1,7 @@
 # Phase 15 Change Log
 
+Implementation record for this milestone. Historical verification totals below are preserved; use the [development guide](DEVELOPMENT.md) for Python 3.11 setup and [current status](CURRENT_STATUS.md) for fresh project checks. The public browser walkthrough uses scripted agents and is separate from opt-in provider experiments.
+
 - Added deterministic `ScenarioMetadata`.
 - Expanded scenario library from 2 to 6 templates.
 - Added experiment-side metadata without changing Red/Blue observation schemas.

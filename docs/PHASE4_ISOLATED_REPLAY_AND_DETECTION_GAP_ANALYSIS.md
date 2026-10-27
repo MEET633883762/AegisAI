@@ -1,5 +1,7 @@
 # Phase 4 — Isolated Synthetic Replay and Detection-Gap Analysis
 
+> Current setup: use Python 3.11 from the [development guide](DEVELOPMENT.md). PowerShell examples run from the repository root with `.\.venv\Scripts\python.exe`; on Linux use `.venv/bin/python`. Phase-specific verification counts are historical; see [current status](CURRENT_STATUS.md) for fresh checks.
+
 **Status:** Local evaluation lab. This is not an attack engine, production detection benchmark, or evidence of real-world efficacy.
 
 ## Boundaries and architecture
@@ -41,13 +43,13 @@ Each CLI invocation gets a unique `replay_id` and UTC start/finish timestamps. S
 From the repository root:
 
 ```powershell
-python scripts/run_replay_lab.py
+.\.venv\Scripts\python.exe scripts/run_replay_lab.py
 ```
 
 Output is JSON on stdout. To save it, specify a new path; existing output files are refused:
 
 ```powershell
-python scripts/run_replay_lab.py --report results/synthetic_detection_gap_report.json
+.\.venv\Scripts\python.exe scripts/run_replay_lab.py --report results/synthetic_detection_gap_report.json
 ```
 
 The command accepts no library path, event input, target, or execution option. `results/` assessment files are not read or changed by this tool.

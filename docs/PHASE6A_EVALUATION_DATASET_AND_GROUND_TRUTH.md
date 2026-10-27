@@ -1,5 +1,7 @@
 # Phase 6A — Detection Evaluation Dataset and Ground Truth
 
+> Current setup: use Python 3.11 from the [development guide](DEVELOPMENT.md). PowerShell examples run from the repository root with `.\.venv\Scripts\python.exe`; on Linux use `.venv/bin/python`. Phase-specific verification counts are historical; see [current status](CURRENT_STATUS.md) for fresh checks.
+
 ## Scope
 
 Phase 6A adds a versioned local benchmark fixture for the existing synthetic detection rules. It does not add an evaluator report, performance metrics, a public route, a database migration, or any frontend behavior. The fixture contains no real client data and is not evidence of security effectiveness.
@@ -25,7 +27,7 @@ Scenario array order and scenario IDs are stable. `dataset_fingerprint` hashes c
 Run focused tests with:
 
 ```powershell
-python -m pytest -q -p no:cacheprovider tests/unit/test_evaluation_dataset.py
+.\.venv\Scripts\python.exe -m pytest -q tests/unit/test_evaluation_dataset.py
 ```
 
 The tests cover versions, size limits, unique IDs, complete positive/negative rule labels, evidence references, stable IDs/fingerprints, expected positive and benign behavior, threshold boundaries, exact duplicates, insufficient evidence, malformed/conflicting inputs, detector-input isolation, and the unchanged supported rule set/threshold constants.
@@ -34,6 +36,6 @@ The tests cover versions, size limits, unique IDs, complete positive/negative ru
 
 It can establish that the fixture is bounded and internally consistent, that its invalid examples reach the declared input-validation failure category, and that selected hand-authored examples exercise existing behavior with the stated evidence references. It cannot establish detection accuracy on real systems, representative prevalence, statistical confidence, operational false-positive rates, or resistance to adversarial evasion. Phase 6A does not publish aggregate accuracy metrics.
 
-## Next step: Phase 6B
+## Related implemented evaluation
 
-Phase 6B may add a separate deterministic evaluator that runs accepted scenarios in isolation, compares observed findings/evidence to this independent ground truth, and reports bounded per-rule confusion counts and evidence completeness. Rejected inputs should be measured as validation outcomes, not detection misses. Phase 6B must not tune rules to fit the fixture and should retain the small-sample limitations in every report.
+[Phase 6B](PHASE6B_DETECTION_METRICS_AND_EVALUATION.md) now provides the separate deterministic evaluator: accepted scenarios run in isolation, findings/evidence are compared to this ground truth, and bounded per-rule confusion counts and evidence completeness are reported. Rejected inputs are validation outcomes rather than detection misses. [Phase 6C](PHASE6C_DETECTION_ROBUSTNESS_AND_REGRESSION.md) adds robustness checks; the later [Detection Lab extension](DETECTION_ENGINEERING_AND_EVALUATION.md) adds schema 1.1 coverage, specificity, and opt-in bounded history. None of these changes tunes rules automatically or removes the authored-small-suite limitations.

@@ -1,5 +1,9 @@
 # Frontend migration audit and compatibility record
 
+> Historical migration record dated 2026-10-22. Baseline routes, file counts, recovery paths, and recorded tests below describe that migration. Use [CURRENT_STATUS.md](CURRENT_STATUS.md), [the frontend guide](../frontend/README.md), and [DEVELOPMENT.md](DEVELOPMENT.md) for current setup and verification.
+
+**Subsequent frontend work:** the public site now has a guided six-moment replay, presentation and keyboard controls, searchable role-filtered evidence, a semantic before/after header table, guarded concurrent report loading, and a research FAQ. The illustrative legacy section described below has been removed. The separate `/local-dashboard.html` supports authenticated synthetic operations, section fragments, finding/evidence navigation, and filter reset; it is excluded from the public build. Public static publication still uses the strict nine-file allowlist.
+
 Date: 2026-10-22. This record describes the local frontend migration only. It does not authorize a public deployment or claim production readiness.
 
 ## Verified baseline before edits

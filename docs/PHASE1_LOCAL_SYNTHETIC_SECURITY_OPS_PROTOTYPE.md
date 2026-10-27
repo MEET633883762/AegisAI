@@ -1,5 +1,7 @@
 # Phase 1 — Local Synthetic Security Operations Prototype
 
+> Current setup: use Python 3.11 from the [development guide](DEVELOPMENT.md). PowerShell examples run from the repository root with `.\.venv\Scripts\python.exe`; on Linux use `.venv/bin/python`. Phase-specific verification counts are historical; see [current status](CURRENT_STATUS.md) for fresh checks.
+
 **Status:** Local research prototype. Synthetic fixtures only; not a production detection or defense system.
 
 ## Scope and separation
@@ -25,7 +27,7 @@ Report schema v1 is `aegisai_local_synthetic_incident_report`. It is labeled syn
 From the repository root:
 
 ```powershell
-python scripts/run_platform_prototype.py
+.\.venv\Scripts\python.exe scripts/run_platform_prototype.py
 ```
 
 This reads the checked-in synthetic fixture and prints a JSON report. To choose another synthetic input, pass `--input path\to\synthetic-events.json`. The same schema and 1 MiB read limit apply. Save output to a new file with `--report path\to\incident-report.json`; an existing file is never overwritten.
@@ -33,7 +35,7 @@ This reads the checked-in synthetic fixture and prints a JSON report. To choose 
 Manual investigation is the default. To request a visibly labeled, policy-gated simulation, first copy a `finding_id` from a report, then run:
 
 ```powershell
-python scripts/run_platform_prototype.py --simulate-action increase_monitoring finding-<12-hex-id> --confirm-simulation
+.\.venv\Scripts\python.exe scripts/run_platform_prototype.py --simulate-action increase_monitoring finding-<12-hex-id> --confirm-simulation
 ```
 
 Only `increase_monitoring` and `create_review_task` are allowlisted. The policy requires a report finding with evidence and confidence at least 0.70; duplicate requests and unsupported actions are denied. Every outcome has `mode: "simulation"` and `executed: false`. No system state changes or external calls occur. Do not interpret an allowed simulation as a completed defensive action.
@@ -42,8 +44,8 @@ Only `increase_monitoring` and `create_review_task` are allowlisted. The policy 
 
 No SQLite database is justified for a one-shot local CLI that processes synthetic fixtures and returns a report. It retains nothing between invocations. If an operator saves a report with `--report`, that file is an operator-created local artifact; delete it when no longer needed, and do not place it in the public static output. There is no automated retention or secure deletion claim.
 
-No background scheduler is implemented or started. A later, separately reviewed scheduler could run a bounded job every ten minutes only over an explicitly authorized private synthetic/test workload: acquire a non-overlap lock and idempotency key, revalidate scope, bound time/bytes/records, validate and normalize, run deterministic rules, record incomplete/failure distinctly, and emit an auditable report. The cadence is not permission for production scanning or response. Any real-client workflow requires separate architecture, authorization, privacy, retention, and security approval.
+This one-shot CLI starts no background scheduler. The separate [Phase 3 API scheduler](PHASE3_READ_ONLY_TELEMETRY_AND_DETECTION.md) is now implemented for the fixed local synthetic fixture, with one owner per database, bounded workers, explicit run states, and a ten-minute cadence. That scheduler does not change this CLI or authorize production scanning or response. Any real-client workflow still requires separate architecture, authorization, privacy, retention, and security review.
 
 ## Verification
 
-Focused tests live in `tests/unit/test_platform_prototype.py`; the full Python suite is run with `python -m pytest -q`. The frontend regression suite is run from `frontend/` using `npm test`. The strict static publisher allowlist remains the only publication boundary; verify it using the existing frontend static release tests and `python scripts/build_static_site.py` with a new empty output path when a release artifact is needed.
+Focused tests live in `tests/unit/test_platform_prototype.py`; the full Python suite is run with `.\.venv\Scripts\python.exe -m pytest -q`. The frontend regression suite is run from `frontend/` using `npm test`. The strict static publisher allowlist remains the only publication boundary; verify it using the existing frontend static release tests and `.\.venv\Scripts\python.exe scripts/build_static_site.py` with a new empty output path when a release artifact is needed.

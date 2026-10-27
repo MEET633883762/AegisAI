@@ -1,5 +1,7 @@
 # Detection engineering and evaluation extension
 
+> Current setup: use Python 3.11 from the [development guide](DEVELOPMENT.md). PowerShell examples run from the repository root with `.\.venv\Scripts\python.exe`; on Linux use `.venv/bin/python`. Phase-specific verification counts are historical; see [current status](CURRENT_STATUS.md) for fresh checks.
+
 This change extends the existing Phase 6 Detection Lab. It does not add a second detector or change any detection rule or threshold.
 
 ## Dataset, labels, and counting
@@ -23,7 +25,7 @@ The existing authenticated `GET /api/evaluation/reports/latest` route continues 
 Run a new report to stdout and record it in history with:
 
 ```powershell
-python scripts/run_detection_evaluation.py --stdout --record-history
+.\.venv\Scripts\python.exe scripts/run_detection_evaluation.py --stdout --record-history
 ```
 
 The normal `--stdout` and default report-file behavior remain unchanged when `--record-history` is omitted. Evaluation/history tests use temporary SQLite files only.
@@ -37,7 +39,7 @@ Legacy schema 1.0 reports remain readable. The API derives specificity from thei
 Focused verification commands:
 
 ```powershell
-python -m pytest -q -p no:cacheprovider tests/unit/test_evaluation_dataset.py tests/unit/test_detection_evaluation.py tests/unit/test_detection_robustness.py tests/unit/test_evaluation_history.py tests/unit/test_detection_evaluation_api.py
+.\.venv\Scripts\python.exe -m pytest -q tests/unit/test_evaluation_dataset.py tests/unit/test_detection_evaluation.py tests/unit/test_detection_robustness.py tests/unit/test_evaluation_history.py tests/unit/test_detection_evaluation_api.py
 cd frontend
 npm.cmd test
 ```

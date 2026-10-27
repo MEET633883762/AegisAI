@@ -1,5 +1,9 @@
 # AegisAI Platform Vision — Phase 0 Architecture and Threat Model
 
+> Historical proposal dated 2026-10-22. The capability matrix, repository observations, and test counts below describe that review, not the current checkout. For present-day behavior and checks, use [CURRENT_STATUS.md](CURRENT_STATUS.md), [development setup](DEVELOPMENT.md), and the [documentation index](README.md).
+
+**Implementation since this proposal:** a separate loopback-only API, schema-v6 SQLite store, bounded synthetic telemetry scheduler, investigations, assessment/report views, and local operations dashboard now exist. They remain synthetic developer tools; they do not implement the customer-facing SaaS, production identity, or response integrations proposed here. Public pages still serve reviewed static samples without calling that API.
+
 **Status:** Proposed architecture; Phase 0 review document, not authorization to build or deploy a client-facing service.  
 **Date:** 2026-10-22
 

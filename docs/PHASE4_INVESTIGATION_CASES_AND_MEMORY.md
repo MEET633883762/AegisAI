@@ -1,5 +1,7 @@
 # Phase 4 — Investigation cases and memory
 
+> Current setup: use Python 3.11 from the [development guide](DEVELOPMENT.md). PowerShell examples run from the repository root with `.\.venv\Scripts\python.exe`; on Linux use `.venv/bin/python`. Phase-specific verification counts are historical; see [current status](CURRENT_STATUS.md) for fresh checks.
+
 This phase adds a human-led case layer to the authenticated local dashboard. It organizes existing tenant-scoped telemetry findings and evidence; it does not run detection, assessment checks, simulator actions, or automated response.
 
 ## Case data and labels
@@ -17,7 +19,7 @@ The private API exposes authenticated `GET /api/investigations/cases` and `GET /
 Read-only development tokens cannot write cases. To explicitly issue the local startup token with the narrow `investigations:write` scope, start the private API with:
 
 ```powershell
-python scripts/run_private_api.py --enable-investigation-writes
+.\.venv\Scripts\python.exe scripts/run_private_api.py --enable-investigation-writes
 ```
 
 All other routes retain their existing scopes and behavior. The case store uses additive schema version 5 tables with composite `(tenant_id, case_id)` ownership and foreign keys to existing tenant findings/evidence. Case writes append categorized history in the same SQLite transaction. The API also records the existing `protected_operation` audit event. Caps are 200 cases per tenant, 100 findings and 500 evidence references per case, 500 notes, 40 historical context references, and 2,000 total history entries per case. The case list returns at most 200 rows. Existing cases are not automatically pruned or deleted.
@@ -35,15 +37,14 @@ All other routes retain their existing scopes and behavior. The case store uses 
 Focused Python coverage uses temporary SQLite databases only:
 
 ```powershell
-python -m pytest -q -p no:cacheprovider tests/unit/test_investigations.py tests/unit/test_private_api.py tests/unit/test_private_telemetry.py tests/unit/test_local_assessment_reporting.py
+.\.venv\Scripts\python.exe -m pytest -q tests/unit/test_investigations.py tests/unit/test_private_api.py tests/unit/test_private_telemetry.py tests/unit/test_local_assessment_reporting.py
 ```
 
 Dashboard coverage and type checking:
 
 ```powershell
-cd frontend
-npm.cmd run typecheck
-npm.cmd run test:unit -- tests/local_dashboard.test.tsx
+npm.cmd --prefix frontend run typecheck
+npm.cmd --prefix frontend run test:unit -- tests/local_dashboard.test.tsx
 ```
 
-The schema-upgrade test starts from a temporary v4 database with only the v4 tables and verifies the additive v5 tables. No local application database or original assessment report is used by these tests.
+The case migration introduced schema version 5; the current store is version 6 after scenario-history support. The schema-upgrade test starts from a temporary v4 database and verifies the additive case tables alongside current migrations. No local application database or original assessment report is used by these tests.

@@ -1,8 +1,10 @@
 # Phase 4 — Release hardening and deployment preparation
 
+The release boundary below remains applicable to the current static app. Setup examples were refreshed on 2026-10-27; use [DEVELOPMENT.md](DEVELOPMENT.md) for the reviewed Python 3.11 environment and [CURRENT_STATUS.md](CURRENT_STATUS.md) for fresh checks. Provider-specific discussion records the Phase 4 hosting option, not a newly validated hosting/pricing recommendation. No deployment was performed during this documentation update.
+
 ## Release boundary
 
-The public V1 is a static, read-only research demo. The frontend uses React, TypeScript, and Vite to compile the existing `index.html`, `dashboard.html`, and `privacy.html` page URLs. The deployable file set is the explicit `STATIC_ALLOWLIST` in `scripts/build_static_site.py`. First run `npm ci` and `npm run build` from `frontend/`; then run `python scripts/build_static_site.py --output dist/aegisai-release` from the repository root. The publisher refuses an incomplete Vite build or a non-empty output directory and verifies that the output exactly matches its allowlist. Only that generated directory is a deployment candidate; do not select the repository root, `frontend/` itself, or `results/` as the publish directory.
+The public V1 is a static, read-only research demo. The frontend uses React, TypeScript, and Vite to compile the existing `index.html`, `dashboard.html`, and `privacy.html` page URLs. The deployable file set is the explicit `STATIC_ALLOWLIST` in `scripts/build_static_site.py`. From the repository root, run `npm.cmd --prefix frontend ci` and `npm.cmd --prefix frontend run build`, then `.\.venv\Scripts\python.exe scripts/build_static_site.py --output dist/aegisai-release`. The publisher refuses an incomplete Vite build or a non-empty output directory and verifies that the output exactly matches its allowlist. Only that generated directory is a deployment candidate; do not select the repository root, `frontend/` itself, or `results/` as the publish directory.
 
 The allowlist includes the three HTML pages, compiled same-origin JavaScript/CSS, Cloudflare Pages `_headers`, and three reviewed JSON samples. It excludes Python source, the simulator, Controller, local checker, tests, original assessment artifacts, experiment data, environment files, Git metadata, and documentation. Vite writes to ignored `frontend/.vite-build/`; the publisher copies only its named assets and the reviewed headers file.
 
@@ -19,17 +21,17 @@ The allowlist includes the three HTML pages, compiled same-origin JavaScript/CSS
 
 ## Hosting configuration
 
-Cloudflare Pages is the recommended initial host for this output. Use a static Pages project with no Pages Functions/Workers. For a source-connected workflow, install the locked frontend dependencies, run the production build, then run the static publisher; configure the Pages output directory as the selected generated directory such as `dist/aegisai-release`. Alternatively, upload only that generated directory using the provider's Direct Upload workflow. Never upload the repository root.
+Cloudflare Pages was the initial hosting option considered in Phase 4. If selected after owner review, use a static Pages project with no Pages Functions/Workers. For a source-connected workflow, install the locked frontend dependencies, run the production build, then run the static publisher; configure the Pages output directory as the selected generated directory such as `dist/aegisai-release`. Alternatively, upload only that generated directory using the provider's Direct Upload workflow. Never upload the repository root.
 
 The frontend `_headers` file defines a same-origin CSP and response security headers. Cloudflare Pages parses `_headers` as configuration rather than serving it as a normal asset. Verify the deployed HTML, scripts, stylesheets, JSON responses, and downloads after configuring the host. The local Python preview does not interpret `_headers`, so it cannot verify production response headers.
 
-As checked 2026-10-21, Cloudflare documents free static asset requests on Pages and free Universal SSL for activated domains. The chosen custom domain is additional; current `.com` registration and renewal are listed at $10.46 USD/year by Cloudflare Registrar, while other TLDs and applicable taxes differ. Hosting tiers, limits, domain prices, and provider terms can change; recheck before launch. See [Pages static asset pricing](https://developers.cloudflare.com/pages/functions/pricing/), [Pages headers](https://developers.cloudflare.com/pages/configuration/headers/), [Universal SSL](https://developers.cloudflare.com/ssl/edge-certificates/universal-ssl/), and [Registrar prices](https://pricing.registrar.cloudflare.com/).
+The Phase 4 provider review was dated 2026-10-21. It is not a current cost quote: recheck hosting tiers, limits, domain registration/renewal, taxes, logging, and provider terms before launch. Consult the provider's [Pages pricing](https://developers.cloudflare.com/pages/functions/pricing/), [header configuration](https://developers.cloudflare.com/pages/configuration/headers/), [SSL documentation](https://developers.cloudflare.com/ssl/edge-certificates/universal-ssl/), and [Registrar prices](https://pricing.registrar.cloudflare.com/).
 
 ## Release procedure (not yet performed)
 
 1. Confirm the source repository's visibility and confirm the reviewed public copy contains no local paths or secrets. The origin URL alone does not establish whether a repository is public.
-2. Run `npm ci`, `npm test` from `frontend/`, `python -m pytest -q`, and `git diff --check`; inspect `git status --short` and the full diff.
-3. Build the frontend with `npm run build` from `frontend/`, then publish the allowlist with `python scripts/build_static_site.py --output dist/aegisai-release`. If the output directory already exists, inspect it and choose a new empty output path; the publisher will not overwrite a populated directory.
+2. Follow the repository-root verification commands below and inspect `git status --short` and the full diff.
+3. Build the frontend with `npm.cmd --prefix frontend run build`, then package the allowlist with `.\.venv\Scripts\python.exe scripts/build_static_site.py --output dist/aegisai-release`. If the output directory already exists, inspect it and choose a new empty output path; the publisher will not overwrite a populated directory.
 4. Review the exact output tree. Confirm it contains only the allowlisted static files and no source, evidence, credentials, or development configuration.
 5. In a Cloudflare Pages preview deployment, verify navigation, artifact loading, both JSON downloads, sample baseline/hardened comparison, and local-file import behavior. Inspect response headers and browser console/network errors.
 6. Complete the manual accessibility checklist: keyboard-only operation, focus visibility/order, screen-reader status/details, contrast, zoom/reflow, and mobile viewport behavior.
@@ -39,25 +41,23 @@ To roll back, select the last known-good successful production deployment in Pag
 
 ## Verification commands
 
-From the repository root in PowerShell:
+From the repository root in PowerShell, after the Python 3.11 virtual-environment setup:
 
 ```powershell
-cd frontend
-npm ci
-npm test
-cd ..
-python -m py_compile scripts/build_public_demo_artifact.py scripts/build_public_assessment_artifacts.py scripts/build_static_site.py
-python -m pytest -q
+npm.cmd --prefix frontend ci
+npm.cmd --prefix frontend test
+.\.venv\Scripts\python.exe -m py_compile scripts/build_public_demo_artifact.py scripts/build_public_assessment_artifacts.py scripts/build_static_site.py
+$pytestBase = Join-Path (Get-Location) ('.aegisai-local/test-artifacts/release-' + [guid]::NewGuid().ToString('N'))
+.\.venv\Scripts\python.exe -m pytest -q --basetemp $pytestBase
+.\.venv\Scripts\python.exe scripts/run_judging_demo.py --check
 git diff --check
-python scripts/build_public_assessment_artifacts.py
-cd frontend
-npm run build
-cd ..
-python scripts/build_static_site.py --output dist/aegisai-release
+.\.venv\Scripts\python.exe scripts/build_static_site.py --output dist/aegisai-release
 Get-ChildItem dist/aegisai-release -Recurse -File | Select-Object -ExpandProperty FullName
 ```
 
-For the local browser smoke check, run `python -m http.server 8765 --bind 127.0.0.1 --directory dist/aegisai-static` and visit `http://127.0.0.1:8765/`. This verifies content behavior only; it does not apply Cloudflare `_headers` or substitute for checking the deployed host.
+These commands verify existing public samples; they do not regenerate them. If sample regeneration is intentional, follow [the frontend artifact workflow](../frontend/README.md#data-validation), inspect every change, and preserve the original `results/` evidence.
+
+For the local browser smoke check, run `.\.venv\Scripts\python.exe -m http.server 8780 --bind 127.0.0.1 --directory dist/aegisai-release` and visit `http://127.0.0.1:8780/`. This serves the exact output directory created above. It verifies content behavior only; it does not apply Cloudflare `_headers` or substitute for checking the deployed host. On Linux use `.venv/bin/python` and `npm` in the equivalent commands. `py -3.11` is also an explicit Windows alternative when dependencies are already installed in that interpreter.
 
 ## Current known limitations
 
